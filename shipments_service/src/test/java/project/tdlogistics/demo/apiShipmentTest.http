@@ -1,0 +1,7 @@
+
+POST http://localhost:8080/v2/shipments/create
+Content-Type: application/json
+
+{
+
+}
