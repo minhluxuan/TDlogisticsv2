@@ -20,28 +20,28 @@ public class Order {
     private Long id;
 
     @Column(name = "order_id", length = 30)
-    private String order_id;
+    private String orderId;
 
     @Column(name = "user_id", length = 25)
-    private String user_id;
+    private String userId;
 
     @Column(name = "agency_id", length = 25)
-    private String agency_id;
+    private String agencyId;
 
     @Column(name = "service_type", length = 3)
-    private String service_type;
+    private String serviceType;
 
     @Column(name = "name_sender", length = 50)
-    private String name_sender;
+    private String nameSender;
 
     @Column(name = "phone_number_sender", length = 11)
-    private String phone_number_sender;
+    private String phoneNumberSender;
 
     @Column(name = "name_receiver", length = 50)
-    private String name_receiver;
+    private String nameReceiver;
 
     @Column(name = "phone_number_receiver", length = 11)
-    private String phone_number_receiver;
+    private String phoneNumberReceiver;
 
     @Column(name = "mass")
     private float mass;
@@ -56,40 +56,40 @@ public class Order {
     private float length;
 
     @Column(name = "province_source", length = 30)
-    private String province_source;
+    private String provinceSource;
 
     @Column(name = "district_source", length = 30)
-    private String district_source;
+    private String districtSource;
 
     @Column(name = "ward_source", length = 30)
-    private String ward_source;
+    private String wardSource;
 
     @Column(name = "detail_source", length = 50)
-    private String detail_source;
+    private String detailSource;
 
     @Column(name = "long_source")
-    private double long_source;
+    private double longSource;
 
     @Column(name = "lat_source")
-    private double lat_source;
+    private double latSource;
 
     @Column(name = "province_dest", length = 30)
-    private String province_dest;
+    private String provinceDest;
 
     @Column(name = "district_dest", length = 30)
-    private String district_dest;
+    private String districtDest;
 
     @Column(name = "ward_dest", length = 30)
-    private String ward_dest;
+    private String wardDest;
 
     @Column(name = "detail_dest", length = 50)
-    private String detail_dest;
+    private String detailDest;
 
     @Column(name = "long_destination")
-    private double long_destination;
+    private double longDestination;
 
     @Column(name = "lat_destination")
-    private double lat_destination;
+    private double latDestination;
 
     @Column(name = "fee")
     private float fee;
@@ -107,22 +107,22 @@ public class Order {
     private String shipper;
 
     @Column(name = "status_code")
-    private int status_code;
+    private int statusCode;
 
     @Column(name = "miss")
     private byte miss;
 
     @Column(name = "send_images", columnDefinition = "LONGTEXT")
-    private String send_images;
+    private String sendImages;
 
     @Column(name = "receive_images", columnDefinition = "LONGTEXT")
-    private String receive_images;
+    private String receiveImages;
 
     @Column(name = "send_signature", length = 256)
-    private String send_signature;
+    private String sendSignature;
 
     @Column(name = "receive_signature", length = 256)
-    private String receive_signature;
+    private String receiveSignature;
 
     @Column(name = "qrcode", length = 7089)
     private String qrcode;
@@ -135,14 +135,14 @@ public class Order {
 
     @Column(name = "created_at", updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
-    private Date created_at;
+    private Date createdAt;
 
     @Column(name = "last_update")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date last_update;
+    private Date lastUpdate;
 
     @Column(name = "order_code")
-    private Long order_code;
+    private Long orderCode;
 
     // Constructors, getters, and setters
 
@@ -157,67 +157,67 @@ public class Order {
     }
 
     public String getOrderId() {
-        return order_id;
+        return orderId;
     }
 
     public void setOrderId(String orderId) {
-        this.order_id = orderId;
+        this.orderId = orderId;
     }
 
     public String getUserId() {
-        return user_id;
+        return userId;
     }
 
     public void setUserId(String userId) {
-        this.user_id = userId;
+        this.userId = userId;
     }
 
     public String getAgencyId() {
-        return agency_id;
+        return agencyId;
     }
 
     public void setAgencyId(String agencyId) {
-        this.agency_id = agencyId;
+        this.agencyId = agencyId;
     }
 
     public String getServiceType() {
-        return service_type;
+        return serviceType;
     }
 
     public void setServiceType(String serviceType) {
-        this.service_type = serviceType;
+        this.serviceType = serviceType;
     }
 
     public String getNameSender() {
-        return name_sender;
+        return nameSender;
     }
 
     public void setNameSender(String nameSender) {
-        this.name_sender = nameSender;
+        this.nameSender = nameSender;
     }
 
     public String getPhoneNumberSender() {
-        return phone_number_sender;
+        return phoneNumberSender;
     }
 
     public void setPhoneNumberSender(String phoneNumberSender) {
-        this.phone_number_sender = phoneNumberSender;
+        this.phoneNumberSender = phoneNumberSender;
     }
 
     public String getNameReceiver() {
-        return name_receiver;
+        return nameReceiver;
     }
 
     public void setNameReceiver(String nameReceiver) {
-        this.name_receiver = nameReceiver;
+        this.nameReceiver = nameReceiver;
     }
 
     public String getPhoneNumberReceiver() {
-        return phone_number_receiver;
+        return phoneNumberReceiver;
     }
 
     public void setPhoneNumberReceiver(String phoneNumberReceiver) {
-        this.phone_number_receiver = phoneNumberReceiver;
+        this.phoneNumberReceiver = phoneNumberReceiver;
     }
 
     public float getMass() {
@@ -253,99 +253,99 @@ public class Order {
     }
 
     public String getProvinceSource() {
-        return province_source;
+        return provinceSource;
     }
 
     public void setProvinceSource(String provinceSource) {
-        this.province_source = provinceSource;
+        this.provinceSource = provinceSource;
     }
 
     public String getDistrictSource() {
-        return district_source;
+        return districtSource;
     }
 
     public void setDistrictSource(String districtSource) {
-        this.district_source = districtSource;
+        this.districtSource = districtSource;
     }
 
     public String getWardSource() {
-        return ward_source;
+        return wardSource;
     }
 
     public void setWardSource(String wardSource) {
-        this.ward_source = wardSource;
+        this.wardSource = wardSource;
     }
 
     public String getDetailSource() {
-        return detail_source;
+        return detailSource;
     }
 
     public void setDetailSource(String detailSource) {
-        this.detail_source = detailSource;
+        this.detailSource = detailSource;
     }
 
     public double getLongSource() {
-        return long_source;
+        return longSource;
     }
 
     public void setLongSource(double longSource) {
-        this.long_source = longSource;
+        this.longSource = longSource;
     }
 
     public double getLatSource() {
-        return lat_source;
+        return latSource;
     }
 
     public void setLatSource(double latSource) {
-        this.lat_source = latSource;
+        this.latSource = latSource;
     }
 
     public String getProvinceDest() {
-        return province_dest;
+        return provinceDest;
     }
 
     public void setProvinceDest(String provinceDest) {
-        this.province_dest = provinceDest;
+        this.provinceDest = provinceDest;
     }
 
     public String getDistrictDest() {
-        return district_dest;
+        return districtDest;
     }
 
     public void setDistrictDest(String districtDest) {
-        this.district_dest = districtDest;
+        this.districtDest = districtDest;
     }
 
     public String getWardDest() {
-        return ward_dest;
+        return wardDest;
     }
 
     public void setWardDest(String wardDest) {
-        this.ward_dest = wardDest;
+        this.wardDest = wardDest;
     }
 
     public String getDetailDest() {
-        return detail_dest;
+        return detailDest;
     }
 
     public void setDetailDest(String detailDest) {
-        this.detail_dest = detailDest;
+        this.detailDest = detailDest;
     }
 
     public double getLongDestination() {
-        return long_destination;
+        return longDestination;
     }
 
     public void setLongDestination(double longDestination) {
-        this.long_destination = longDestination;
+        this.longDestination = longDestination;
     }
 
     public double getLatDestination() {
-        return lat_destination;
+        return latDestination;
     }
 
     public void setLatDestination(double latDestination) {
-        this.lat_destination = latDestination;
+        this.latDestination = latDestination;
     }
 
     public float getFee() {
@@ -389,11 +389,11 @@ public class Order {
     }
 
     public int getStatusCode() {
-        return status_code;
+        return statusCode;
     }
 
     public void setStatusCode(int statusCode) {
-        this.status_code = statusCode;
+        this.statusCode = statusCode;
     }
 
     public byte getMiss() {
@@ -405,35 +405,35 @@ public class Order {
     }
 
     public String getSendImages() {
-        return send_images;
+        return sendImages;
     }
 
     public void setSendImages(String sendImages) {
-        this.send_images = sendImages;
+        this.sendImages = sendImages;
     }
 
     public String getReceiveImages() {
-        return receive_images;
+        return receiveImages;
     }
 
     public void setReceiveImages(String receiveImages) {
-        this.receive_images = receiveImages;
+        this.receiveImages = receiveImages;
     }
 
     public String getSendSignature() {
-        return send_signature;
+        return sendSignature;
     }
 
     public void setSendSignature(String sendSignature) {
-        this.send_signature = sendSignature;
+        this.sendSignature = sendSignature;
     }
 
     public String getReceiveSignature() {
-        return receive_signature;
+        return receiveSignature;
     }
 
     public void setReceiveSignature(String receiveSignature) {
-        this.receive_signature = receiveSignature;
+        this.receiveSignature = receiveSignature;
     }
 
     public String getQrcode() {
@@ -461,27 +461,27 @@ public class Order {
     }
 
     public Date getCreatedAt() {
-        return created_at;
+        return createdAt;
     }
 
     public void setCreatedAt(Date createdAt) {
-        this.created_at = createdAt;
+        this.createdAt = createdAt;
     }
 
     public Date getLastUpdate() {
-        return last_update;
+        return lastUpdate;
     }
 
     public void setLastUpdate(Date lastUpdate) {
-        this.last_update = lastUpdate;
+        this.lastUpdate = lastUpdate;
     }
 
     public Long getOrderCode() {
-        return order_code;
+        return orderCode;
     }
 
     public void setOrderCode(Long orderCode) {
-        this.order_code = orderCode;
+        this.orderCode = orderCode;
     }
 }
 

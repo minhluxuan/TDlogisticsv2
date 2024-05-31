@@ -14,49 +14,49 @@ public class Shipment {
 
     @Id
     @Column(name = "shipment_id", nullable = false, length = 30)
-    private String shipment_id;
+    private String shipmentId;
 
     @Column(name = "agency_id", length = 25)
-    private String agency_id;
+    private String agencyId;
 
     @Column(name = "agency_id_dest", length = 30)
-    private String agency_id_dest;
+    private String agencyIdDest;
 
     @Column(name = "long_source")
-    private Float long_source;
+    private Float longSource;
 
     @Column(name = "lat_source")
-    private Float lat_source;
+    private Float latSource;
 
     @Column(name = "current_agency_id", length = 30)
-    private String current_agency_id;
+    private String currentAgencyId;
 
     @Column(name = "current_lat")
-    private Float current_lat;
+    private Float currentLat;
 
     @Column(name = "current_long")
-    private Float current_long;
+    private Float currentLong;
 
     @Column(name = "long_destination")
-    private Float long_destination;
+    private Float longDestination;
 
     @Column(name = "lat_destination")
-    private Float lat_destination;
+    private Float latDestination;
 
     @Column(name = "transport_partner_id", length = 25)
-    private String transport_partner_id;
+    private String transportPartnerId;
 
     @Column(name = "staff_id", length = 25)
-    private String staff_id;
+    private String staffId;
 
     @Column(name = "vehicle_id", length = 20)
-    private String vehicle_id;
+    private String vehicleId;
 
     @Column(name = "mass", columnDefinition = "float default 0")
     private Float mass = 0.0f;
 
     @Column(name = "order_ids", columnDefinition = "longtext")
-    private String order_ids;
+    private String orderIds;
 
     @Column(name = "parent", length = 20)
     private String parent;
@@ -66,11 +66,11 @@ public class Shipment {
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at", updatable = false, columnDefinition = "datetime default CURRENT_TIMESTAMP")
-    private Date created_at;
+    private Date createdAt;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "last_update", columnDefinition = "datetime default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP")
-    private Date last_update;
+    private Date lastUpdate;
 
     @Column(name = "journey", columnDefinition = "longtext", length = 16777215)
     private String journey;
@@ -78,107 +78,107 @@ public class Shipment {
     // Getters and Setters
 
     public String getShipmentId() {
-        return shipment_id;
+        return shipmentId;
     }
 
     public void setShipmentId(String shipmentId) {
-        this.shipment_id = shipmentId;
+        this.shipmentId = shipmentId;
     }
 
     public String getAgencyId() {
-        return agency_id;
+        return agencyId;
     }
 
     public void setAgencyId(String agencyId) {
-        this.agency_id = agencyId;
+        this.agencyId = agencyId;
     }
 
     public String getAgencyIdDest() {
-        return agency_id_dest;
+        return agencyIdDest;
     }
 
     public void setAgencyIdDest(String agencyIdDest) {
-        this.agency_id_dest = agencyIdDest;
+        this.agencyIdDest = agencyIdDest;
     }
 
     public Float getLongSource() {
-        return long_source;
+        return longSource;
     }
 
     public void setLongSource(Float longSource) {
-        this.long_source = longSource;
+        this.longSource = longSource;
     }
 
     public Float getLatSource() {
-        return lat_source;
+        return latSource;
     }
 
     public void setLatSource(Float latSource) {
-        this.lat_source = latSource;
+        this.latSource = latSource;
     }
 
     public String getCurrentAgencyId() {
-        return current_agency_id;
+        return currentAgencyId;
     }
 
     public void setCurrentAgencyId(String currentAgencyId) {
-        this.current_agency_id = currentAgencyId;
+        this.currentAgencyId = currentAgencyId;
     }
 
     public Float getCurrentLat() {
-        return current_lat;
+        return currentLat;
     }
 
     public void setCurrentLat(Float currentLat) {
-        this.current_lat = currentLat;
+        this.currentLat = currentLat;
     }
 
     public Float getCurrentLong() {
-        return current_long;
+        return currentLong;
     }
 
     public void setCurrentLong(Float currentLong) {
-        this.current_long = currentLong;
+        this.currentLong = currentLong;
     }
 
     public Float getLongDestination() {
-        return long_destination;
+        return longDestination;
     }
 
     public void setLongDestination(Float longDestination) {
-        this.long_destination = longDestination;
+        this.longDestination = longDestination;
     }
 
     public Float getLatDestination() {
-        return lat_destination;
+        return latDestination;
     }
 
     public void setLatDestination(Float latDestination) {
-        this.lat_destination = latDestination;
+        this.latDestination = latDestination;
     }
 
     public String getTransportPartnerId() {
-        return transport_partner_id;
+        return transportPartnerId;
     }
 
     public void setTransportPartnerId(String transportPartnerId) {
-        this.transport_partner_id = transportPartnerId;
+        this.transportPartnerId = transportPartnerId;
     }
 
     public String getStaffId() {
-        return staff_id;
+        return staffId;
     }
 
     public void setStaffId(String staffId) {
-        this.staff_id = staffId;
+        this.staffId = staffId;
     }
 
     public String getVehicleId() {
-        return vehicle_id;
+        return vehicleId;
     }
 
     public void setVehicleId(String vehicleId) {
-        this.vehicle_id = vehicleId;
+        this.vehicleId = vehicleId;
     }
 
     public Float getMass() {
@@ -190,11 +190,11 @@ public class Shipment {
     }
 
     public String getOrderIds() {
-        return order_ids;
+        return orderIds;
     }
 
     public void setOrderIds(String orderIds) {
-        this.order_ids = orderIds;
+        this.orderIds = orderIds;
     }
 
     public String getParent() {
@@ -214,19 +214,19 @@ public class Shipment {
     }
 
     public Date getCreatedAt() {
-        return created_at;
+        return createdAt;
     }
 
     public void setCreatedAt(Date createdAt) {
-        this.created_at = createdAt;
+        this.createdAt = createdAt;
     }
 
     public Date getLastUpdate() {
-        return last_update;
+        return lastUpdate;
     }
 
     public void setLastUpdate(Date lastUpdate) {
-        this.last_update = lastUpdate;
+        this.lastUpdate = lastUpdate;
     }
 
     public String getJourney() {
