@@ -9,7 +9,7 @@ content-type: application/json
     "height": 30,
     "width": 25,
     "length": 60,
-    "provinceSource": "Tỉnh Bà Rịa - Vũng Tàu",
+    "province_source": "Tỉnh Bà Rịa - Vũng Tàu",
     "district_source": "Huyện Đất Đỏ",
     "ward_source": "Thị trấn Đất Đỏ",
     "detail_source": "Đường tỉnh 52, tổ 6 Khu phố Hiệp Hòa",
