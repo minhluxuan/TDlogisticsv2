@@ -181,4 +181,68 @@ public class OrderRestController {
         }
     }
     
+    @PostMapping("/update")
+    public ResponseEntity<Response<Order>> updateOrder(@RequestBody Order info,
+                                                    @RequestParam Map<String, String> queryParams) throws Exception {
+        try {
+            //TODO: process POST request
+            // Validate query parameters and body
+            // String error1 = orderService.validateQueryUpdatingOrder(queryParams);
+            // if (error1 != null) {
+            //     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<Order>(
+            //             true,
+            //             error1,
+            //             null
+            //         ));
+            // }
+
+            // String error2 = orderService.validateUpdatingOrder(orderUpdateRequest);
+            // if (error2 != null) {
+            //     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<Order>(
+            //             true,
+            //             error2,
+            //             null
+            //         ));
+            // }
+
+            final String userRole = "SHIPPER";
+            final String agencyId = "TD_71000_089204006685";
+            if (List.of("AGENCY_MANAGER", "AGENCY_TELLER").contains(userRole)) {
+                // queryParams.put("agency_id", user.getAgencyId());
+                queryParams.put("agency_id", agencyId);
+            } else if (List.of("SHIPPER", "AGENCY_SHIPPER", "PARTNER_SHIPPER").contains(userRole)) {
+                String postalCode = orderService.getPostalCodeFromAgencyId(agencyId);
+                // boolean taskExists = shippersService.checkExistTask(new TaskRequest(queryParams.get("order_id")), postalCode);
+                // if (!taskExists) {
+                //     return ResponseEntity.status(404).body(Map.of("error", true, "message", "Đơn hàng " + queryParams.get("order_id") + " không tồn tại."));
+                // }
+                queryParams.put("agency_id", agencyId);
+            }
+
+            try {
+                orderService.updateOrder(info, queryParams);
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Order>(
+                    true,
+                    e.getMessage(),
+                    null
+                ));
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(new Response<Order>(
+                false,
+                "Cập nhật đơn hàng thành công",
+                null
+            ));
+        }  catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<Order>(
+                true,
+                e.getMessage(),
+                null
+            ));
+        }                                             
+        
+    }
+    
+
 }

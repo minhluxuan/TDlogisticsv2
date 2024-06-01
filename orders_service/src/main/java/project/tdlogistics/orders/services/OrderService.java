@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -158,6 +159,27 @@ public class OrderService {
         return info;
     }
 
+    public Order updateOrder(Order info, Map<String, String> conditions) {
+        Optional<Order> optionalOrder = orderRepository.findByOrderIdAndAgencyId(conditions.get("orderId"), conditions.get("agencyId"));
+        if(optionalOrder == null) {
+            return null;
+        }
+        if(optionalOrder.isPresent()) {
+            if (info.getMass() != 0) {
+                optionalOrder.get().setMass(info.getMass());
+            }
+            if (info.getOrderCode() != null) {
+                optionalOrder.get().setOrderCode(info.getOrderCode());
+            }
+            if (info.getQrcode() != null) {
+                optionalOrder.get().setQrcode(info.getQrcode());
+            }
+        }
+
+        orderRepository.save(optionalOrder.get());
+        return optionalOrder.get();
+    }
+
     public enum OrderStatus {
         DELIVERED_SUCCESS(1, "Giao hàng thành công"),
         PROCESSING(2, "Đang được xử lí"),
@@ -234,4 +256,6 @@ public class OrderService {
             orderRepository.save(order);
         }
     }
+
+
 }

@@ -14,4 +14,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     // Add or implement more neccessary methods here
     // public Long countByOrderId(String orderId);
     public Optional<Order> findByOrderId(String orderId);
+    public Optional<Order> findByOrderIdAndAgencyId(String orderId, String agencyId);
 }
