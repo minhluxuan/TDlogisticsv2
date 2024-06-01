@@ -1,4 +1,5 @@
 
+
 POST http://localhost:8080/v2/orders/create
 content-type: application/json
 
@@ -23,4 +24,12 @@ content-type: application/json
     "latDestination": 10.377187,
     "cod": 32000,
     "serviceType": "CPN"
+}
+
+###
+POST http://localhost:8080/v2/orders/check
+content-type: application/json
+
+{
+    "orderId": "TD_71000_2024053111341801"
 }

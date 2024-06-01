@@ -54,16 +54,16 @@ public class ShipmentRestController {
         }
     }
     
-    @GetMapping("/check")
+    @PostMapping("/check")
     public ResponseEntity<Response<Shipment>> checkExistShipment(@RequestBody Shipment criteria) throws Exception {
         try {
             final Optional<Shipment> ShipmentOptional = shipmentService.checkExistShipment(criteria);
             if (ShipmentOptional.isPresent()) {
-                final Response response = new Response<>(false, "Khách hàng đã tồn tại.", ShipmentOptional.get());
+                final Response response = new Response<>(false, "Lô hàng đã tồn tại.", ShipmentOptional.get());
                 return ResponseEntity.status(HttpStatus.OK).body(response);
             }
 
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(false, "Khách hàng không tồn tại.", null));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(false, "Lô hàng không tồn tại.", null));
 
             
         } catch (Exception e) {

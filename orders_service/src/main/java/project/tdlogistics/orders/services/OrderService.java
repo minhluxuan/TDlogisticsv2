@@ -35,16 +35,26 @@ public class OrderService {
     private ObjectMapper objectMapper;
 
     // Implement relative methods here
-    public Optional<Order> checkExistCustomer(Order criteria) {
-        ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreNullValues();
-        Example<Order> example = Example.of(criteria, matcher);
-        List<Order> orders = orderRepository.findAll(example);
-        if (orders.size() == 1) {
-            final Order order = orders.get(0);
-            return Optional.of(order);
-        } else {
-            return Optional.empty();
-        }
+    public Optional<Order> checkExistOrder(Order criteria) {
+        // ExampleMatcher matcher = ExampleMatcher.matching()
+        //                             .withIgnorePaths("id")
+        //                             .withMatcher("orderId", ExampleMatcher.GenericPropertyMatchers.exact())
+        //                             .withIgnoreNullValues();
+        // Example<Order> example = Example.of(criteria, matcher);
+        // List<Order> orders = orderRepository.findAll(example);
+        Optional<Order> matchingOrder = orderRepository.findByOrderId(criteria.getOrderId());
+        // System.out.printf("Check gone %d", orders.size());
+        // if (orders.size() == 1) {
+        //     System.out.println("Check gone here 1");
+        //     final Order order = orders.get(0);
+        //     return Optional.of(order);
+        // } else {
+        //     System.out.println("Check gone here 2");
+        //     return Optional.empty();
+        // }
+        
+        return Optional.ofNullable(matchingOrder.get());
+        
     }
 
     public List<Order> getOrders(Order criteria, int rows, int page) {  
@@ -98,6 +108,7 @@ public class OrderService {
 
         // info.setQrCode(paymentResult.getQrCode());
         info.setQrcode("123456");
+        info.setCreatedAt(createdTime);
         final Order resultCreatingOrder = orderRepository.save(info);
         if (resultCreatingOrder == null) {
             return null;

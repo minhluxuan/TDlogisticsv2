@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -40,10 +41,40 @@ public class OrderRestController {
     @Autowired
     private ObjectMapper objectMapper;
 
-   @GetMapping("/check")
-   public String getMethodName(@RequestParam String param) {
-       return new String();
-   }
+   @PostMapping("/check")
+    public ResponseEntity<Response<Order>> checkExistOrder(@RequestBody Order criteria) throws Exception {
+        try {
+            
+            ObjectMapper objectMapper = new ObjectMapper();
+            String json;
+            try {
+                json = objectMapper.writeValueAsString(criteria);
+                System.out.println(json);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+
+            Optional<Order> OrderOptional;
+            try {
+                OrderOptional = orderService.checkExistOrder(criteria);
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(false, "Đơn hàng không tồn tại.", null));
+            }
+
+            
+            if (OrderOptional.isPresent()) {
+                final Response response = new Response<>(false, "Đơn hàng đã tồn tại.", OrderOptional.get());
+                return ResponseEntity.status(HttpStatus.OK).body(response);
+            }
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(false, "Đơn hàng không tồn tại.", null));
+
+            
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
+        }
+    }
     
     @PostMapping(value = "/search")
     public ResponseEntity<Response<List<Order>>> getOrders(@RequestBody Order info,

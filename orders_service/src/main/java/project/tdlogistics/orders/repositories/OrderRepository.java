@@ -13,5 +13,5 @@ import java.util.Optional;
 public interface OrderRepository extends JpaRepository<Order, Long> {
     // Add or implement more neccessary methods here
     // public Long countByOrderId(String orderId);
-    Optional<Order> findByOrderId(String orderId);
+    public Optional<Order> findByOrderId(String orderId);
 }
