@@ -1,4 +1,4 @@
-package project.tdlogistics.administrative;
+package project.tdlogistics.users;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

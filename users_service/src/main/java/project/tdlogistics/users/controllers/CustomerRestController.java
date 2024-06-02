@@ -39,7 +39,16 @@ public class CustomerRestController {
     private AmqpTemplate amqpTemplate;
 
     private String exchange = "rpc-direct-exchange";
-
+    @PostMapping("/search")
+    public ResponseEntity<Response<List<Customer>>> getCustomers(@RequestBody Customer criteria) throws Exception {
+        try {
+            final List<Customer> customers = customerService.getCustomers(criteria);
+            return ResponseEntity.status(HttpStatus.OK).body(new Response<>(false, "Lấy thông tin khách hàng thành công", customers));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
+        }
+    }
     @GetMapping("/check")
     public ResponseEntity<Response<Customer>> checkExistCustomer(@RequestBody Customer criteria) throws Exception {
         try {
@@ -112,16 +121,7 @@ public class CustomerRestController {
         }
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<Response<List<Customer>>> getCustomers(@RequestBody Customer criteria) throws Exception {
-        try {
-            final List<Customer> customers = customerService.getCustomers(criteria);
-            return ResponseEntity.status(HttpStatus.OK).body(new Response<>(false, "Lấy thông tin khách hàng thành công", customers));
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
-        }
-    }
+
 
     @PutMapping("/update")
     public ResponseEntity<Response<Customer>> updateCustomer(@RequestParam String id, @RequestBody Customer info) throws Exception {

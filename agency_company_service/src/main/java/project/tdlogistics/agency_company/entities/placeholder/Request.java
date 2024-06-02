@@ -1,4 +1,4 @@
-package project.tdlogistics.users.entities;
+package project.tdlogistics.agency_company.entities.placeholder;
 
 import java.util.HashMap;
 import java.util.Map;

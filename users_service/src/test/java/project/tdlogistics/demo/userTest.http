@@ -1,4 +1,4 @@
-GET http://localhost:8080/v2/customers/search
+POST  http://localhost:8080/v2/customers/search
 Content-Type: application/json
 
 {

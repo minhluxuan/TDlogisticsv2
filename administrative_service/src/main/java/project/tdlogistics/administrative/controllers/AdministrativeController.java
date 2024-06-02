@@ -19,7 +19,7 @@ public class AdministrativeController {
         this.administrativeService = administrativeService;
     }
 
-    @GetMapping("/getUnits")
+    @GetMapping("/api/v2/administrative/search")
     public ResponseEntity<Response<List<String>>> getUnits(@RequestBody UnitRequest request) {
         try {
             Response<List<String>> response;
