@@ -10,9 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public interface OrderRepository extends JpaRepository<Order, Long> {
+public interface OrderRepository extends JpaRepository<Order, Long>, CustomerOrderRepository {
     // Add or implement more neccessary methods here
     // public Long countByOrderId(String orderId);
     public Optional<Order> findByOrderId(String orderId);
     public Optional<Order> findByOrderIdAndAgencyId(String orderId, String agencyId);
+    public int cancelOrderWithTimeConstraint(Map<String, Object> conditions);
+    public int cancelOrderWithoutTimeConstraint(Map<String, Object> conditions);
 }

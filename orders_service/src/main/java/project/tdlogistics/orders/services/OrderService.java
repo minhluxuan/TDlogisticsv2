@@ -23,6 +23,7 @@ import jakarta.transaction.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import project.tdlogistics.orders.entities.Order;
 import project.tdlogistics.orders.repositories.OrderRepository;
+import project.tdlogistics.orders.repositories.OrderRepositoryImplement;
 
 
 
@@ -31,6 +32,9 @@ public class OrderService {
 
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private OrderRepositoryImplement orderRepositoryImplement;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -228,6 +232,13 @@ public class OrderService {
         return agencyIdSubParts[1];
     }
 
+    public int cancelOrderWithTimeConstraint(Map<String, Object> conditions) {
+        return orderRepositoryImplement.cancelOrderWithTimeConstraint(conditions);
+    }
+
+    public int cancelOrderWithoutTimeConstrain(Map<String, Object> conditions) {
+        return orderRepositoryImplement.cancelOrderWithoutTimeConstraint(conditions);
+    }
 
     @SuppressWarnings("unchecked")
     @Transactional
@@ -256,6 +267,7 @@ public class OrderService {
             orderRepository.save(order);
         }
     }
+
 
 
 }

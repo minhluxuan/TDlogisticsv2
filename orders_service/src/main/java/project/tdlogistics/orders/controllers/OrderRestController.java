@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,7 +26,7 @@ import project.tdlogistics.orders.services.OrderService.OrderStatus;
 import project.tdlogistics.orders.entities.Order;
 import project.tdlogistics.orders.entities.Response;
 
-
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -143,7 +144,6 @@ public class OrderRestController {
             }
 
             if ("NNT".equals(info.getServiceType()) && !info.getProvinceSource().equals(info.getProvinceDest())) {
-                // return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse(true, "Đơn hàng phải được giao nội tỉnh!"));
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<Order>(
                     true,
                     "Đơn hàng phải được giao nội tỉnh!",
@@ -244,5 +244,65 @@ public class OrderRestController {
         
     }
     
-
+    @DeleteMapping("/cancel")
+    public ResponseEntity<Response<Order>> cancelOrder(@RequestParam Map<String, String> conditions) throws Exception {
+        try {
+            final String userRole = "USER";
+            final String userId = "3123uuer";
+            Map<String, Object> processedCondition = new HashMap<>(conditions);
+            if(List.of("USER").contains(userRole)) {
+                conditions.put("userId", userId);
+                final int resultCancelingOrder = orderService.cancelOrderWithTimeConstraint(processedCondition);
+                if(resultCancelingOrder == 0) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Order>(
+                        true,
+                        "Đơn hàng có mã đơn hàng " + conditions.get("order_id") + " không tồn tại hoặc quá hạn để hủy.",
+                        null
+                    ));
+                }
+                return ResponseEntity.status(HttpStatus.OK).body(new Response<Order>(
+                    false,
+                    "Hủy đơn hàng thành công",
+                    null
+                ));
+            }
+            else if(List.of("AGENCY_MANAGER", "AGENCY_TELLER").contains(userRole)) {
+                conditions.put("agencyId", userId);
+                final int resultCancelingOrder = orderService.cancelOrderWithTimeConstraint(processedCondition);
+                if(resultCancelingOrder == 0) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Order>(
+                        true,
+                        "Đơn hàng có mã đơn hàng " + conditions.get("order_id") + " không tồn tại hoặc quá hạn để hủy.",
+                        null
+                    ));
+                }
+                return ResponseEntity.status(HttpStatus.OK).body(new Response<Order>(
+                    false,
+                    "Hủy đơn hàng thành công",
+                    null
+                ));
+            } 
+            else {
+                final int resultCancelingOrder = orderService.cancelOrderWithoutTimeConstrain(processedCondition);
+                if(resultCancelingOrder == 0) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Order>(
+                        true,
+                        "Đơn hàng có mã đơn hàng " + conditions.get("order_id") + " không tồn tại hoặc quá hạn để hủy.",
+                        null
+                    ));
+                }
+                return ResponseEntity.status(HttpStatus.OK).body(new Response<Order>(
+                    false,
+                    "Hủy đơn hàng thành công",
+                    null
+                ));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<Order>(
+                true,
+                e.getMessage(),
+                null
+            ));
+        } 
+    }
 }
