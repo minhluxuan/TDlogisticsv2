@@ -1,6 +1,7 @@
 package project.tdlogistics.orders.entities;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -8,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import project.tdlogistics.orders.configurations.ListToStringConverter;
 
 import java.util.Date;
 
@@ -98,6 +100,7 @@ public class Order {
     private String parent;
 
     @Column(name = "journey", columnDefinition = "LONGTEXT")
+    @Convert(converter = ListToStringConverter.class)
     private String journey;
 
     @Column(name = "COD")
