@@ -1,6 +1,54 @@
-GET http://localhost:8080/v2/customers/search
+GET http://localhost:8080/v2/check
 Content-Type: application/json
 
 {
-    
+    "fullname": "Lữ Xuân Minh",
+    "email": "minhfaptv@gmail.com"
 }
+
+###
+
+POST http://localhost:8762/v2/staffs/create
+Content-Type: application/json
+
+{
+    "account": {
+        "id": "cc72cb87-b186-42c5-8ba4-22f54c74d68b"
+    },
+    "accountId": "cc72cb87-b186-42c5-8ba4-22f54c74d68b",
+    "agencyId": "TD_00000_077165007713",
+    "username": "minhluxuan2k",
+    "password": "minhluxuan@TDlogistics2k24",
+    "fullname": "Lữ Xuân Minh",
+    "date_of_birth": "2004-03-03",
+    "cccd": "077204005693",
+    "province": "Tỉnh Bà Rịa - Vũng Tàu",
+    "district": "Huyện Đất Đỏ",
+    "town": "Thị trấn Đất Đỏ",
+    "detailAddress": "326, ĐT44A",
+    "position": "Giám đốc",
+    "salary": 25000000,
+    "managedWards": ["Phường Phạm Ngũ Lão", "Phường Đa Kao"]
+}
+
+###
+
+POST http://localhost:8081/v2/users/staffs/search
+Content-Type: application/json
+
+{
+}
+
+###
+
+PUT http://localhost:8081/v2/users/staffs/update?id=BC_71000_077204005693
+Content-Type: application/json
+
+{
+    "fullname": "Lữ Xuân Sáng",
+    "paidSalary": 2356000
+}
+
+###
+
+DELETE http://localhost:8081/v2/users/staffs/delete?staffId=BC_71000_077204005693

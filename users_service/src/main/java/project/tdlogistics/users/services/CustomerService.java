@@ -28,7 +28,7 @@ public class CustomerService {
         List<Customer> customers = customerRepository.findAll(example);
         if (customers.size() == 1) {
             final Customer customer = customers.get(0);
-            customer.getAccount().setPassword(null);
+            // customer.getAccount().setPassword(null);
             return Optional.of(customer);
         } else {
             return Optional.empty();
@@ -37,7 +37,7 @@ public class CustomerService {
 
     public Customer createNewCustomer(Customer info) {
         customerRepository.save(info);
-        info.getAccount().setPassword(null);
+        // info.getAccount().setPassword(null);
         return info;
     }
 
@@ -46,13 +46,13 @@ public class CustomerService {
         Example<Customer> example = Example.of(criteria, matcher);
         final List<Customer> customers = customerRepository.findAll(example);
         customers.forEach((customer) -> {
-            customer.getAccount().setPassword(null);
+            // customer.getAccount().setPassword(null);
         });
 
         return customers;
     }
 
-    public Customer updateCustomerInfo(String id, Customer info) {
+    public Customer updateCustomerInfo(Long id, Customer info) {
         Optional<Customer> customerOptional = customerRepository.findById(id);
         if (customerOptional.isEmpty()) {
             return null;
@@ -86,7 +86,8 @@ public class CustomerService {
         if (info.getDetailAddress() != null) {
             customer.setDetailAddress(info.getDetailAddress());
         }
-        customer.getAccount().setPassword(null);
+        
+        // customer.getAccount().setPassword(null);
         customerRepository.save(customer);
 
         return customer;

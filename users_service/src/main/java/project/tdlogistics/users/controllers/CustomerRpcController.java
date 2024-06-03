@@ -107,7 +107,7 @@ public class CustomerRpcController {
                 return (new ObjectMapper()).writeValueAsString(new Response<Customer>(HttpStatus.BAD_REQUEST, true, "Trường id không được phép để trống", null));
             }
 
-            final Customer customer = customerService.updateCustomerInfo((String) params.get("id"), info);
+            final Customer customer = customerService.updateCustomerInfo((Long) params.get("id"), info);
             if (customer == null) {
                 return (new ObjectMapper()).writeValueAsString(new Response<Customer>(HttpStatus.NOT_FOUND, true, "Khách hàng không tồn tại", null));
             }
