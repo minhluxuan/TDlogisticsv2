@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
+import javax.swing.text.html.Option;
 
 @Repository
 public class AgencyRepositoryImpl implements CustomAgencyRepository {
@@ -40,7 +43,7 @@ public class AgencyRepositoryImpl implements CustomAgencyRepository {
 
     @Override
     @Transactional
-    public List<String> createTablesForAgency(String postalCode) throws Exception {
+    public String createTablesForAgency(String postalCode) throws Exception {
 
         String ordersTable = postalCode + "_orders";
         String shipmentTable = postalCode + "_shipment";
@@ -121,9 +124,10 @@ public class AgencyRepositoryImpl implements CustomAgencyRepository {
             String message = String.format(
                     "Failed to create all necessary tables for an agency. The created tables are: %s.\n Please manually create the following tables in the database: %s.",
                     String.join(", ", successCreatedTable), String.join(", ", necessaryTables));
-            throw new Exception(message);
+            return message;
         }
-        return successCreatedTable;
+        return String.format("Tạo tất cả bảng cần thiết cho một bưu cục/đại lý thành công. Các bảng đã được tạo là: %s",
+                String.join(", ", successCreatedTable));
 
     }
 
@@ -173,10 +177,15 @@ public class AgencyRepositoryImpl implements CustomAgencyRepository {
             String agencyId, String postalCode) {
         try {
             if (choice == 0) {
+
+                Optional<List<String>> resultGetProvince = province
                 String provinceSelectQuery = "SELECT agency_ids FROM province WHERE province = ? LIMIT 1";
                 Query provinceResultSelect = entityManager.createNativeQuery(provinceSelectQuery);
                 provinceResultSelect.setParameter(1, province);
                 List<String> agenciesOfProvince = (List<String>) provinceResultSelect.getSingleResult();
+                if (agenciesOfProvince == null) {
+                    agenciesOfProvince = new ArrayList<>();
+                }
 
                 if (!agenciesOfProvince.contains(agencyId)) {
                     agenciesOfProvince.add(agencyId);
@@ -187,6 +196,9 @@ public class AgencyRepositoryImpl implements CustomAgencyRepository {
                 districtResultSelect.setParameter(1, province);
                 districtResultSelect.setParameter(2, district);
                 List<String> agenciesOfDistrict = (List<String>) districtResultSelect.getSingleResult();
+                if (agenciesOfDistrict == null) {
+                    agenciesOfDistrict = new ArrayList<>();
+                }
 
                 if (!agenciesOfDistrict.contains(agencyId)) {
                     agenciesOfDistrict.add(agencyId);
@@ -221,7 +233,9 @@ public class AgencyRepositoryImpl implements CustomAgencyRepository {
                 Query provinceResultSelect = entityManager.createNativeQuery(provinceSelectQuery);
                 provinceResultSelect.setParameter(1, province);
                 List<String> agenciesOfProvince = (List<String>) provinceResultSelect.getSingleResult();
-
+                if (agenciesOfProvince == null) {
+                    agenciesOfProvince = new ArrayList<>();
+                }
                 if (agenciesOfProvince.contains(agencyId)) {
                     agenciesOfProvince.remove(agencyId);
                 }
@@ -231,7 +245,9 @@ public class AgencyRepositoryImpl implements CustomAgencyRepository {
                 districtResultSelect.setParameter(1, province);
                 districtResultSelect.setParameter(2, district);
                 List<String> agenciesOfDistrict = (List<String>) districtResultSelect.getSingleResult();
-
+                if (agenciesOfDistrict == null) {
+                    agenciesOfDistrict = new ArrayList<>();
+                }
                 if (agenciesOfDistrict.contains(agencyId)) {
                     agenciesOfDistrict.remove(agencyId);
                 }
@@ -261,10 +277,10 @@ public class AgencyRepositoryImpl implements CustomAgencyRepository {
                 }
             }
 
-            return new Response(true, "Cập nhật thông tin địa bàn hoạt động thành công.", null);
+            return new Response<>(false, "Cập nhật thông tin địa bàn hoạt động thành công.", null);
 
         } catch (Exception e) {
-            return new Response(false, e.getMessage(), null);
+            return new Response<>(true, e.getMessage(), null);
         }
     }
 

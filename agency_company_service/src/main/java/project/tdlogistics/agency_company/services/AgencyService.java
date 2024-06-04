@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import project.tdlogistics.agency_company.entities.Agency;
 import project.tdlogistics.agency_company.entities.District;
 import project.tdlogistics.agency_company.entities.Ward;
+import project.tdlogistics.agency_company.entities.Province;
 import project.tdlogistics.agency_company.entities.placeholder.Response;
 import project.tdlogistics.agency_company.repositories.*;
 
@@ -101,7 +102,7 @@ public class AgencyService {
         return true;
     }
 
-    public List<String> createTablesForAgency(String postalCode) throws Exception {
+    public String createTablesForAgency(String postalCode) throws Exception {
 
         return agencyRepository.createTablesForAgency(postalCode);
 
@@ -118,9 +119,88 @@ public class AgencyService {
     public Response locateAgencyInArea(int choice, String province, String district, List<String> wards,
             String agencyId, String postalCode) {
         try {
-            return agencyRepository.locateAgencyInArea(choice, province, district, wards, agencyId, postalCode);
+
+            if (choice == 0) {
+                Optional<Province> resultGetOneProvince = provinceRepository.findProvinceByProvince(province);
+                if (resultGetOneProvince.isEmpty()) {
+                    throw new IllegalArgumentException("Không có tỉnh này");
+                }
+                List<String> agenciesOfProvince = resultGetOneProvince.get().getAgencyIds();
+                if (!agenciesOfProvince.contains(agencyId)) {
+                    agenciesOfProvince.add(agencyId);
+                    Province proviceToUpdate = resultGetOneProvince.get();
+                    proviceToUpdate.setAgencyIds(agenciesOfProvince);
+                    provinceRepository.save(proviceToUpdate);
+                }
+
+                Optional<District> resultGetOneDistrict = districtRepository.findDistrictByProvinceAndDistrict(province,
+                        district);
+                if (resultGetOneDistrict.isEmpty()) {
+                    throw new IllegalArgumentException(
+                            String.format("Không %s thuộc %s này", district, province));
+                }
+                List<String> agenciesOfDistrict = resultGetOneDistrict.get().getAgencyIds();
+                if (!agenciesOfDistrict.contains(agencyId)) {
+                    agenciesOfDistrict.add(agencyId);
+                    District districtToUpdate = resultGetOneDistrict.get();
+                    districtToUpdate.setAgencyIds(agenciesOfDistrict);
+                    districtRepository.save(districtToUpdate);
+                }
+
+                for (String ward : wards) {
+                    Optional<Ward> resultGetOneWard = wardRepository.findByProvinceAndDistrictAndWard(province,
+                            district,
+                            ward);
+                    if (resultGetOneWard.isPresent()) {
+                        Ward wardToUpdate = resultGetOneWard.get();
+                        wardToUpdate.setAgencyId(agencyId);
+                        wardToUpdate.setPostalCode(postalCode);
+                        wardRepository.save(wardToUpdate);
+                    }
+                }
+                return new Response<>(false, "Update thành công", null);
+            }
+            if (choice == 1) {
+                Optional<Province> resultGetOneProvince = provinceRepository.findProvinceByProvince(province);
+                if (resultGetOneProvince.isEmpty()) {
+                    throw new IllegalArgumentException("Không có tỉnh này");
+                }
+                List<String> agenciesOfProvince = resultGetOneProvince.get().getAgencyIds();
+                if (agenciesOfProvince.contains(agencyId)) {
+                    agenciesOfProvince.remove(agencyId);
+                    Province proviceToUpdate = resultGetOneProvince.get();
+                    proviceToUpdate.setAgencyIds(agenciesOfProvince);
+                    provinceRepository.save(proviceToUpdate);
+                }
+
+                Optional<District> resultGetOneDistrict = districtRepository.findDistrictByProvinceAndDistrict(province,
+                        district);
+                if (resultGetOneDistrict.isEmpty()) {
+                    throw new IllegalArgumentException(String.format("Không %s thuộc %s này", district, province));
+                }
+                List<String> agenciesOfDistrict = resultGetOneDistrict.get().getAgencyIds();
+                if (agenciesOfDistrict.contains(agencyId)) {
+                    agenciesOfDistrict.remove(agencyId);
+                    District districtToUpdate = resultGetOneDistrict.get();
+                    districtToUpdate.setAgencyIds(agenciesOfDistrict);
+                    districtRepository.save(districtToUpdate);
+                }
+
+                for (String ward : wards) {
+                    Optional<Ward> resultGetOneWard = wardRepository.findByProvinceAndDistrictAndWard(province,
+                            district, ward);
+                    if (resultGetOneWard.isPresent()) {
+                        Ward wardToUpdate = resultGetOneWard.get();
+                        wardToUpdate.setAgencyId(null);
+                        wardToUpdate.setPostalCode(null);
+                        wardRepository.save(wardToUpdate);
+                    }
+                }
+
+            }
+            return new Response<>(true, "Đã có lỗi xảy ra", null);
         } catch (Exception e) {
-            return new Response<>(true, "Da co loi trong he thong", null);
+            return new Response<>(true, e.getMessage(), null);
         }
     }
 
@@ -160,36 +240,44 @@ public class AgencyService {
             throw new Exception("Error creating agency: " + e.getMessage());
         }
     }
+
     //
-    // public Response updateAgency(Agency agency) {
-    // Optional<Agency> existingAgency = checkExistAgency(agency);
-    // if (!existingAgency.isPresent()) {
-    // return new Response<>(true, "Agency does not exist", null);
-    // }
-    // try {
-    // agencyRepository.save(agency);
-    // return new Response<>(false, "Agency updated successfully", agency);
-    // } catch (Exception e) {
-    // return new Response<>(true, "Error updating agency: " + e.getMessage(),
-    // null);
-    // }
-    // }
+    public boolean updateAgency(String agencyId, Agency agency) {
+        Optional<Agency> existingAgency = checkExistAgency(agencyId);
+        if (!existingAgency.isPresent()) {
+            return false;
+        }
+        try {
+            agencyRepository.save(agency);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     //
-    // public Response deleteAgency(Agency agency) {
-    // Optional<Agency> existingAgency = checkExistAgency(agency);
-    // if (!existingAgency.isPresent()) {
-    // return new Response<>(true, "Agency does not exist", null);
-    // }
-    // try {
-    // agencyRepository.delete(existingAgency.get());
-    // return new Response<>(false, "Agency deleted successfully",
-    // existingAgency.get());
-    // } catch (Exception e) {
-    // return new Response<>(true, "Error deleting agency: " + e.getMessage(),
-    // null);
-    // }
-    // }
+    public Response deleteAgency(Agency agency) {
+        Optional<Agency> existingAgency = checkExistAgency(agency);
+        if (!existingAgency.isPresent()) {
+            return new Response<>(true, "Agency does not exist", null);
+        }
+        try {
+            agencyRepository.delete(existingAgency.get());
+            return new Response<>(false, "Agency deleted successfully",
+                    existingAgency.get());
+        } catch (Exception e) {
+            return new Response<>(true, "Error deleting agency: " + e.getMessage(),
+                    null);
+        }
+    }
 
     // public Response updatePassword
-
+    public List<String> getManagedWards(String agencyId) {
+        Optional<Agency> agency = this.checkExistAgency(agencyId);
+        if (agency.isPresent()) {
+            return agency.get().getManaged_wards();
+        } else {
+            throw new IllegalArgumentException("Agency không tồn tại");
+        }
+    }
 }

@@ -1,9 +1,13 @@
 package project.tdlogistics.agency_company.entities;
 
+import java.util.List;
+
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import project.tdlogistics.agency_company.configurations.ListToStringConverter;
 
 @Entity
 @Table(name = "province")
@@ -29,7 +33,8 @@ public class Province {
     private Byte region;
 
     @Column(name = "agency_ids", columnDefinition = "LONGTEXT")
-    private String agencyIds;
+    @Convert(converter = ListToStringConverter.class)
+    private List<String> agencyIds;
 
     @Column(name = "postal_code", length = 5)
     private String postalCode;
@@ -39,7 +44,8 @@ public class Province {
 
     // Getters and Setters
 
-    public Province(String provinceId, String province, String acronym, String level, Byte area, Byte region, String agencyIds, String postalCode, String managedBy) {
+    public Province(String provinceId, String province, String acronym, String level, Byte area, Byte region,
+            List<String> agencyIds, String postalCode, String managedBy) {
         this.provinceId = provinceId;
         this.province = province;
         this.acronym = acronym;
@@ -102,11 +108,11 @@ public class Province {
         this.region = region;
     }
 
-    public String getAgencyIds() {
+    public List<String> getAgencyIds() {
         return agencyIds;
     }
 
-    public void setAgencyIds(String agencyIds) {
+    public void setAgencyIds(List<String> agencyIds) {
         this.agencyIds = agencyIds;
     }
 

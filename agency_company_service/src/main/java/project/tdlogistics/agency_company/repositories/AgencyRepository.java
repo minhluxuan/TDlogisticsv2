@@ -20,7 +20,7 @@ interface CustomAgencyRepository {
     boolean checkTableExists(String tableName);
 
     @Transactional
-    List<String> createTablesForAgency(String postalCode) throws Exception;
+    String createTablesForAgency(String postalCode) throws Exception;
 
     @Transactional
     Response dropTablesForAgency(String postalCode) throws Exception;

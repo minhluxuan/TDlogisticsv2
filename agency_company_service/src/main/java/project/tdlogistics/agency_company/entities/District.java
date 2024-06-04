@@ -1,9 +1,13 @@
 package project.tdlogistics.agency_company.entities;
 
+// import org.hibernate.mapping.List;
+import java.util.List;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import project.tdlogistics.agency_company.configurations.ListToStringConverter;
 
 @Entity
 @Table(name = "district")
@@ -26,14 +30,16 @@ public class District {
     private String province;
 
     @Column(name = "agency_ids", columnDefinition = "LONGTEXT")
-    private String agencyIds;
+    @Convert(converter = ListToStringConverter.class)
+    private List<String> agencyIds;
 
     @Column(name = "postal_code", length = 10)
     private String postalCode;
 
     // Getters and Setters
 
-    public District(String districtId, String district, String level, String provinceId, String province, String agencyIds, String postalCode) {
+    public District(String districtId, String district, String level, String provinceId, String province,
+            List<String> agencyIds, String postalCode) {
         this.districtId = districtId;
         this.district = district;
         this.level = level;
@@ -86,11 +92,11 @@ public class District {
         this.province = province;
     }
 
-    public String getAgencyIds() {
+    public List<String> getAgencyIds() {
         return agencyIds;
     }
 
-    public void setAgencyIds(String agencyIds) {
+    public void setAgencyIds(List<String> agencyIds) {
         this.agencyIds = agencyIds;
     }
 
