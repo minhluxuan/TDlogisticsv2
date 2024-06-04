@@ -151,11 +151,50 @@ public class ShipmentService {
     }
 
     public boolean updateParentAndIncreaseMass(Shipment shipment, String orderId, String postalCode) {
-        if(postalCode == null) {
-            return shipmentRepositoryImplement.updateParentAndIncreaseMass(shipment, orderId);
-        }
-        
         return shipmentRepositoryImplement.updateParentAndIncreaseMass(shipment, orderId, postalCode);
+    }
+
+    public ListResponse removeOrders(Shipment shipment, List<String> orderIds, String postalCode) {
+
+        
+        int acceptedNumber = 0;
+        List<String> acceptedArray = new ArrayList<>();
+        int notAcceptedNumber = 0;
+        List<String> notAcceptedArray = new ArrayList<>();
+        
+        List<String> prevOrderIds = shipment.getOrderIds();
+        if (prevOrderIds.size() == 0) {
+            prevOrderIds = new ArrayList<>();
+        }
+
+        for (String orderId : orderIds) {
+            if (prevOrderIds.contains(orderId) && updateParentAndDecreaseMass(shipment, orderId, postalCode)) {
+                prevOrderIds.remove(orderId);
+                acceptedNumber++;
+                acceptedArray.add(orderId);
+            } else {
+                notAcceptedNumber++;
+                notAcceptedArray.add(orderId);
+            }
+        }
+
+        shipment.setOrderIds(prevOrderIds);
+        if(postalCode == null) {
+            shipmentRepository.save(shipment);
+        } else {
+            final String shipmentTable = postalCode + "_shipment";
+            List<String> fields = Arrays.asList("order_ids");
+            List<Object> values = Arrays.asList(shipment.getOrderIds());
+            List<String> conditionFields = Arrays.asList("shipment_id");
+            List<Object> conditionValues = Arrays.asList(shipment.getShipmentId());
+            dbUtils.update(shipmentTable, fields, values, conditionFields, conditionValues);
+        }
+
+        return new ListResponse(acceptedNumber, acceptedArray, notAcceptedNumber, notAcceptedArray);
+    }
+
+    public boolean updateParentAndDecreaseMass(Shipment shipment, String orderId, String postalCode) {     
+        return shipmentRepositoryImplement.updateParentAndDecreaseMass(shipment, orderId, postalCode);
     }
 
 

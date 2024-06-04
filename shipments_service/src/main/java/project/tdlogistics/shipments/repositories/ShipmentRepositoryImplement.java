@@ -45,10 +45,11 @@ public class ShipmentRepositoryImplement implements ShipmentRepositoryInterface 
 
         return orderRowsAffected > 0;
     }
-
+ 
     @Override
-    public boolean updateParentAndIncreaseMass(Shipment shipment, String orderId) {
-        String ordersTable = "orders";
+    public boolean updateParentAndDecreaseMass(Shipment shipment, String orderId, String postalCode) {
+        String ordersTable = (postalCode != null) ? postalCode + "_orders" : "orders";
+        String shipmentTable = (postalCode != null) ? postalCode + "_shipment" : "shipment";
 
         // Order service
         // get 1 order by orderId and orderTable
@@ -67,7 +68,7 @@ public class ShipmentRepositoryImplement implements ShipmentRepositoryInterface 
         shipment.setMass(shipment.getMass() + orderMass);
     
         // Update the shipment's mass
-        String updateShipmentQuery = "UPDATE shipment SET mass = mass + ? WHERE shipment_id = ?";
+        String updateShipmentQuery = "UPDATE " + shipmentTable + " SET mass = mass - ? WHERE shipment_id = ?";
         int shipmentRowsAffected = jdbcTemplate.update(updateShipmentQuery, orderMass, shipment.getShipmentId());
 
         if (shipmentRowsAffected == 0) {
@@ -77,9 +78,9 @@ public class ShipmentRepositoryImplement implements ShipmentRepositoryInterface 
 
         // Update the order's parent field
         String updateOrderQuery = "UPDATE " + ordersTable + " SET parent = ? WHERE order_id = ?";
-        int orderRowsAffected = jdbcTemplate.update(updateOrderQuery, shipment.getShipmentId(), orderId);
+        int orderRowsAffected = jdbcTemplate.update(updateOrderQuery, null, orderId);
 
         return orderRowsAffected > 0;
     }
-    
+
 }

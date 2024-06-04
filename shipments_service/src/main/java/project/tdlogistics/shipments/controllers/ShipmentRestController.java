@@ -74,8 +74,8 @@ public class ShipmentRestController {
         }
     }
     
-    @GetMapping("/add_orders")
-    public ResponseEntity<Response<List<String>>> addOrderToShipment(@RequestParam Map<String, String> queryParams,
+    @PostMapping("/add_orders")
+    public ResponseEntity<Response<List<String>>> addOrdersToShipment(@RequestParam Map<String, String> queryParams,
                                                 @RequestBody Shipment info) {
         try {
             // Validate request
@@ -190,5 +190,123 @@ public class ShipmentRestController {
         }
 
     }
+   
+    @PostMapping("/remove_orders")
+    public ResponseEntity<Response<List<String>>> removeOrdersFromShipment(@RequestParam Map<String, String> queryParams,
+                                                @RequestBody Shipment info) {
+        try {
+            // Validate request
+            // Assuming validation methods throw exceptions if invalid
+            // shipmentRequestValidation.validateQueryUpdatingShipment(queryParams);
+            // shipmentRequestValidation.validateOperationWithOrder(requestBody);
+
+            String userRole = "AGENCY_MANAGER";
+            if (List.of("AGENCY_MANAGER", "AGENCY_TELLER").contains(userRole)) {
+                // String agencyId = user.getAgencyId();
+                String agencyId = "TD_71000_089204006685";
+                String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
+                Shipment shipment = null;
+                try {
+                    Optional<Shipment> optionalShipmennt = shipmentService.getOneShipment(queryParams.get("shipment_id"), postalCode);
+                    if(optionalShipmennt.isPresent()) {
+                        shipment = optionalShipmennt.get();
+                    } else {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                            true, 
+                            "Không tìm thấy lô hàng.", 
+                            null
+                        ));
+                    }
+                } catch (Exception e) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                        true, 
+                        "Không tìm thấy lô hàng.", 
+                        null
+                    ));
+
+                }
+                
+
+                // Shipment result = shipmentService.addOrdersToShipment(shipment, requestBody.getOrderIds(), postalCode);
+                ListResponse resultAddingOrders = shipmentService.removeOrders(shipment, info.getOrderIds(), postalCode);
+                List<String> acceptedArray = resultAddingOrders.getAcceptedArray();
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response<>(
+                    false, 
+                    "Thêm đơn hàng vào lô thành công", 
+                    acceptedArray
+                ));
+            } else if (List.of("MANAGER", "TELLER").contains(userRole)) {
+                // String agencyId = user.getAgencyId();
+                String agencyId = "TD_00000_089204006685";
+                String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
+                Shipment shipment = null;
+                try {
+                    Optional<Shipment> optionalShipmennt = shipmentService.getOneShipment(queryParams.get("shipment_id"), postalCode);
+                    if(optionalShipmennt.isPresent()) {
+                        shipment = optionalShipmennt.get();
+                    } else {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                            true, 
+                            "Không tìm thấy lô hàng.", 
+                            null
+                        ));
+                    }
+                } catch (Exception e) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                        true, 
+                        "Không tìm thấy lô hàng.", 
+                        null
+                    ));
+                }
+
+                // Shipment result = shipmentService.removeOrdersFromShipment(shipment, requestBody.getOrderIds(), postalCode);
+                shipmentService.removeOrders(shipment, info.getOrderIds(), postalCode);
+                ListResponse resultAddingOrders = shipmentService.removeOrders(shipment, info.getOrderIds(), null);
+                List<String> acceptedArray = resultAddingOrders.getAcceptedArray();
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response<>(
+                    false, 
+                    "Thêm đơn hàng vào lô thành công", 
+                    acceptedArray
+                ));
+            }
+
+            String postalCode = queryParams.get("shipment_id").split("_")[1];
+            Shipment shipment = null;
+            try {
+                Optional<Shipment> optionalShipmennt = shipmentService.getOneShipment(queryParams.get("shipment_id"), postalCode);
+                if(optionalShipmennt.isPresent()) {
+                    shipment = optionalShipmennt.get();
+                } else {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                        true, 
+                        "Không tìm thấy lô hàng.", 
+                        null
+                    ));
+                }
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                    true, 
+                    "Không tìm thấy lô hàng.", 
+                    null
+                ));
+
+            }
+            
+
+            // Shipment result = shipmentService.removeOrdersToShipment(shipment, requestBody.getOrderIds(), postalCode);
+            ListResponse resultAddingOrders = shipmentService.removeOrders(shipment, info.getOrderIds(), postalCode);
+            List<String> acceptedArray = resultAddingOrders.getAcceptedArray();
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response<>(
+                false, 
+                "Thêm đơn hàng vào lô thành công", 
+                acceptedArray
+            ));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
+        }
+
+    }
     
+
 }
