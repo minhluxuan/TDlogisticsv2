@@ -308,5 +308,57 @@ public class ShipmentRestController {
 
     }
     
+    @PostMapping("/undertake")
+    public ResponseEntity<Response<List<String>>> undertakeShipment(@RequestBody Shipment info) throws Exception {
+        try {
+            
+            final String staffId = "TD_71000_089204006685";
+            final String postalCode = shipmentService.getPostalCodeFromAgencyId(staffId);
+            Shipment shipment = null;
+            try {
+                Optional<Shipment> optionalShipmennt = shipmentService.getOneShipment(info.getShipmentId(), postalCode);
+                if(optionalShipmennt.isPresent()) {
+                    shipment = optionalShipmennt.get();
+                } else {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                        true, 
+                        "Không tìm thấy lô hàng.", 
+                        null
+                    ));
+                }
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                    true, 
+                    "Không tìm thấy lô hàng.", 
+                    null
+                ));
+            }
+
+            final boolean resultAddingOneShipment = shipmentService.addOneShipmentToVehicle(shipment.getShipmentId(), staffId);
+            if(!resultAddingOneShipment) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                    true, 
+                    "Nhân viên không có phương tiện nào để có thể tiếp nhận lô hàng này.", 
+                    null
+                ));
+            }
+
+            ListResponse resultUpdatingOrders = shipmentService.updateOrders(info.getOrderIds(), staffId, postalCode);
+            // TODO
+            // Shipper service: assign task to shipper
+
+            List<String> acceptedArray = resultUpdatingOrders.getAcceptedArray();
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response<>(
+                false, 
+                "Thêm đơn hàng vào lô thành công", 
+                acceptedArray
+            ));
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
+        }                
+    }
+    
 
 }

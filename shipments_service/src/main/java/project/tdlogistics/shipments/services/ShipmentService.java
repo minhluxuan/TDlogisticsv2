@@ -2,6 +2,7 @@ package project.tdlogistics.shipments.services;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.util.Map;
@@ -212,5 +213,54 @@ public class ShipmentService {
         return agencyIdSubParts[1];
     }
 
+    public boolean addOneShipmentToVehicle(String shipmentId, String staffId) {
+        
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            shipmentId = objectMapper.writeValueAsString(Collections.singletonList(shipmentId));
+        } catch (JsonProcessingException e) {
+           return false;
+        }
+        
+        List<String> fields = Arrays.asList("shipment_ids");
+        List<Object> values = Arrays.asList(shipmentId);
+        List<String> conditionFields = Arrays.asList("staff_id");
+        List<Object> conditionValues = Arrays.asList(staffId);
+        final int affectedRows = dbUtils.updateOne("vehicle", fields, values, conditionFields, conditionValues);
+        return (affectedRows > 0);
+    }
+
+    public ListResponse updateOrders(List<String> orderIds, String staffId, String postalCode) {
+        int acceptedNumber = 0;
+        List<String> acceptedArray = new ArrayList<>();
+        int notAcceptedNumber = 0;
+        List<String> notAcceptedArray = new ArrayList<>();
+
+        List<String> fields = Arrays.asList("shipper");
+        List<Object> values = Arrays.asList(staffId);
+        List<String> conditionFields = Arrays.asList("order_id");
+
+        for (String orderId : orderIds) { 
+            List<Object> conditionValues = Arrays.asList(orderId);
+
+            int resultAssigningShipperToOrderInAgency = dbUtils.updateOne(postalCode + "_orders", fields, values, conditionFields, conditionValues);
+            if (resultAssigningShipperToOrderInAgency > 0) {
+                int resultAssignShipperToDatabase = dbUtils.updateOne("orders", fields, values, conditionFields, conditionValues);
+
+                if (resultAssignShipperToDatabase > 0) {
+                    acceptedNumber++;
+                    acceptedArray.add(orderId);
+                } else {
+                    notAcceptedNumber++;
+                    notAcceptedArray.add(orderId);
+                }
+            } else {
+                notAcceptedNumber++;
+                notAcceptedArray.add(orderId);
+            }
+        }
+
+        return new ListResponse(acceptedNumber, acceptedArray, notAcceptedNumber, notAcceptedArray);
+    }
 
 }
