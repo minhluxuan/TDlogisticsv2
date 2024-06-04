@@ -11,7 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class OrderRepositoryImplement implements CustomerOrderRepository {
+public class OrderRepositoryImplement implements OrderRepositoryInterface {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 

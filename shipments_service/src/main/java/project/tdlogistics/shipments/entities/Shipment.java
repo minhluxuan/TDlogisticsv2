@@ -1,12 +1,16 @@
 package project.tdlogistics.shipments.entities;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import project.tdlogistics.shipments.configurations.ListToStringConverter;
+
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "shipment")
@@ -56,7 +60,8 @@ public class Shipment {
     private Float mass = 0.0f;
 
     @Column(name = "order_ids", columnDefinition = "longtext")
-    private String orderIds;
+    @Convert(converter = ListToStringConverter.class)
+    private List<String> orderIds;
 
     @Column(name = "parent", length = 20)
     private String parent;
@@ -73,6 +78,7 @@ public class Shipment {
     private Date lastUpdate;
 
     @Column(name = "journey", columnDefinition = "longtext", length = 16777215)
+    @Convert(converter = ListToStringConverter.class)
     private String journey;
 
     // Getters and Setters
@@ -189,11 +195,11 @@ public class Shipment {
         this.mass = mass;
     }
 
-    public String getOrderIds() {
+    public List<String> getOrderIds() {
         return orderIds;
     }
 
-    public void setOrderIds(String orderIds) {
+    public void setOrderIds(List<String> orderIds) {
         this.orderIds = orderIds;
     }
 

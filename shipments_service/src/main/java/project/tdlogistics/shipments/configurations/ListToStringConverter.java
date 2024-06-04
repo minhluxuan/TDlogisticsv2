@@ -1,16 +1,16 @@
-package project.tdlogistics.orders.configurations;
+package project.tdlogistics.shipments.configurations;
 
+import jakarta.persistence.Converter;
+import jakarta.persistence.AttributeConverter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.AttributeConverter;
-import jakarta.persistence.Converter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Converter
-public class ListStringToStringConverter implements AttributeConverter<List<String>, String> {
+public class ListToStringConverter implements AttributeConverter<List<String>, String> {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -29,7 +29,7 @@ public class ListStringToStringConverter implements AttributeConverter<List<Stri
     @Override
     public List<String> convertToEntityAttribute(String dbData) {
         if (dbData == null) {
-            return new ArrayList<>(); // or return a default value
+            return new ArrayList<String>(); // or return a default value
         }
         try {
             return objectMapper.readValue(dbData, new TypeReference<List<String>>() {
@@ -39,4 +39,3 @@ public class ListStringToStringConverter implements AttributeConverter<List<Stri
         }
     }
 }
-

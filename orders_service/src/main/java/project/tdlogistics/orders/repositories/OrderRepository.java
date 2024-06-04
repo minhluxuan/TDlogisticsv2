@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public interface OrderRepository extends JpaRepository<Order, Long>, CustomerOrderRepository {
+public interface OrderRepository extends JpaRepository<Order, Long>, OrderRepositoryInterface {
     // Add or implement more neccessary methods here
     // public Long countByOrderId(String orderId);
     public Optional<Order> findByOrderId(String orderId);
