@@ -408,6 +408,27 @@ public class ShipmentRestController {
             ));
         }
     }
-    
+
+    @PostMapping("/get_journey")
+    public ResponseEntity<Response<List<Map<String, String>>>> getJourney(@RequestParam Map<String, String> queryParams) {
+        try {
+
+            String shipmentId = queryParams.get("shipment_id");
+            List<Map<String, String>> journey = shipmentService.getJourney(shipmentId);
+            return ResponseEntity.status(HttpStatus.OK).body(new Response<> (
+                false,
+                "Lấy thông tin hành trình thành công!",
+                journey
+            ));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(
+                true,
+                "Đã xảy ra lỗi. Vui lòng thử lại.",
+                null
+            ));
+        }
+    }
 
 }

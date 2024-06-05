@@ -63,7 +63,7 @@ public class ShipmentService {
             // shipment.setLongDestination(agency.getLongitude());
         }
 
-        Map<String, Object> journeyInfo = new HashMap<>();
+        Map<String, String> journeyInfo = new HashMap<>();
 
         if(userRole.equals("AGENCY_MANAGER") || userRole.equals("AGENCY_TELLER")) {
             // const postalCode = utils.getPostalCodeFromAgencyID(req.user.agency_id);
@@ -82,14 +82,17 @@ public class ShipmentService {
             journeyInfo.put("message", String.format("Lô hàng được tạo tại Tổng cục %s bởi nhân viên %s.", "TD_00001_089204006685", "TD_00001_0123456789"));      
         }
         // Create a list to hold the journey info maps
-        List<Map<String, Object>> journeyInfoList = new ArrayList<>();
+        List<Map<String, String>> journeyInfoList = new ArrayList<>();
         journeyInfoList.add(journeyInfo);
         
+        // Without converter
         // Convert journeyInfoList to JSON string
-        ObjectMapper objectMapper = new ObjectMapper(); // Assuming you have Jackson ObjectMapper
-        String journeyInfoJson = objectMapper.writeValueAsString(journeyInfoList);
+        // ObjectMapper objectMapper = new ObjectMapper(); // Assuming you have Jackson ObjectMapper
+        // String journeyInfoJson = objectMapper.writeValueAsString(journeyInfoList);
+
+        // With converter
         shipment.setStatus(0);
-        shipment.setJourney(journeyInfoJson);
+        shipment.setJourney(journeyInfoList);
 
 
         shipmentRepository.save(shipment);
@@ -268,7 +271,6 @@ public class ShipmentService {
         return new ListResponse(acceptedNumber, acceptedArray, notAcceptedNumber, notAcceptedArray);
     }
 
-
     public boolean setJourney(String shipmentId, String updatedTime, String message, String postalCode) {
          
         Shipment shipment = shipmentRepositoryImplement.getOneShipment(shipmentId, postalCode);
@@ -278,12 +280,17 @@ public class ShipmentService {
             return false;
         }
 
-        List<Map<String, String>> journey = new ArrayList<>();
-        try {
-            journey = new ObjectMapper().readValue(shipment.getJourney(), new TypeReference<List<Map<String, String>>>(){});
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // Without converter
+
+        // List<Map<String, String>> journey = new ArrayList<>();
+        // try {
+        //     journey = new ObjectMapper().readValue(shipment.getJourney(), new TypeReference<List<Map<String, String>>>(){});
+        // } catch (IOException e) {
+        //     e.printStackTrace();
+        // }
+        
+        // With coverter
+        List<Map<String, String>> journey = shipment.getJourney();
 
         Map<String, String> newJourneyEntry = new HashMap<>();
         newJourneyEntry.put("time", updatedTime);
@@ -318,6 +325,17 @@ public class ShipmentService {
 
         return affectedRows > 0;
 
+    }
+
+    public List<Map<String, String>> getJourney(String shipmentId) {
+        Shipment shipment = shipmentRepositoryImplement.getOneShipment(shipmentId, null);
+    
+        if (shipment == null) {
+            System.out.println("Shipment with shipment_id " + shipmentId + " not found");
+            return new ArrayList<>(); // Return an empty list
+        }
+    
+        return shipment.getJourney();
     }
 
 }

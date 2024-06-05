@@ -8,9 +8,11 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import project.tdlogistics.shipments.configurations.ListToStringConverter;
+import project.tdlogistics.shipments.configurations.ListMapToStringConverter;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Table(name = "shipment")
@@ -78,8 +80,8 @@ public class Shipment {
     private Date lastUpdate;
 
     @Column(name = "journey", columnDefinition = "longtext", length = 16777215)
-    @Convert(converter = ListToStringConverter.class)
-    private String journey;
+    @Convert(converter = ListMapToStringConverter.class)
+    private List<Map<String, String>> journey;
 
     // Getters and Setters
 
@@ -235,11 +237,11 @@ public class Shipment {
         this.lastUpdate = lastUpdate;
     }
 
-    public String getJourney() {
+    public List<Map<String, String>> getJourney() {
         return journey;
     }
 
-    public void setJourney(String journey) {
+    public void setJourney(List<Map<String, String>> journey) {
         this.journey = journey;
     }
 }
