@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -358,6 +359,54 @@ public class ShipmentRestController {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
         }                
+    }
+    
+    @PostMapping("/update_journey")
+    public ResponseEntity<Response<Shipment>> updateJourney(@RequestParam Map<String, String> queryParams, @RequestBody Map<String, String> body) {
+        try {
+            Date createdTime = new Date();
+            SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+            String formattedTime = formatter.format(createdTime);
+
+            String shipmentId = queryParams.get("shipment_id");
+            // if (shipmentId == null || shipmentId.isEmpty()) {
+            //     return ResponseEntity.badRequest().body(Map.of(
+            //         "error", true,
+            //         "message", "Shipment ID is required"
+            //     ));
+            // }
+
+            String message = body.get("message");
+            // if (message == null || message.isEmpty()) {
+            //     return ResponseEntity.badRequest().body(Map.of(
+            //         "error", true,
+            //         "message", "Message is required"
+            //     ));
+            // }
+            
+
+            final boolean resultUpdatingJourney = shipmentService.setJourney(shipmentId, formattedTime, message, null);
+            if (!resultUpdatingJourney) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(
+                    true,
+                    "Đã xảy ra lỗi. Vui lòng thử lại.",
+                    null
+                ));
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(new Response<>(
+                false,
+                "Cập nhật hành trình thành công!",
+                null
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(
+                true,
+                "Đã xảy ra lỗi. Vui lòng thử lại.",
+                null
+            ));
+        }
     }
     
 

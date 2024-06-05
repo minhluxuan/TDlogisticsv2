@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.Optional;
@@ -16,14 +17,15 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.transaction.Transactional;
 import project.tdlogistics.shipments.entities.ListResponse;
 import project.tdlogistics.shipments.entities.Shipment;
 import project.tdlogistics.shipments.repositories.DBUtils;
 import project.tdlogistics.shipments.repositories.ShipmentRepository;
 import project.tdlogistics.shipments.repositories.ShipmentRepositoryImplement;
-import project.tdlogistics.shipments.repositories.dbUtils;
 
 @Service
 public class ShipmentService {
@@ -37,6 +39,9 @@ public class ShipmentService {
 
     @Autowired
     private DBUtils dbUtils;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     // @Autowired
     // private AgencyRepository agencyRepository;
@@ -261,6 +266,58 @@ public class ShipmentService {
         }
 
         return new ListResponse(acceptedNumber, acceptedArray, notAcceptedNumber, notAcceptedArray);
+    }
+
+
+    public boolean setJourney(String shipmentId, String updatedTime, String message, String postalCode) {
+         
+        Shipment shipment = shipmentRepositoryImplement.getOneShipment(shipmentId, postalCode);
+
+        if (shipment == null) {
+            System.out.println("Shipment with shipment_id " + shipmentId + " not found");
+            return false;
+        }
+
+        List<Map<String, String>> journey = new ArrayList<>();
+        try {
+            journey = new ObjectMapper().readValue(shipment.getJourney(), new TypeReference<List<Map<String, String>>>(){});
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Map<String, String> newJourneyEntry = new HashMap<>();
+        newJourneyEntry.put("time", updatedTime);
+        newJourneyEntry.put("message", message);
+        journey.add(newJourneyEntry);
+
+        String stringifyJourney;
+        try {
+            stringifyJourney = objectMapper.writeValueAsString(journey);
+        } catch (JsonProcessingException e) {
+            System.out.println("Error converting journey to JSON: " + e.getMessage());
+            return false;
+        }
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("journey", stringifyJourney);
+
+        Map<String, Object> conditions = new HashMap<>();
+        conditions.put("shipment_id", shipmentId);
+
+
+        List<String> fields = Arrays.asList("journey");
+        List<Object> values = Arrays.asList(stringifyJourney);
+        List<String> conditionFields = Arrays.asList("shipment_id");
+        List<Object> conditionValues = Arrays.asList(shipmentId);
+
+        if(postalCode != null) {
+            dbUtils.updateOne(postalCode + "_shipment", fields, values, conditionFields, conditionValues);
+        }
+
+        final int affectedRows = dbUtils.updateOne("shipment", fields, values, conditionFields, conditionValues);
+
+        return affectedRows > 0;
+
     }
 
 }

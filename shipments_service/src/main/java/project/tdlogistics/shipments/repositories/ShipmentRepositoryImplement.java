@@ -1,6 +1,9 @@
 package project.tdlogistics.shipments.repositories;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import project.tdlogistics.shipments.entities.Shipment;
@@ -81,6 +84,15 @@ public class ShipmentRepositoryImplement implements ShipmentRepositoryInterface 
         int orderRowsAffected = jdbcTemplate.update(updateOrderQuery, null, orderId);
 
         return orderRowsAffected > 0;
+    }
+
+    @Override
+    public Shipment getOneShipment(String shipment_id, String postalCode) {
+        String shipmentTable = (postalCode == null) ? "shipment" : (postalCode + "_shipment");
+        String query = "SELECT * FROM " + shipmentTable + " WHERE shipment_id = ? LIMIT 1";
+        List<Shipment> shipments = jdbcTemplate.query(query,  new BeanPropertyRowMapper<>(Shipment.class), new Object[]{shipment_id});
+
+        return shipments.isEmpty() ? null : shipments.get(0);
     }
 
 }
