@@ -171,118 +171,142 @@ public class AgencyRepositoryImpl implements CustomAgencyRepository {
         }
     }
 
-    @Override
-    @Transactional
-    public Response locateAgencyInArea(int choice, String province, String district, List<String> wards,
-            String agencyId, String postalCode) {
-        try {
-            if (choice == 0) {
+    // @Override
+    // @Transactional
+    // public Response locateAgencyInArea(int choice, String province, String
+    // district, List<String> wards,
+    // String agencyId, String postalCode) {
+    // try {
+    // if (choice == 0) {
 
-                Optional<List<String>> resultGetProvince = province
-                String provinceSelectQuery = "SELECT agency_ids FROM province WHERE province = ? LIMIT 1";
-                Query provinceResultSelect = entityManager.createNativeQuery(provinceSelectQuery);
-                provinceResultSelect.setParameter(1, province);
-                List<String> agenciesOfProvince = (List<String>) provinceResultSelect.getSingleResult();
-                if (agenciesOfProvince == null) {
-                    agenciesOfProvince = new ArrayList<>();
-                }
+    // Optional<List<String>> resultGetProvince = province.
+    // String provinceSelectQuery = "SELECT agency_ids FROM province WHERE province
+    // = ? LIMIT 1";
+    // Query provinceResultSelect =
+    // entityManager.createNativeQuery(provinceSelectQuery);
+    // provinceResultSelect.setParameter(1, province);
+    // List<String> agenciesOfProvince = (List<String>)
+    // provinceResultSelect.getSingleResult();
+    // if (agenciesOfProvince == null) {
+    // agenciesOfProvince = new ArrayList<>();
+    // }
 
-                if (!agenciesOfProvince.contains(agencyId)) {
-                    agenciesOfProvince.add(agencyId);
-                }
+    // if (!agenciesOfProvince.contains(agencyId)) {
+    // agenciesOfProvince.add(agencyId);
+    // }
 
-                String districtSelectQuery = "SELECT agency_ids FROM district WHERE province = ? AND district = ? LIMIT 1";
-                Query districtResultSelect = entityManager.createNativeQuery(districtSelectQuery);
-                districtResultSelect.setParameter(1, province);
-                districtResultSelect.setParameter(2, district);
-                List<String> agenciesOfDistrict = (List<String>) districtResultSelect.getSingleResult();
-                if (agenciesOfDistrict == null) {
-                    agenciesOfDistrict = new ArrayList<>();
-                }
+    // String districtSelectQuery = "SELECT agency_ids FROM district WHERE province
+    // = ? AND district = ? LIMIT 1";
+    // Query districtResultSelect =
+    // entityManager.createNativeQuery(districtSelectQuery);
+    // districtResultSelect.setParameter(1, province);
+    // districtResultSelect.setParameter(2, district);
+    // List<String> agenciesOfDistrict = (List<String>)
+    // districtResultSelect.getSingleResult();
+    // if (agenciesOfDistrict == null) {
+    // agenciesOfDistrict = new ArrayList<>();
+    // }
 
-                if (!agenciesOfDistrict.contains(agencyId)) {
-                    agenciesOfDistrict.add(agencyId);
-                }
+    // if (!agenciesOfDistrict.contains(agencyId)) {
+    // agenciesOfDistrict.add(agencyId);
+    // }
 
-                String provinceUpdateQuery = "UPDATE province SET agency_ids = ? WHERE province = ?";
-                Query provinceResultUpdate = entityManager.createNativeQuery(provinceUpdateQuery);
-                provinceResultUpdate.setParameter(1, agenciesOfProvince.toString());
-                provinceResultUpdate.setParameter(2, province);
-                provinceResultUpdate.executeUpdate();
+    // String provinceUpdateQuery = "UPDATE province SET agency_ids = ? WHERE
+    // province = ?";
+    // Query provinceResultUpdate =
+    // entityManager.createNativeQuery(provinceUpdateQuery);
+    // provinceResultUpdate.setParameter(1, agenciesOfProvince.toString());
+    // provinceResultUpdate.setParameter(2, province);
+    // provinceResultUpdate.executeUpdate();
 
-                String districtUpdateQuery = "UPDATE district SET agency_ids = ? WHERE province = ? AND district = ?";
-                Query districtResultUpdate = entityManager.createNativeQuery(districtUpdateQuery);
-                districtResultUpdate.setParameter(1, agenciesOfDistrict.toString());
-                districtResultUpdate.setParameter(2, province);
-                districtResultUpdate.setParameter(3, district);
-                districtResultUpdate.executeUpdate();
+    // String districtUpdateQuery = "UPDATE district SET agency_ids = ? WHERE
+    // province = ? AND district = ?";
+    // Query districtResultUpdate =
+    // entityManager.createNativeQuery(districtUpdateQuery);
+    // districtResultUpdate.setParameter(1, agenciesOfDistrict.toString());
+    // districtResultUpdate.setParameter(2, province);
+    // districtResultUpdate.setParameter(3, district);
+    // districtResultUpdate.executeUpdate();
 
-                for (String ward : wards) {
-                    String wardUpdateQuery = "UPDATE ward SET agency_id = ?, postal_code = ? WHERE province = ? AND district = ? AND ward = ?";
-                    Query wardResultUpdate = entityManager.createNativeQuery(wardUpdateQuery);
-                    wardResultUpdate.setParameter(1, agencyId);
-                    wardResultUpdate.setParameter(2, postalCode);
-                    wardResultUpdate.setParameter(3, province);
-                    wardResultUpdate.setParameter(4, district);
-                    wardResultUpdate.setParameter(5, ward);
-                    wardResultUpdate.executeUpdate();
-                }
-            }
-            if (choice == 1) {
-                String provinceSelectQuery = "SELECT agency_ids FROM province WHERE province = ? LIMIT 1";
-                Query provinceResultSelect = entityManager.createNativeQuery(provinceSelectQuery);
-                provinceResultSelect.setParameter(1, province);
-                List<String> agenciesOfProvince = (List<String>) provinceResultSelect.getSingleResult();
-                if (agenciesOfProvince == null) {
-                    agenciesOfProvince = new ArrayList<>();
-                }
-                if (agenciesOfProvince.contains(agencyId)) {
-                    agenciesOfProvince.remove(agencyId);
-                }
+    // for (String ward : wards) {
+    // String wardUpdateQuery = "UPDATE ward SET agency_id = ?, postal_code = ?
+    // WHERE province = ? AND district = ? AND ward = ?";
+    // Query wardResultUpdate = entityManager.createNativeQuery(wardUpdateQuery);
+    // wardResultUpdate.setParameter(1, agencyId);
+    // wardResultUpdate.setParameter(2, postalCode);
+    // wardResultUpdate.setParameter(3, province);
+    // wardResultUpdate.setParameter(4, district);
+    // wardResultUpdate.setParameter(5, ward);
+    // wardResultUpdate.executeUpdate();
+    // }
+    // }
+    // if (choice == 1) {
+    // String provinceSelectQuery = "SELECT agency_ids FROM province WHERE province
+    // = ? LIMIT 1";
+    // Query provinceResultSelect =
+    // entityManager.createNativeQuery(provinceSelectQuery);
+    // provinceResultSelect.setParameter(1, province);
+    // List<String> agenciesOfProvince = (List<String>)
+    // provinceResultSelect.getSingleResult();
+    // if (agenciesOfProvince == null) {
+    // agenciesOfProvince = new ArrayList<>();
+    // }
+    // if (agenciesOfProvince.contains(agencyId)) {
+    // agenciesOfProvince.remove(agencyId);
+    // }
 
-                String districtSelectQuery = "SELECT agency_ids FROM district WHERE province = ? AND district = ? LIMIT 1";
-                Query districtResultSelect = entityManager.createNativeQuery(districtSelectQuery);
-                districtResultSelect.setParameter(1, province);
-                districtResultSelect.setParameter(2, district);
-                List<String> agenciesOfDistrict = (List<String>) districtResultSelect.getSingleResult();
-                if (agenciesOfDistrict == null) {
-                    agenciesOfDistrict = new ArrayList<>();
-                }
-                if (agenciesOfDistrict.contains(agencyId)) {
-                    agenciesOfDistrict.remove(agencyId);
-                }
+    // String districtSelectQuery = "SELECT agency_ids FROM district WHERE province
+    // = ? AND district = ? LIMIT 1";
+    // Query districtResultSelect =
+    // entityManager.createNativeQuery(districtSelectQuery);
+    // districtResultSelect.setParameter(1, province);
+    // districtResultSelect.setParameter(2, district);
+    // List<String> agenciesOfDistrict = (List<String>)
+    // districtResultSelect.getSingleResult();
+    // if (agenciesOfDistrict == null) {
+    // agenciesOfDistrict = new ArrayList<>();
+    // }
+    // if (agenciesOfDistrict.contains(agencyId)) {
+    // agenciesOfDistrict.remove(agencyId);
+    // }
 
-                String provinceUpdateQuery = "UPDATE province SET agency_ids = ? WHERE province = ?";
-                Query provinceResultUpdate = entityManager.createNativeQuery(provinceUpdateQuery);
-                provinceResultUpdate.setParameter(1, agenciesOfProvince.toString());
-                provinceResultUpdate.setParameter(2, province);
-                provinceResultUpdate.executeUpdate();
+    // String provinceUpdateQuery = "UPDATE province SET agency_ids = ? WHERE
+    // province = ?";
+    // Query provinceResultUpdate =
+    // entityManager.createNativeQuery(provinceUpdateQuery);
+    // provinceResultUpdate.setParameter(1, agenciesOfProvince.toString());
+    // provinceResultUpdate.setParameter(2, province);
+    // provinceResultUpdate.executeUpdate();
 
-                String districtUpdateQuery = "UPDATE district SET agency_ids = ? WHERE province = ? AND district = ?";
-                Query districtResultUpdate = entityManager.createNativeQuery(districtUpdateQuery);
-                districtResultUpdate.setParameter(1, agenciesOfDistrict.toString());
-                districtResultUpdate.setParameter(2, province);
-                districtResultUpdate.setParameter(3, district);
-                districtResultUpdate.executeUpdate();
+    // String districtUpdateQuery = "UPDATE district SET agency_ids = ? WHERE
+    // province = ? AND district = ?";
+    // Query districtResultUpdate =
+    // entityManager.createNativeQuery(districtUpdateQuery);
+    // districtResultUpdate.setParameter(1, agenciesOfDistrict.toString());
+    // districtResultUpdate.setParameter(2, province);
+    // districtResultUpdate.setParameter(3, district);
+    // districtResultUpdate.executeUpdate();
 
-                for (String ward : wards) {
-                    String wardUpdateQuery = "UPDATE ward SET agency_id = ?, postal_code = ? WHERE province = ? AND district = ? AND ward = ?";
-                    Query wardResultUpdate = entityManager.createNativeQuery(wardUpdateQuery);
-                    wardResultUpdate.setParameter(1, null);
-                    wardResultUpdate.setParameter(2, null);
-                    wardResultUpdate.setParameter(3, province);
-                    wardResultUpdate.setParameter(4, district);
-                    wardResultUpdate.setParameter(5, ward);
-                    wardResultUpdate.executeUpdate();
-                }
-            }
+    // for (String ward : wards) {
+    // String wardUpdateQuery = "UPDATE ward SET agency_id = ?, postal_code = ?
+    // WHERE province = ? AND district = ? AND ward = ?";
+    // Query wardResultUpdate = entityManager.createNativeQuery(wardUpdateQuery);
+    // wardResultUpdate.setParameter(1, null);
+    // wardResultUpdate.setParameter(2, null);
+    // wardResultUpdate.setParameter(3, province);
+    // wardResultUpdate.setParameter(4, district);
+    // wardResultUpdate.setParameter(5, ward);
+    // wardResultUpdate.executeUpdate();
+    // }
+    // }
 
-            return new Response<>(false, "Cập nhật thông tin địa bàn hoạt động thành công.", null);
+    // return new Response<>(false, "Cập nhật thông tin địa bàn hoạt động thành
+    // công.", null);
 
-        } catch (Exception e) {
-            return new Response<>(true, e.getMessage(), null);
-        }
-    }
+    // } catch (Exception e) {
+    // return new Response<>(true, e.getMessage(), null);
+    // }
+    // }
 
     // @Override
     // @Transactional

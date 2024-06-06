@@ -216,7 +216,7 @@ public class AgencyService {
 
             int limit = (rows != null && rows >= 1) ? rows : 3;
             int offset = (pages != null) ? pages * limit : 0;
-            // havent implemented the pagination yet
+            // confuse giua offset va limit here
             Pageable pageable = PageRequest.of(offset, limit);
 
             return agencyRepository.findAll(example);
@@ -271,7 +271,8 @@ public class AgencyService {
         }
     }
 
-    // public Response updatePassword
+    // public Response updatePassword // ko xai den?
+
     public List<String> getManagedWards(String agencyId) {
         Optional<Agency> agency = this.checkExistAgency(agencyId);
         if (agency.isPresent()) {

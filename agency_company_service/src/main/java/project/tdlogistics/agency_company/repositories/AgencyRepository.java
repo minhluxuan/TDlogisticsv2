@@ -25,9 +25,10 @@ interface CustomAgencyRepository {
     @Transactional
     Response dropTablesForAgency(String postalCode) throws Exception;
 
-    @Transactional
-    Response locateAgencyInArea(int choice, String province, String district, List<String> wards, String agencyId,
-            String postalCode) throws Exception;
+    // @Transactional
+    // Response locateAgencyInArea(int choice, String province, String district,
+    // List<String> wards, String agencyId,
+    // String postalCode) throws Exception;
 
     // @Transactional
     // List<Agency> getManyAgencies(Map<String, Object> info, Map<String, Object>
