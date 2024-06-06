@@ -1,6 +1,7 @@
 package project.tdlogistics.users.services;
 
 import project.tdlogistics.users.entities.Account;
+import project.tdlogistics.users.entities.Customer;
 import project.tdlogistics.users.repositories.TokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -59,8 +60,9 @@ public class JwtService {
     }
 
 
-    public String generateToken(Account account) {
-        String token = Jwts
+    public String generateToken(Account account, String option) {
+        if (option.equals("STAFF")) {
+            String token = Jwts
                 .builder()
                 .subject(account.getId())
                 .claim("username", account.getUsername())
@@ -70,7 +72,23 @@ public class JwtService {
                 .signWith(getSigninKey())
                 .compact();
 
-        return token;
+            return token;
+        }
+        else if (option.equals("CUSTOMER")) {
+            String token = Jwts
+                .builder()
+                .subject(account.getId())
+                .claim("phoneNumber", account.getPhoneNumber())
+                .claim("role", account.getRole())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + 24*60*60*1000 ))
+                .signWith(getSigninKey())
+                .compact();
+
+            return token;
+        }
+
+        return null;
     }
 
     private SecretKey getSigninKey() {

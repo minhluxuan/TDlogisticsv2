@@ -8,13 +8,20 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 
+import project.tdlogistics.users.configurations.MyBeanUtils;
+import project.tdlogistics.users.entities.Account;
 import project.tdlogistics.users.entities.Customer;
+import project.tdlogistics.users.entities.Staff;
+import project.tdlogistics.users.repositories.AccountRepository;
 import project.tdlogistics.users.repositories.CustomerRepository;
 
 @Service
 public class CustomerService {
     @Autowired
     private CustomerRepository customerRepository;
+
+    @Autowired
+    private AccountRepository accountRepository;
 
     // public Optional<Customer> checkExistCustomer(Customer criteria) {
     //     ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreNullValues();
@@ -52,44 +59,21 @@ public class CustomerService {
         return customers;
     }
 
-    public Customer updateCustomerInfo(Long id, Customer info) {
+    public Customer updateCustomerInfo(String id, Customer info) {
         Optional<Customer> customerOptional = customerRepository.findById(id);
         if (customerOptional.isEmpty()) {
-            return null;
+            return null; // Or throw an exception if customer not found
         }
 
-        Customer customer = customerOptional.get();
-        if (info.getPhoneNumber() != null) {
-            customer.setPhoneNumber(info.getPhoneNumber());
-        }
+        Customer existingCustomer= customerOptional.get();
 
-        if (info.getEmail() != null) {
-            customer.setEmail(info.getEmail());
-        }
+        // Copy non-null properties from info to existingStaff
+        MyBeanUtils.copyNonNullProperties(info, existingCustomer);
 
-        if (info.getFullname() != null) {
-            customer.setFullname(info.getFullname());
-        }
+        // Save the updated customer entity
+        customerRepository.save(existingCustomer);
 
-        if (info.getProvince() != null) {
-            customer.setProvince(info.getProvince());
-        }
-
-        if (info.getDistrict() != null) {
-            customer.setDistrict(info.getDistrict());
-        }
-
-        if (info.getWard() != null) {
-            customer.setWard(info.getWard());
-        }
-
-        if (info.getDetailAddress() != null) {
-            customer.setDetailAddress(info.getDetailAddress());
-        }
-        
-        // customer.getAccount().setPassword(null);
-        customerRepository.save(customer);
-
-        return customer;
+        // Return the updated customer entity
+        return customerRepository.findById(id).get();
     }
 }

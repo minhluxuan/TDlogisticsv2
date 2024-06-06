@@ -25,13 +25,13 @@ public class MQConfiguration {
         return BindingBuilder.bind(usersQueue).to(exchange).with("rpc.users");
     }
 
-    // @Bean
-    // public Queue commonQueue() {
-    //     return new Queue("rpc.common", true);
-    // }
-    
-    // @Bean
-    // Binding commonBinding(Queue commonQueue, DirectExchange exchange) {
-    //     return BindingBuilder.bind(commonQueue).to(exchange).with("rpc.#");
-    // }
+    @Bean
+    public Queue emailsQueue() {
+        return new Queue("rpc.emails", true);
+    }
+
+    @Bean
+    Binding emailsBinding(Queue emailsQueue, DirectExchange exchange) {
+        return BindingBuilder.bind(emailsQueue).to(exchange).with("rpc.emails");
+    }
 }

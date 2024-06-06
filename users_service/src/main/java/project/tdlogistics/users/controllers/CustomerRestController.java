@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import jakarta.validation.Validator;
 
 @RestController
-@RequestMapping("/v2/users/customers")
+@RequestMapping("/v2/customers")
 public class CustomerRestController {
     @Autowired
     CustomerService customerService;
@@ -83,52 +84,7 @@ public class CustomerRestController {
         }
     }
 
-    @PostMapping(value = "/create")
-    public ResponseEntity<Response<Customer>> createNewCustomer(@RequestParam String accountId, @RequestBody Customer info) throws Exception{
-        try {
-            // Set<ConstraintViolation<Customer>> violations = validator.validate(info);
-
-            // if (!violations.isEmpty()) {
-            //     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response(true, "Thông tin không hợp lệ", null));
-            // }
-            System.out.println(accountId);
-            Optional<Account> accountOptional = accountService.findById(accountId);
-            System.out.println(accountOptional);
-            if (accountOptional.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response(true, "Account not found", null));
-            }
-
-            final Customer tempCustomer = new Customer();
-            tempCustomer.setPhoneNumber(info.getPhoneNumber());
-            Optional<Customer> customerOptional = customerService.checkExistCustomer(tempCustomer);
-            if (customerOptional.isPresent()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response(true, "Khách hàng đã tồn tại", null));
-            }
-
-            info.setAccount(accountOptional.get());
-            customerService.createNewCustomer(info);
-            return ResponseEntity.status(HttpStatus.CREATED).body(new Response<>(false, "Tạo khách hàng mới thành công", info)); 
-
-            // final String jsonRequest = (new ObjectMapper()).writeValueAsString(new Request<Customer>("createNewCustomer", null, info));
-            // final String jsonResponse = (String) amqpTemplate.convertSendAndReceive(exchange, "rpc.users", jsonRequest);
-            // if (jsonResponse != null) {
-            //     final Response<Customer> response = (new ObjectMapper().registerModule(new JavaTimeModule())).readValue(jsonResponse, new TypeReference<Response<Customer>>() {});
-                
-            //     if (response.getError() || response.getData() == null) {
-            //         return ResponseEntity.status(response.getStatus()).body(new Response<Customer>(response.getError(), response.getMessage(), response.getData()));
-            //     }
-                
-            //     return ResponseEntity.status(HttpStatus.CREATED).body(new Response<Customer>(false, "Tạo khách hàng mới thành công", response.getData()));
-            // }
-
-            // return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<Customer>(false, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
-        }
-    }
-
-    @GetMapping("/search")
+    @PostMapping("/search")
     public ResponseEntity<Response<List<Customer>>> getCustomers(@RequestBody Customer criteria) throws Exception {
         try {
             final List<Customer> customers = customerService.getCustomers(criteria);
@@ -142,27 +98,27 @@ public class CustomerRestController {
     @PutMapping("/update")
     public ResponseEntity<Response<Customer>> updateCustomer(@RequestParam String id, @RequestBody Customer info) throws Exception {
         try {
-            // final Customer customer = customerService.updateCustomerInfo(id, info);
-            // if (customer == null) {
-            //     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(true, "Khách hàng không tồn tại", null));
-            // }
-
-            // return ResponseEntity.status(HttpStatus.CREATED).body(new Response<>(false, "Cập nhật thông tin khách hàng thành công", customer));
-        
-            HashMap<String, Object> params = new HashMap<String, Object>();
-            params.put("id", id);
-            final String jsonRequest = (new ObjectMapper()).writeValueAsString(new Request<Customer>("updateCustomer", params, info));
-            final String jsonResponse = (String) amqpTemplate.convertSendAndReceive(exchange, "rpc", jsonRequest);
-            if (jsonResponse != null) {
-                final Response<Customer> response = (new ObjectMapper().registerModule(new JavaTimeModule())).readValue(jsonResponse, new TypeReference<Response<Customer>>() {});
-                if (response.getError() || response.getData() == null) {
-                    return ResponseEntity.status(response.getStatus()).body(new Response<Customer>(response.getError(), response.getMessage(), response.getData()));
-                }
-
-                return ResponseEntity.status(HttpStatus.CREATED).body(new Response<Customer>(false, "Cập nhật thông tin khách hàng thành công", response.getData()));
+            final Customer customer = customerService.updateCustomerInfo(id, info);
+            if (customer == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(true, "Khách hàng không tồn tại", null));
             }
 
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<Customer>(false, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
+            return ResponseEntity.status(HttpStatus.CREATED).body(new Response<>(false, "Cập nhật thông tin khách hàng thành công", customer));
+        
+            // HashMap<String, Object> params = new HashMap<String, Object>();
+            // params.put("id", id);
+            // final String jsonRequest = (new ObjectMapper()).writeValueAsString(new Request<Customer>("updateCustomer", params, info));
+            // final String jsonResponse = (String) amqpTemplate.convertSendAndReceive(exchange, "rpc", jsonRequest);
+            // if (jsonResponse != null) {
+            //     final Response<Customer> response = (new ObjectMapper().registerModule(new JavaTimeModule())).readValue(jsonResponse, new TypeReference<Response<Customer>>() {});
+            //     if (response.getError() || response.getData() == null) {
+            //         return ResponseEntity.status(response.getStatus()).body(new Response<Customer>(response.getError(), response.getMessage(), response.getData()));
+            //     }
+
+            //     return ResponseEntity.status(HttpStatus.CREATED).body(new Response<Customer>(false, "Cập nhật thông tin khách hàng thành công", response.getData()));
+            // }
+
+            // return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<Customer>(false, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));

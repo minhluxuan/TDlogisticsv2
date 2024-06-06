@@ -1,3 +1,25 @@
+
+PUT http://localhost:8081/v2/customers/update?id=0fd0c668-1e0a-4861-8aa0-f5e68ed0fcb7
+Content-Type: application/json
+
+{
+    "fullname": "Lữ Xuân Minh"
+}
+
+###
+
+POST http://localhost:8081/v2/customers/search
+Content-Type: application/json
+
+{
+    "fullname": "Lữ Xuân Minh",
+    "account": {
+        "id": "7f33d1a0-b6dd-49e7-b92f-25505a509483"
+    }
+}
+
+###
+
 GET http://localhost:8080/v2/check
 Content-Type: application/json
 

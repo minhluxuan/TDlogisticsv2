@@ -14,21 +14,13 @@ import jakarta.validation.constraints.*;
 @Table(name = "customer")
 public class Customer {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
-    private Long id;
+    private String id;
 
     @Column(name = "fullname")
     @Pattern(regexp = "([a-vxyỳọáầảấờễàạằệếýộậốũứĩõúữịỗìềểẩớặòùồợãụủíỹắẫựỉỏừỷởóéửỵẳẹèẽổẵẻỡơôưăêâđA-VXYỲỌÁẦẢẤỜỄÀẠẰỆẾÝỘẬỐŨỨĨÕÚỮỊỖÌỀỂẨỚẶÒÙỒỢÃỤỦÍỸẮẪỰỈỎỪỶỞÓÉỬỴẲẸÈẼỔẴẺỠƠÔƯĂÊÂĐ]+)((\\s{1}[a-vxyỳọáầảấờễàạằệếýộậốũứĩõúữịỗìềểẩớặòùồợãụủíỹắẫựỉỏừỷởóéửỵẳẹèẽổẵẻỡơôưăêâđA-VXYỲỌÁẦẢẤỜỄÀẠẰỆẾÝỘẬỐŨỨĨÕÚỮỊỖÌỀỂẨỚẶÒÙỒỢÃỤỦÍỸẮẪỰỈỎỪỶỞÓÉỬỴẲẸÈẼỔẴẺỠƠÔƯĂÊÂĐ]+){1,})")
     private String fullname;
-
-    @Column(name = "phone_number")
-    @Pattern(regexp = "[0-9]{1,10}")
-    private String phoneNumber;
-
-    @Column(name = "email")
-    @Pattern(regexp = "[a-zA-Z0-9._-]{1,64}@[a-zA-Z0-9._-]{1,255}\\.[a-zA-Z]{2,4}")
-    private String email;
 
     @Column(name = "province")
     private String province;
@@ -43,17 +35,16 @@ public class Customer {
     private String detailAddress;
 
     @OneToOne
+    @NotNull(message = "Tài khoản không được để trống")
     @JoinColumn(name = "account_id", referencedColumnName = "id")
     private Account account;
 
     public Customer() {
     }
 
-    public Customer(String fullname, String phoneNumber, String email, String province,
+    public Customer(String fullname, String province,
             String district, String ward, String detailAddress, Account account) {
         this.fullname = fullname;
-        this.phoneNumber = phoneNumber;
-        this.email = email;
         this.province = province;
         this.district = district;
         this.ward = ward;
@@ -61,11 +52,11 @@ public class Customer {
         this.account = account;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -75,22 +66,6 @@ public class Customer {
 
     public void setFullname(String fullname) {
         this.fullname = fullname;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public String getProvince() {
@@ -135,7 +110,7 @@ public class Customer {
 
     @Override
     public String toString() {
-        return "Customer [id=" + id + ", fullname=" + fullname + ", phoneNumber=" + phoneNumber + ", email=" + email
-                + ", account=" + account + "]";
+        return "Customer [id=" + id + ", fullname=" + fullname + ", province=" + province + ", district=" + district
+                + ", ward=" + ward + ", detailAddress=" + detailAddress + "]";
     }
 }

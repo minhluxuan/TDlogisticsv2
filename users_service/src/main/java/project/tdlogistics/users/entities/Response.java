@@ -1,14 +1,14 @@
 package project.tdlogistics.users.entities;
 
 import java.util.Objects;
-import org.springframework.http.HttpStatus;
+// import org.springframework.http.Integer;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Response<T> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private HttpStatus status;
+    private Integer status;
     
     private boolean error;
     private String message;
@@ -23,18 +23,18 @@ public class Response<T> {
         this.data = data;
     }
 
-    public Response(HttpStatus status, boolean error, String message, T data) {
+    public Response(Integer status, boolean error, String message, T data) {
         this.error = error;
         this.message = message;
         this.data = data;
         this.status = status;
     }
 
-    public HttpStatus getStatus() {
+    public Integer getStatus() {
         return status;
     }
 
-    public void setStatus(HttpStatus status) {
+    public void setStatus(Integer status) {
         this.status = status;
     }
 

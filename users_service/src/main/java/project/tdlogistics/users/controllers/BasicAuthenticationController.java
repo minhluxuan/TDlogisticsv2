@@ -3,7 +3,7 @@ package project.tdlogistics.users.controllers;
 import project.tdlogistics.users.entities.Account;
 import project.tdlogistics.users.entities.AuthenticationResponse;
 import project.tdlogistics.users.entities.Response;
-import project.tdlogistics.users.services.AuthenticationService;
+import project.tdlogistics.users.services.BasicAuthenticationService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Duration;
@@ -19,10 +19,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("v2/auth")
-public class AuthenticationController {
-    private final AuthenticationService authService;
+public class BasicAuthenticationController {
+    private final BasicAuthenticationService authService;
 
-    public AuthenticationController(AuthenticationService authService) {
+    public BasicAuthenticationController(BasicAuthenticationService authService) {
         this.authService = authService;
     }
 

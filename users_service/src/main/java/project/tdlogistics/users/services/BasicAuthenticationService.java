@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @Service
-public class AuthenticationService {
+public class BasicAuthenticationService {
     private final AccountRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -26,7 +26,7 @@ public class AuthenticationService {
 
     private final AuthenticationManager authenticationManager;
 
-    public AuthenticationService(AccountRepository repository,
+    public BasicAuthenticationService(AccountRepository repository,
                                  PasswordEncoder passwordEncoder,
                                  JwtService jwtService,
                                  TokenRepository tokenRepository,
@@ -49,7 +49,7 @@ public class AuthenticationService {
         account.setPassword(passwordEncoder.encode(request.getPassword()));
         account.setRole(request.getRole());
         
-        String jwt = jwtService.generateToken(account);
+        String jwt = jwtService.generateToken(account, "STAFF");
         System.out.println(account);
         repository.save(account);
 
@@ -67,7 +67,7 @@ public class AuthenticationService {
             );
 
             Account account = repository.findByUsername(request.getUsername()).orElseThrow(null);
-            String jwt = jwtService.generateToken(account);
+            String jwt = jwtService.generateToken(account, "STAFF");
 
             revokeAllTokenByAccount(account);
             saveUserToken(jwt, account);

@@ -23,6 +23,10 @@ public class AccountService implements UserDetailsService {
         return repository.findById(id);
     }
 
+    public Optional<Account> findOneByPhoneNumber(String phoneNumber) {
+        return repository.findOneByPhoneNumber(phoneNumber);
+    }
+
     public UserDetails loadUserByAccountId(String accountId) {
         UserDetails userDetails = null;
         try {

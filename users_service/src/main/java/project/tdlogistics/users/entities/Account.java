@@ -66,6 +66,14 @@ public class Account implements UserDetails {
         this.role = role;
     }
 
+    public Account(String username, String password, String phoneNumber, String email, Role role) {
+        this.username = username;
+        this.password = password;
+        this.phoneNumber = phoneNumber;
+        this.email = email;
+        this.role = role;
+    }
+
     public String getId() {
         return id;
     }
