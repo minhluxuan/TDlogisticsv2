@@ -1,6 +1,7 @@
 package project.tdlogistics.users.entities;
 
 import java.util.Objects;
+
 import org.springframework.http.HttpStatus;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -9,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public class Response<T> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private HttpStatus status;
-    
+
     private boolean error;
     private String message;
     private T data;

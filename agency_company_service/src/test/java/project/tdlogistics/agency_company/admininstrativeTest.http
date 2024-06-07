@@ -1,0 +1,22 @@
+GET http://localhost:8080/getUnits
+Content-Type: application/json
+
+{}
+###
+
+GET http://localhost:8080/getUnits
+Content-Type: application/json
+
+{
+  "province": "Tỉnh Bình Dương"
+}
+###
+
+GET http://localhost:8080/getUnits
+Content-Type: application/json
+
+{
+  "province": "Tỉnh Bình Dương",
+  "district": "Huyện Bàu Bàng"
+}
+###

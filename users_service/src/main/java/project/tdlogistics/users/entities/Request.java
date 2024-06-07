@@ -7,7 +7,7 @@ public class Request<T> {
     private String operation;
     private HashMap<String, Object> params;
     private T payload;
-    
+
     public Request() {
     }
 
@@ -32,7 +32,7 @@ public class Request<T> {
     public void setParams(HashMap<String, Object> params) {
         this.params = params;
     }
-    
+
     public T getPayload() {
         return payload;
     }
