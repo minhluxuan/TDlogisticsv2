@@ -1,19 +1,22 @@
 package project.tdlogistics.users.entities;
 
 import java.time.LocalDateTime;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -23,16 +26,11 @@ import jakarta.persistence.TemporalType;
 @Entity
 @Table(name = "account")
 @Inheritance(strategy = InheritanceType.JOINED)
-public class Account {
+public class Account implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", columnDefinition = "INT UNSIGNED")
-    private Long id;
-
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    @JsonBackReference
-    private User user;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id")
+    private String id;
 
     @Column(name = "username")
     private String username;
@@ -41,8 +39,15 @@ public class Account {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String password;
 
-    @Column(name = "role")
-    private String role;
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
+    @Column(name = "email")
+    private String email;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private Role role;
 
     @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
@@ -55,17 +60,25 @@ public class Account {
     public Account() {
     }
 
-    public Account(String username, String password, String role) {
+    public Account(String username, String password, Role role) {
         this.username = username;
         this.password = password;
         this.role = role;
     }
 
-    public Long getId() {
+    public Account(String username, String password, String phoneNumber, String email, Role role) {
+        this.username = username;
+        this.password = password;
+        this.phoneNumber = phoneNumber;
+        this.email = email;
+        this.role = role;
+    }
+
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -85,20 +98,28 @@ public class Account {
         this.password = password;
     }
 
-    public String getRole() {
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -130,5 +151,32 @@ public class Account {
     @Override
     public String toString() {
         return "Account [id=" + id + ", username=" + username + ", password=" + password + ", role=" + role + "]";
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority(role.name()));
+        return authorities;
     }
 }

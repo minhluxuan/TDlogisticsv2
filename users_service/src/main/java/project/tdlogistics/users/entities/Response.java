@@ -3,6 +3,7 @@ package project.tdlogistics.users.entities;
 import java.util.Objects;
 
 import org.springframework.http.HttpStatus;
+// import org.springframework.http.Integer;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 

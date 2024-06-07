@@ -1,42 +1,196 @@
 package project.tdlogistics.users.entities;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import io.micrometer.common.lang.NonNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+
+import project.tdlogistics.users.validations.staffs.*;
 
 @Entity
 @Table(name = "staff")
-public class Staff extends User {
+public class Staff {
+
+    @OneToOne
+    @JoinColumn(name = "account")
+    @NotNull(message = "Tài khoản không được để trống", groups = CreateByAdmin.class)
+    private Account account;
+
+    @Column(name = "agency_id")
+    @NotNull(message = "Mã bưu cục/đại lý không được để trống", groups = CreateByAdmin.class)
+    @NotBlank(message = "Mã bưu cục/đại lý không được để trống", groups = CreateByAdmin.class)
+    @Pattern(message = "Mã bưu cục/đại lý không đúng định dạng", groups = CreateByAdmin.class, regexp = "(TD|BC|DL)_\\d{5}_\\d{12}")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String agencyId;
+
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id")
-    private String id;
+    @Column(name = "staff_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String staffId;
 
     @Column(name = "fullname")
+    @NotNull(message = "Họ và tên không được để null", groups = CreateByAdmin.class)
+    @NotBlank(message = "Họ và tên không được để trống", groups = CreateByAdmin.class)
+    @Pattern(message = "Họ và tên không đúng định dạng", groups = CreateByAdmin.class, regexp = "([a-vxyỳọáầảấờễàạằệếýộậốũứĩõúữịỗìềểẩớặòùồợãụủíỹắẫựỉỏừỷởóéửỵẳẹèẽổẵẻỡơôưăêâđA-VXYỲỌÁẦẢẤỜỄÀẠẰỆẾÝỘẬỐŨỨĨÕÚỮỊỖÌỀỂẨỚẶÒÙỒỢÃỤỦÍỸẮẪỰỈỎỪỶỞÓÉỬỴẲẸÈẼỔẴẺỠƠÔƯĂÊÂĐ]+)((\\s{1}[a-vxyỳọáầảấờễàạằệếýộậốũứĩõúữịỗìềểẩớặòùồợãụủíỹắẫựỉỏừỷởóéửỵẳẹèẽổẵẻỡơôưăêâđA-VXYỲỌÁẦẢẤỜỄÀẠẰỆẾÝỘẬỐŨỨĨÕÚỮỊỖÌỀỂẨỚẶÒÙỒỢÃỤỦÍỸẮẪỰỈỎỪỶỞÓÉỬỴẲẸÈẼỔẴẺỠƠÔƯĂÊÂĐ]+){1,})")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String fullname;
 
-    @Column(name = "phone_number")
-    private String phoneNumber;
+    @Temporal(TemporalType.DATE)
+    @Column(name = "date_of_birth")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Date dateOfBirth;
 
-    @Column(name = "email")
-    private String email;
+    @Column(name = "cccd")
+    @NotNull(message = "Căn cước công dân không được để trống", groups = CreateByAdmin.class)
+    @NotBlank(message = "Căn cước công dân không được để trống", groups = CreateByAdmin.class)
+    @Pattern(message = "Căn cước công dân không đúng định dạng", groups = CreateByAdmin.class, regexp = "[0-9]{12}")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String cccd;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Account account;
+    @Column(name = "province")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String province;
+
+    @Column(name = "district")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String district;
+
+    @Column(name = "town")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String town;
+
+    @Column(name = "detail_address")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String detailAddress;
+
+    @Column(name = "position")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String position;
+
+    @Column(name = "bin")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String bin;
+
+    @Column(name = "bank")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String bank;
+
+    @Column(name = "deposit", columnDefinition = "INT UNSIGNED")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer deposit;
+
+    @Column(name = "salary", columnDefinition = "INT UNSIGNED")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer salary;
+
+    @Column(name = "paid_salary", columnDefinition = "INT UNSIGNED")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer paidSalary;
+
+    @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<String> managedWards;
+
+    @Column(name = "avatar")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String avatar;
+
+    @Column(name = "active", columnDefinition = "TINYINT UNSIGNED")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean active;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_at")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private LocalDateTime dateCreated;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "last_update")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private LocalDateTime dateModified;
 
     public Staff() {
     }
 
-    public Staff(String fullname, String phoneNumber, String email) {
+    public Staff(Long id,
+            @NotNull(message = "Mã tài khoản không được để trống") @NotBlank(message = "Mã tài khoản không được để trống") String accountId,
+            Account account,
+            @NotNull(message = "Mã bưu cục/đại lý không được để trống", groups = CreateByAdmin.class) @NotBlank(message = "Mã bưu cục/đại lý không được để trống", groups = CreateByAdmin.class) @Pattern(message = "Mã bưu cục/đại lý không đúng định dạng", groups = CreateByAdmin.class, regexp = "(TD|BC|DL)_\\d{5}_\\d{12}") String agencyId,
+            String staffId,
+            @NotNull(message = "Họ và tên không được để trống", groups = CreateByAdmin.class) @NotBlank(message = "Họ và tên không được để trống", groups = CreateByAdmin.class) @Pattern(message = "Họ và tên không đúng định dạng", groups = CreateByAdmin.class, regexp = "([a-vxyỳọáầảấờễàạằệếýộậốũứĩõúữịỗìềểẩớặòùồợãụủíỹắẫựỉỏừỷởóéửỵẳẹèẽổẵẻỡơôưăêâđA-VXYỲỌÁẦẢẤỜỄÀẠẰỆẾÝỘẬỐŨỨĨÕÚỮỊỖÌỀỂẨỚẶÒÙỒỢÃỤỦÍỸẮẪỰỈỎỪỶỞÓÉỬỴẲẸÈẼỔẴẺỠƠÔƯĂÊÂĐ]+)((\\s{1}[a-vxyỳọáầảấờễàạằệếýộậốũứĩõúữịỗìềểẩớặòùồợãụủíỹắẫựỉỏừỷởóéửỵẳẹèẽổẵẻỡơôưăêâđA-VXYỲỌÁẦẢẤỜỄÀẠẰỆẾÝỘẬỐŨỨĨÕÚỮỊỖÌỀỂẨỚẶÒÙỒỢÃỤỦÍỸẮẪỰỈỎỪỶỞÓÉỬỴẲẸÈẼỔẴẺỠƠÔƯĂÊÂĐ]+){1,})") String fullname,
+            Date dateOfBirth,
+            @NotNull(message = "Căn cước công dân không được để trống", groups = CreateByAdmin.class) @NotBlank(message = "Căn cước công dân không được để trống", groups = CreateByAdmin.class) @Pattern(message = "Căn cước công dân không đúng định dạng", groups = CreateByAdmin.class, regexp = "[0-9]{12}") String cccd,
+            String province, String district, String town, String detailAddress, String position, String bin,
+            String bank, Integer deposit, Integer salary, Integer paidSalary, List<String> managedWards, String avatar,
+            Boolean active, LocalDateTime dateCreated, LocalDateTime dateModified) {
+        // this.id = id;
+        // this.accountId = accountId;
+        this.account = account;
+        this.agencyId = agencyId;
+        this.staffId = staffId;
         this.fullname = fullname;
-        this.phoneNumber = phoneNumber;
-        this.email = email;
+        this.dateOfBirth = dateOfBirth;
+        this.cccd = cccd;
+        this.province = province;
+        this.district = district;
+        this.town = town;
+        this.detailAddress = detailAddress;
+        this.position = position;
+        this.bin = bin;
+        this.bank = bank;
+        this.deposit = deposit;
+        this.salary = salary;
+        this.paidSalary = paidSalary;
+        this.managedWards = managedWards;
+        this.avatar = avatar;
+        this.active = active;
+        this.dateCreated = dateCreated;
+        this.dateModified = dateModified;
+    }
+
+    // public Long getId() {
+    //     return id;
+    // }
+
+    // public void setId(Long id) {
+    //     this.id = id;
+    // }
+
+    // public String getAccountId() {
+    //     return accountId;
+    // }
+
+    // public void setAccountId(String accountId) {
+    //     this.accountId = accountId;
+    // }
+
+    public String getAgencyId() {
+        return agencyId;
+    }
+
+    public void setAgencyId(String agencyId) {
+        this.agencyId = agencyId;
+    }
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
+    }
+
+    public String getStaffId() {
+        return staffId;
+    }
+
+    public void setStaffId(String staffId) {
+        this.staffId = staffId;
     }
 
     public String getFullname() {
@@ -47,34 +201,207 @@ public class Staff extends User {
         this.fullname = fullname;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
+    public Date getDateOfBirth() {
+        return dateOfBirth;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
+    public void setDateOfBirth(Date dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
 
-    public String getEmail() {
-        return email;
+    public String getCccd() {
+        return cccd;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setCccd(String cccd) {
+        this.cccd = cccd;
     }
 
-    public Account getAccount() {
-        return account;
+    public String getProvince() {
+        return province;
     }
 
-    public void setAccount(Account account) {
-        this.account = account;
-        account.setUser(this);
+    public void setProvince(String province) {
+        this.province = province;
+    }
+
+    public String getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(String district) {
+        this.district = district;
+    }
+
+    public String getTown() {
+        return town;
+    }
+
+    public void setTown(String town) {
+        this.town = town;
+    }
+
+    public String getDetailAddress() {
+        return detailAddress;
+    }
+
+    public void setDetailAddress(String detailAddress) {
+        this.detailAddress = detailAddress;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
+    }
+
+    public String getBin() {
+        return bin;
+    }
+
+    public void setBin(String bin) {
+        this.bin = bin;
+    }
+
+    public String getBank() {
+        return bank;
+    }
+
+    public void setBank(String bank) {
+        this.bank = bank;
+    }
+
+    public Integer getDeposit() {
+        return deposit;
+    }
+
+    public void setDeposit(Integer deposit) {
+        this.deposit = deposit;
+    }
+
+    public Integer getSalary() {
+        return salary;
+    }
+
+    public void setSalary(Integer salary) {
+        this.salary = salary;
+    }
+
+    public Integer getPaidSalary() {
+        return paidSalary;
+    }
+
+    public void setPaidSalary(Integer paidSalary) {
+        this.paidSalary = paidSalary;
+    }
+
+    public List<String> getManagedWards() {
+        return managedWards;
+    }
+
+    public void setManagedWards(List<String> managedWards) {
+        this.managedWards = managedWards;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
+    public LocalDateTime getDateCreated() {
+        return dateCreated;
+    }
+
+    public void setDateCreated(LocalDateTime dateCreated) {
+        this.dateCreated = dateCreated;
+    }
+
+    public LocalDateTime getDateModified() {
+        return dateModified;
+    }
+
+    public void setDateModified(LocalDateTime dateModified) {
+        this.dateModified = dateModified;
+    }
+
+    @PrePersist
+    private void onCreate() {
+        this.dateCreated = this.dateModified = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    private void onUpdate() {
+        this.dateModified = LocalDateTime.now();
     }
 
     @Override
     public String toString() {
-        return "Staff [id=" + id + ", fullname=" + fullname + ", phoneNumber=" + phoneNumber + ", email=" + email
-                + ", account=" + account + "]";
+        return "Staff [account=" + account + ", agencyId=" + agencyId + ", staffId=" + staffId + ", fullname="
+                + fullname + ", dateOfBirth=" + dateOfBirth + ", cccd=" + cccd + ", province=" + province
+                + ", district=" + district + ", town=" + town + ", detailAddress=" + detailAddress + ", position="
+                + position + ", bin=" + bin + ", bank=" + bank + ", deposit=" + deposit + ", salary=" + salary
+                + ", paidSalary=" + paidSalary + ", managedWards=" + managedWards + ", avatar=" + avatar + ", active="
+                + active + ", dateCreated=" + dateCreated + ", dateModified=" + dateModified + "]";
     }
+
+    // public Staff(
+    //         @NotNull(message = "Mã tài khoản không được để trống") @NotBlank(message = "Mã tài khoản không được để trống") String accountId,
+    //         Account account,
+    //         @NotNull(message = "Mã bưu cục/đại lý không được để trống", groups = CreateByAdmin.class) @NotBlank(message = "Mã bưu cục/đại lý không được để trống", groups = CreateByAdmin.class) @Pattern(message = "Mã bưu cục/đại lý không đúng định dạng", groups = CreateByAdmin.class, regexp = "(TD|BC|DL)_\\d{5}_\\d{12}") String agencyId,
+    //         String staffId,
+    //         @NotNull(message = "Họ và tên không được để null", groups = CreateByAdmin.class) @NotBlank(message = "Họ và tên không được để trống", groups = CreateByAdmin.class) @Pattern(message = "Họ và tên không đúng định dạng", groups = CreateByAdmin.class, regexp = "([a-vxyỳọáầảấờễàạằệếýộậốũứĩõúữịỗìềểẩớặòùồợãụủíỹắẫựỉỏừỷởóéửỵẳẹèẽổẵẻỡơôưăêâđA-VXYỲỌÁẦẢẤỜỄÀẠẰỆẾÝỘẬỐŨỨĨÕÚỮỊỖÌỀỂẨỚẶÒÙỒỢÃỤỦÍỸẮẪỰỈỎỪỶỞÓÉỬỴẲẸÈẼỔẴẺỠƠÔƯĂÊÂĐ]+)((\\s{1}[a-vxyỳọáầảấờễàạằệếýộậốũứĩõúữịỗìềểẩớặòùồợãụủíỹắẫựỉỏừỷởóéửỵẳẹèẽổẵẻỡơôưăêâđA-VXYỲỌÁẦẢẤỜỄÀẠẰỆẾÝỘẬỐŨỨĨÕÚỮỊỖÌỀỂẨỚẶÒÙỒỢÃỤỦÍỸẮẪỰỈỎỪỶỞÓÉỬỴẲẸÈẼỔẴẺỠƠÔƯĂÊÂĐ]+){1,})") String fullname,
+    //         Date dateOfBirth,
+    //         @NotNull(message = "Căn cước công dân không được để trống", groups = CreateByAdmin.class) @NotBlank(message = "Căn cước công dân không được để trống", groups = CreateByAdmin.class) @Pattern(message = "Căn cước công dân không đúng định dạng", groups = CreateByAdmin.class, regexp = "[0-9]{12}") String cccd,
+    //         String province, String district, String town, String detailAddress, String position, String bin,
+    //         String bank, Integer deposit, Integer salary, Integer paidSalary, List<String> managedWards, String avatar,
+    //         Boolean active, LocalDateTime dateCreated, LocalDateTime dateModified) {
+    //     this.accountId = accountId;
+    //     this.account = account;
+    //     this.agencyId = agencyId;
+    //     this.staffId = staffId;
+    //     this.fullname = fullname;
+    //     this.dateOfBirth = dateOfBirth;
+    //     this.cccd = cccd;
+    //     this.province = province;
+    //     this.district = district;
+    //     this.town = town;
+    //     this.detailAddress = detailAddress;
+    //     this.position = position;
+    //     this.bin = bin;
+    //     this.bank = bank;
+    //     this.deposit = deposit;
+    //     this.salary = salary;
+    //     this.paidSalary = paidSalary;
+    //     this.managedWards = managedWards;
+    //     this.avatar = avatar;
+    //     this.active = active;
+    //     this.dateCreated = dateCreated;
+    //     this.dateModified = dateModified;
+    // }
+
+    // @Override
+    // public String toString() {
+    //     return "Staff [id=" + id  + ", account=" + account + ", agencyId=" + agencyId
+    //             + ", staffId=" + staffId + ", fullname=" + fullname + ", dateOfBirth=" + dateOfBirth + ", cccd=" + cccd
+    //             + ", province=" + province + ", district=" + district + ", town=" + town + ", detailAddress="
+    //             + detailAddress + ", position=" + position + ", bin=" + bin + ", bank=" + bank + ", deposit=" + deposit
+    //             + ", salary=" + salary + ", paidSalary=" + paidSalary + ", managedWards=" + managedWards + ", avatar="
+    //             + avatar + ", active=" + active + ", dateCreated=" + dateCreated + ", dateModified=" + dateModified
+    //             + "]";
+    // }
+
+    
 }
