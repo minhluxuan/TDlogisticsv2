@@ -8,7 +8,9 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mysql.cj.x.protobuf.MysqlxDatatypes.Array;
 
 import jakarta.transaction.Transactional;
 import project.tdlogistics.shipments.entities.ListResponse;
@@ -111,13 +114,29 @@ public class ShipmentService {
         }
     }
 
-    public Optional<Shipment> getOneShipment(String shipemtId) {
-        return shipmentRepository.findOneByShipmentId(shipemtId);
+    // public Optional<Shipment> checkExistShipment(Shipment criteria, String postalCode) {
+    //     ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreNullValues();
+    //     Example<Shipment> example = Example.of(criteria, matcher);
+    //     List<Shipment> shipments = shipmentRepository.findAll(example);
+    //     if (shipments.size() == 1) {
+    //         final Shipment shipment = shipments.get(0);
+    //         return Optional.of(shipment);
+    //     } else {
+    //         return Optional.empty();
+    //     }
+    // }
+
+    public boolean checkExistShipment(String shipmentId, String postalCode) {
+        Shipment shipment = shipmentRepositoryImplement.getOneShipment(shipmentId, postalCode);
+        if(shipment != null) {
+            return true;
+        }
+        return false;
     }
 
-    public Optional<Shipment> getOneShipment(String shipemtId, String postalCode) {
-        String tableName = postalCode + "_shipment";
-        return shipmentRepository.findOneByShipmentId(shipemtId, tableName);
+
+    public Shipment getOneShipment(String shipemtId, String postalCode) {
+        return shipmentRepositoryImplement.getOneShipment(shipemtId, postalCode);
     }
  
     public ListResponse addOrders(Shipment shipment, List<String> orderIds, String postalCode) {
@@ -338,4 +357,98 @@ public class ShipmentService {
         return shipment.getJourney();
     }
 
+
+    public ListResponse compareOrdersInRequestWithOrdersInShipment(List<String> requestOrderIds, List<String> shipmentOrderIds) {
+        Set<String> requestOrderIdsSet = new HashSet<>(requestOrderIds);
+        Set<String> shipmentOrderIdsSet = new HashSet<>(shipmentOrderIds);
+
+        int hitNumber = 0;
+        List<String> hitArray = new ArrayList<>();
+        int missNumber = 0;
+        List<String> missArray = new ArrayList<>();
+
+        for (String orderId : shipmentOrderIdsSet) {
+            if (requestOrderIdsSet.contains(orderId)) {
+                hitNumber++;
+                hitArray.add(orderId);
+            } else {
+                missNumber++;
+                missArray.add(orderId);
+            }
+        }
+
+        return new ListResponse(hitNumber, hitArray, missNumber, missArray);
+    }
+
+    public int updateShipmentStatus(String shipmentId, int status, String postalCode) {
+        return shipmentRepositoryImplement.updateStatus(shipmentId, status, postalCode);
+    }
+
+    public ListResponse decomposeShipment (List<String> orderIds, String shipmentId, String agencyId, String postalCode) {
+        int updatedNumber = 0;
+        List<String> updatedArray = new ArrayList<>();
+        Set<String> orderIdsSet = new HashSet<>(orderIds);
+        
+        // Format the current date and time
+        String formattedTime = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date());
+
+        // Fetch agency details
+        // Agency Service
+        // Map<String, Object> agency = findOneIntersect("agency", Collections.singletonList("agency_id"), Collections.singletonList(agencyId));
+        // if (agency == null || !agency.containsKey("agency_name")) {
+        //     throw new Exception("Agency not found");
+        // }
+        // String agencyName = agency.get("agency_name").toString();
+        // String orderMessage = formattedTime + ": Đơn hàng đã đến " + agencyName;
+
+        String agencyName = "Bưu cục Quận 1";
+        String orderMessage = formattedTime + ": Đơn hàng đã đến " + agencyName;
+        if(postalCode == null) {
+
+            // Order service
+            // Update orders
+            // for (String orderId : orderIdsSet) {
+            //     int resultUpdatingOneOrder = updateOne("orders", Collections.singletonList("parent"), Collections.singletonList(null), Collections.singletonList("order_id"), Collections.singletonList(orderId));
+            //     boolean resultUpdatingOneOrderStatus = orderService.setJourney(orderId, orderMessage, "enter_agency");
+        
+            //     if (resultUpdatingOneOrder > 0 && resultUpdatingOneOrderStatus) {
+            //         updatedNumber++;
+            //         updatedArray.add(orderId);
+            //     }
+            // }
+
+            for (String orderId : orderIdsSet) {
+                if (true) {
+                    updatedNumber++;
+                    updatedArray.add(orderId);
+                }
+            }
+            updateShipmentStatus(shipmentId, 6, null);
+
+            return new ListResponse(updatedNumber, updatedArray, 0, null); 
+        }
+        // Order service
+        // Update orders
+        // for (String orderId : orderIdsSet) {
+        //     int resultUpdatingOneOrder = updateOne("orders", Collections.singletonList("parent"), Collections.singletonList(null), Collections.singletonList("order_id"), Collections.singletonList(orderId));
+        //     boolean resultUpdatingOneOrderStatus = orderService.setJourney(orderId, orderMessage, "enter_agency");
+        //*Set order message in agency table */
+        //     if (resultUpdatingOneOrder > 0 && resultUpdatingOneOrderStatus) {
+        //         updatedNumber++;
+        //         updatedArray.add(orderId);
+        //     }
+        // }
+
+        for (String orderId : orderIdsSet) {
+            if (true) {
+                updatedNumber++;
+                updatedArray.add(orderId);
+            }
+        }
+        updateShipmentStatus(shipmentId, 6, null);
+
+        return new ListResponse(updatedNumber, updatedArray, 0, null);
+    }
+
+    
 }

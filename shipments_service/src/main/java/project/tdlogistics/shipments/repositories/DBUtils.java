@@ -1,6 +1,8 @@
 package project.tdlogistics.shipments.repositories;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -8,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
 
 @Component
 public class DBUtils {
@@ -19,11 +21,16 @@ public class DBUtils {
     @Autowired
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    public Map<String, Object> findOneUnion(String table, List<String> fields, List<Object> values) {
+    public <T> T findOneUnion(String table, List<String> fields, List<Object> values, Class<T> type) {
         String query;
         if (fields == null || values == null || fields.isEmpty() || values.isEmpty()) {
             query = "SELECT * FROM " + table + " LIMIT 1";
-            return jdbcTemplate.queryForMap(query);
+            try {
+                List<T> results = namedParameterJdbcTemplate.query(query, new BeanPropertyRowMapper<>(type));
+                return results.get(0);
+            } catch (EmptyResultDataAccessException e) {
+                return null;
+            }
         } else {
             StringBuilder queryBuilder = new StringBuilder("SELECT * FROM ").append(table).append(" WHERE ");
             for (int i = 0; i < fields.size(); i++) {
@@ -39,16 +46,26 @@ public class DBUtils {
                 params.addValue(fields.get(i), values.get(i));
             }
 
-            List<Map<String, Object>> results = namedParameterJdbcTemplate.queryForList(queryBuilder.toString(), params);
-            return results.isEmpty() ? null : results.get(0);
+            try {
+                List<T> results = namedParameterJdbcTemplate.query(queryBuilder.toString(), params, new BeanPropertyRowMapper<>(type)); 
+                return results.get(0);
+            } catch (EmptyResultDataAccessException e) {
+                return null;
+            }  
         }
     }
 
-    public Map<String, Object> findOneIntersect(String table, List<String> fields, List<Object> values) {
+    
+    public <T> T findOneIntersect(String table, List<String> fields, List<Object> values, Class<T> type) {
         String query;
         if (fields == null || values == null || fields.isEmpty() || values.isEmpty()) {
             query = "SELECT * FROM " + table + " LIMIT 1";
-            return jdbcTemplate.queryForMap(query);
+            try {
+                List<T> results = namedParameterJdbcTemplate.query(query, new BeanPropertyRowMapper<>(type));
+                return results.get(0);
+            } catch (EmptyResultDataAccessException e) {
+                return null;
+            }
         } else {
             StringBuilder queryBuilder = new StringBuilder("SELECT * FROM ").append(table).append(" WHERE ");
             for (int i = 0; i < fields.size(); i++) {
@@ -64,8 +81,12 @@ public class DBUtils {
                 params.addValue(fields.get(i), values.get(i));
             }
 
-            List<Map<String, Object>> results = namedParameterJdbcTemplate.queryForList(queryBuilder.toString(), params);
-            return results.isEmpty() ? null : results.get(0);
+            try {
+                List<T> results = namedParameterJdbcTemplate.query(queryBuilder.toString(), params, new BeanPropertyRowMapper<>(type)); 
+                return results.get(0);
+            } catch (EmptyResultDataAccessException e) {
+                return null;
+            }  
         }
     }
 

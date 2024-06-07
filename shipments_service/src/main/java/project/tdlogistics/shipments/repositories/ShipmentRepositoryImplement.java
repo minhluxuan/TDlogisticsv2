@@ -95,4 +95,10 @@ public class ShipmentRepositoryImplement implements ShipmentRepositoryInterface 
         return shipments.isEmpty() ? null : shipments.get(0);
     }
 
+    @Override
+    public int updateStatus(String shipmentId, int status, String postalCode) {
+        String shipmentTable = (postalCode == null) ? "shipment" : (postalCode + "_shipment");
+        String query = "UPDATE " + shipmentTable + " SET status = ? WHERE shipment_id = ?";
+        return jdbcTemplate.update(query, status, shipmentId);
+    }
 }
