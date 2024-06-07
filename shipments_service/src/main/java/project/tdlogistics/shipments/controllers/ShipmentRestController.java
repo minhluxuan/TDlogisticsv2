@@ -25,6 +25,7 @@ import project.tdlogistics.shipments.services.ShipmentService;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -559,4 +560,57 @@ public class ShipmentRestController {
         }
     }
 
+    @PutMapping("/accept")
+    public ResponseEntity<Response<Shipment>> approveNewShipment(@RequestParam Map<String, String> queryParams) {
+        Date approveTime = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        String formattedTime = formatter.format(approveTime);
+
+        final String shipmentId = queryParams.get("shipmentId");
+        Shipment shipment = shipmentService.getOneShipment(shipmentId, null);
+        
+        // req.user
+        final String agencyId = "BC_71000_089204006685";
+        final String staffId = "TD_71000_089204006685";
+        final String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
+
+        if(shipment == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                true,
+                "Lô hàng không tồn tại",
+                null 
+            ));
+        }
+
+        if(shipment.getStatus() >= 2) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<>(
+                true,
+                "Lô hàng đã được phê duyệt từ trước",
+                null 
+            ));
+        }
+
+        shipmentService.updateShipmentStatus(shipmentId, 2, null);
+        shipmentService.updateShipmentStatus(shipmentId, 2, postalCode);
+    
+        String[] agencyIdSubParts = shipment.getAgencyId().split("_");
+
+        String journeyMessage = formattedTime + ": Lô hàng được phê duyệt tại Trung tâm điều phối " + agencyId + " bởi nhân viên " + staffId;
+        shipmentService.setJourney(shipmentId, formattedTime, journeyMessage, null);
+        shipmentService.setJourney(shipmentId, formattedTime, journeyMessage, postalCode);
+
+        // Check the first part of the agency_id
+        if (agencyIdSubParts.length > 0 && ("DL".equals(agencyIdSubParts[0]) || "BC".equals(agencyIdSubParts[0]))) {
+            // Update the shipment status
+            String agencySourcePostalCode = shipmentService.getPostalCodeFromAgencyId(shipment.getAgencyId());
+            shipmentService.updateShipmentStatus(shipmentId, 2, agencySourcePostalCode);
+            shipmentService.setJourney(shipmentId, formattedTime, journeyMessage, agencySourcePostalCode);
+        }
+   
+        return ResponseEntity.status(HttpStatus.OK).body(new Response<>(
+            false,
+            "Tiếp nhận lô hàng thành công",
+            null
+        ));
+    }
 }
