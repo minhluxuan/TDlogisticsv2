@@ -1,0 +1,71 @@
+GET http://localhost:8080/v2/agencies/check?agencyId=BC_71000_077204005691
+Content-Type: application/json
+
+###
+
+GET http://localhost:8080/v2/agencies/search
+Content-Type: application/json
+
+{
+    
+}
+
+###
+
+POST http://localhost:8080/v2/agencies/create
+Content-Type: application/json
+
+{
+    "agencyAdmin": {
+        "fullname": "Trần Thế Nhân",
+        "phoneNumber": "07879199421",
+        "email": "nhan.tranthek22cse@hcmut.edu.vn",
+        "dateOfBirth": "2004-03-03",
+        "cccd": "077204005691",
+        "province": "Tỉnh Bà Rịa - Vũng Tàu",
+        "district": "Huyện Đất Đỏ",
+        "town": "Thị trấn Đất Đỏ",
+        "detailAddress": "326, ĐT44A",
+        "position": "Quản lý bưu cục",
+        "salary": 25000000
+    },
+    "type": "BC",
+    "level": 3,
+    "postalCode": "71000",
+    "agencyName": "Bưu cục quận 1",
+    "detailAddress": "49, Phạm Ngũ Lão, phường Phạm Ngũ Lão, quận 1, Thành phố Hồ Chí Minh",
+    "province": "Thành phố Hồ Chí Minh",
+    "district": "Quận 1",
+    "town": "Phường Phạm Ngũ Lão",
+    "detailAddress": "15, đường Phạm Ngũ Lão",
+    "latitude": 10.7540931,
+    "longitude": 106.0342813,
+    "managedWards": ["Phường Phạm Ngũ Lão", "Phường Đa Kao", "Phường Tân Định"],
+    "phoneNumber": "0981430417",
+    "email": "buucucquan1@gmail.com",
+    "commissionRate": 0.4,
+    "bin": "050138319579",
+    "bank": "Sacombank",
+    "individualCompany": true,
+    "agencyCompany": {
+        "companyName": "Công ty Cổ phần Bất động sản Tiến Dũng",
+        "taxNumber": "0123456788"
+    }
+}
+
+###
+
+PUT http://localhost:8080/v2/agencies/update?agencyId=BC_71000_077204005691
+Content-Type: application/json
+
+{
+    "agencyName": "Bưu cục quận 1",
+    "agencyCompany": {
+        "companyName": "Công ty Cổ phần Bất động sản Tiến Dũng 3",
+        "taxNumber": "0123456788"
+    }
+}
+
+###
+
+DELETE http://localhost:8080/v2/agencies/delete?agencyId=BC_71000_077204005691
