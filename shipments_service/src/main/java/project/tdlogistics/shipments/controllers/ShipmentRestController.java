@@ -321,8 +321,7 @@ public class ShipmentRestController {
                 null
             ));
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(
                 true,
                 "Đã xảy ra lỗi. Vui lòng thử lại.",
                 null
@@ -344,7 +343,7 @@ public class ShipmentRestController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(
                 true,
                 "Đã xảy ra lỗi. Vui lòng thử lại.",
                 null
@@ -457,7 +456,102 @@ public class ShipmentRestController {
             ));
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(
+                true,
+                "Đã xảy ra lỗi. Vui lòng thử lại.",
+                null
+            ));
+        }
+    }
+
+    @PostMapping("/confirm_create")
+    public ResponseEntity<Response<ListResponse>> confirmCreateShipment(@RequestBody Shipment info) throws Exception {
+        try {
+            //Validation
+
+            final String agencyId = "BC_71000_089204006685";
+            final String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
+
+            final Shipment shipment = shipmentService.getOneShipment(info.getShipmentId(), postalCode);
+            if(shipment == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                    true,
+                    "Lô hàng không tồn taị trong bưu cục",
+                    null
+                ));
+            }
+
+            if(shipment.getStatus() != 0) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                    true,
+                    "Lô hàng đã được xác nhận tạo trên tổng cục từ trước.",
+                    null
+                ));
+            }
+
+            if(shipmentService.checkExistShipment(info.getShipmentId(), null)) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                    true,
+                    "Lô hàng đã tồn tại trên cơ sở dữ liệu tổng cục từ trước.",
+                    null
+                ));
+            }
+
+            // Agency service
+            // const resultGettingOneAgency = await agencyService.getOneAgency({ agency_id: req.user.agency_id });
+            // if (!resultGettingOneAgency || resultGettingOneAgency.length === 0) {
+            //     return res.status(409).json({
+            //         error: true,
+            //         message: "Xác nhận tạo lô hàng không thành công. Vui lòng thử lại.",
+            //     });
+            // }
+
+            // if (!resultGettingOneAgency[0].province) {
+            //     return res.status(409).json({
+            //         error: true,
+            //         message: "Xác nhận tạo lô hàng không thành công. Vui lòng cập nhật thông tin Tỉnh của bưu cục để có thể tiếp tục.",
+            //     });
+            // }
+
+            // Administrative service
+            // const distributionCenterId = await administrativeService.getOneDistributionCenter(resultGettingOneAgency[0].province);
+            // if (!distributionCenterId) {
+            //     return res.status(404).json({
+            //         error: true,
+            //         message: `Xác nhận tạo lô hàng không thành công.
+            //         Bưu cục ${req.user.agency_id} chưa thuộc quyền quản lý của trung tâm điều phối nào.`,
+            //     });
+            // }
+            
+            // Agency service
+            // if (!(await agencyService.getOneAgency({ agency_id: distributionCenterId }))) {
+            //     return res.status(404).json({
+            //         error: true,
+            //         message: `Trung tâm điều phối ${distributionCenterId} quản lý bưu cục của bạn không tồn tại.`
+            //     });
+            // }
+
+            final String distributionCenterId = "TD_00001_089204006684";
+            final String postalCodeOfDistributionCenter = shipmentService.getPostalCodeFromAgencyId(distributionCenterId);
+            final boolean resultConfirmingCreateShipment = shipmentService.confirmCreateShipment(shipment, postalCodeOfDistributionCenter);
+            if(!resultConfirmingCreateShipment) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(
+                    true,
+                    "Đã xảy ra lỗi. Vui lòng thử lại.",
+                    null
+                ));
+            }
+
+            shipmentService.updateShipmentStatus(shipment.getShipmentId(), 1, postalCode);
+            ListResponse resultUpdatingParentForGlobalOrders = shipmentService.updateParentForGlobalOrders(shipment.getOrderIds(), shipment.getShipmentId());
+            return ResponseEntity.status(HttpStatus.OK).body(new Response<>(
+                false,
+                "Xác nhận tạo lô hàng trên tổng cục thành công",
+                resultUpdatingParentForGlobalOrders
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(
                 true,
                 "Đã xảy ra lỗi. Vui lòng thử lại.",
                 null

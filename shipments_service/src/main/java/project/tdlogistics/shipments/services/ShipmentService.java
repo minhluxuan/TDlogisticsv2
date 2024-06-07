@@ -450,5 +450,137 @@ public class ShipmentService {
         return new ListResponse(updatedNumber, updatedArray, 0, null);
     }
 
+    public boolean confirmCreateShipment(Shipment shipment, String postalCode) {
+        String shipmentTable = (postalCode == null) ? "shipment" : (postalCode + "_shipment");
+        List<String> fields = new ArrayList<>();
+        List<Object> values = new ArrayList<>();
     
+        // Manually add fields and corresponding values
+        fields.add("shipment_id");
+        values.add(shipment.getShipmentId());
+    
+        if (shipment.getAgencyId() != null) {
+            fields.add("agency_id");
+            values.add(shipment.getAgencyId());
+        }
+    
+        if (shipment.getAgencyIdDest() != null) {
+            fields.add("agency_id_dest");
+            values.add(shipment.getAgencyIdDest());
+        }
+    
+        if (shipment.getLongSource() != null) {
+            fields.add("long_source");
+            values.add(shipment.getLongSource());
+        }
+    
+        if (shipment.getLatSource() != null) {
+            fields.add("lat_source");
+            values.add(shipment.getLatSource());
+        }
+    
+        if (shipment.getCurrentAgencyId() != null) {
+            fields.add("current_agency_id");
+            values.add(shipment.getCurrentAgencyId());
+        }
+    
+        if (shipment.getCurrentLat() != null) {
+            fields.add("current_lat");
+            values.add(shipment.getCurrentLat());
+        }
+    
+        if (shipment.getCurrentLong() != null) {
+            fields.add("current_long");
+            values.add(shipment.getCurrentLong());
+        }
+    
+        if (shipment.getLongDestination() != null) {
+            fields.add("long_destination");
+            values.add(shipment.getLongDestination());
+        }
+    
+        if (shipment.getLatDestination() != null) {
+            fields.add("lat_destination");
+            values.add(shipment.getLatDestination());
+        }
+    
+        if (shipment.getTransportPartnerId() != null) {
+            fields.add("transport_partner_id");
+            values.add(shipment.getTransportPartnerId());
+        }
+    
+        if (shipment.getStaffId() != null) {
+            fields.add("staff_id");
+            values.add(shipment.getStaffId());
+        }
+    
+        if (shipment.getVehicleId() != null) {
+            fields.add("vehicle_id");
+            values.add(shipment.getVehicleId());
+        }
+    
+        if (shipment.getMass() != null) {
+            fields.add("mass");
+            values.add(shipment.getMass());
+        }
+    
+        if (shipment.getOrderIds() != null) {
+            fields.add("order_ids");
+            values.add(shipment.getOrderIds());
+        }
+    
+        if (shipment.getParent() != null) {
+            fields.add("parent");
+            values.add(shipment.getParent());
+        }
+    
+        if (shipment.getStatus() != null) {
+            fields.add("status");
+            values.add(shipment.getStatus());
+        }
+    
+        if (shipment.getCreatedAt() != null) {
+            fields.add("created_at");
+            values.add(shipment.getCreatedAt());
+        }
+    
+        if (shipment.getLastUpdate() != null) {
+            fields.add("last_update");
+            values.add(shipment.getLastUpdate());
+        }
+    
+        if (shipment.getJourney() != null) {
+            fields.add("journey");
+            values.add(shipment.getJourney());
+        }
+    
+        return dbUtils.insert(shipmentTable, fields, values) > 0;
+    }
+    
+
+    public ListResponse updateParentForGlobalOrders(List<String> orderIds, String shipmentId) {
+        int acceptedNumber = 0;
+        List<String> acceptedArray = new ArrayList<>();
+        int notAcceptedNumber = 0;
+        List<String> notAcceptedArray = new ArrayList<>();
+
+        final String orderTable = "orders";
+        List<String> fields = Arrays.asList("parent");
+        List<Object> values = Arrays.asList(shipmentId);
+        List<String> conditionFields = Arrays.asList("order_id");
+        for(String orderId : orderIds) {
+            List<Object> conditionValues = Arrays.asList(orderId);
+            int resultUpdatingParent = dbUtils.updateOne(orderTable, fields, values, conditionFields, conditionValues);
+            if(resultUpdatingParent > 0) {
+                acceptedNumber++;
+                acceptedArray.add(orderId);
+            } 
+            else {
+                notAcceptedNumber++;
+                notAcceptedArray.add(orderId);
+            }
+        }
+
+        return new ListResponse(acceptedNumber, acceptedArray, notAcceptedNumber, notAcceptedArray);
+    }
 }
