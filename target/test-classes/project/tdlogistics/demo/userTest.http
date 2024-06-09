@@ -1,0 +1,100 @@
+POST http://localhost:8081/v2/auth/otp/send
+Content-Type: application/json
+
+{
+    "phoneNumber": "0981430418",
+    "email": "minh.luxuanhcmut@hcmut.edu.vn"
+}
+
+###
+
+GET http://localhost:8081/v2/customers/
+
+###
+
+PUT http://localhost:8081/v2/customers/update?customerId=0fd0c668-1e0a-4861-8aa0-f5e68ed0fcb7
+Content-Type: application/json
+role: CUSTOMER
+userId: 0fd0c668-1e0a-4861-8aa0-f5e68ed0fcb7
+
+{
+    "province": "Tỉnh Bà Rịa - Vũng Tàu"
+}
+
+###
+
+POST http://localhost:8081/v2/customers/search
+Content-Type: application/json
+
+{
+    "fullname": "Lữ Xuân Minh",
+    "account": {
+        "id": "7f33d1a0-b6dd-49e7-b92f-25505a509483"
+    }
+}
+
+###
+
+GET http://localhost:8081/v2/staffs/check
+Content-Type: application/json
+
+{
+    "fullname": "Lữ Xuân Minh",
+    "email": "minhfaptv@gmail.com"
+}
+
+###
+
+GET http://localhost:8081/v2/staffs/
+Content-Type: application/json
+staffId: DL_78300_0772040056931
+
+###
+
+POST http://localhost:8081/v2/staffs/create
+Content-Type: application/json
+role: AGENCY_MANAGER
+staffId: DL_78300_077165007713
+agencyId: DL_78300_077165007713
+
+{
+    "account": {
+        "id": "dqlks21-34228-ndwe932-283239"
+    },
+    "agencyId": "DL_78300_077165007713",
+    "username": "minhluxuan2k",
+    "password": "minhluxuan@TDlogistics2k24",
+    "fullname": "Lữ Xuân Minh",
+    "date_of_birth": "2004-03-03",
+    "cccd": "077204005693",
+    "province": "Tỉnh Bà Rịa - Vũng Tàu",
+    "district": "Huyện Đất Đỏ",
+    "town": "Thị trấn Đất Đỏ",
+    "detailAddress": "326, ĐT44A",
+    "position": "Giám đốc",
+    "salary": 25000000,
+    "managedWards": ["Thị trấn Đất Đỏ"]
+}
+
+###
+
+POST http://localhost:8081/v2/users/staffs/search
+Content-Type: application/json
+
+{
+}
+
+###
+
+PUT http://localhost:8081/v2/staffs/update?staffId=DL_78300_077204005693
+Content-Type: application/json
+
+{
+    "fullname": "Lữ Xuân Sáng",
+    "paidSalary": 2356000,
+    "managedWards": []
+}
+
+###
+
+DELETE http://localhost:8081/v2/users/staffs/delete?staffId=BC_71000_077204005693
