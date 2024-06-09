@@ -151,6 +151,62 @@ public class Order {
 
     public Order() {}
 
+    
+
+    public Order(Long id, String orderId, String userId, String agencyId, String serviceType, String nameSender,
+            String phoneNumberSender, String nameReceiver, String phoneNumberReceiver, float mass, float height,
+            float width, float length, String provinceSource, String districtSource, String wardSource,
+            String detailSource, double longSource, double latSource, String provinceDest, String districtDest,
+            String wardDest, String detailDest, double longDestination, double latDestination, float fee, String parent,
+            String journey, float cod, String shipper, int statusCode, byte miss, String sendImages,
+            String receiveImages, String sendSignature, String receiveSignature, String qrcode, String signature,
+            boolean paid, Date createdAt, Date lastUpdate, Long orderCode) {
+        this.id = id;
+        this.orderId = orderId;
+        this.userId = userId;
+        this.agencyId = agencyId;
+        this.serviceType = serviceType;
+        this.nameSender = nameSender;
+        this.phoneNumberSender = phoneNumberSender;
+        this.nameReceiver = nameReceiver;
+        this.phoneNumberReceiver = phoneNumberReceiver;
+        this.mass = mass;
+        this.height = height;
+        this.width = width;
+        this.length = length;
+        this.provinceSource = provinceSource;
+        this.districtSource = districtSource;
+        this.wardSource = wardSource;
+        this.detailSource = detailSource;
+        this.longSource = longSource;
+        this.latSource = latSource;
+        this.provinceDest = provinceDest;
+        this.districtDest = districtDest;
+        this.wardDest = wardDest;
+        this.detailDest = detailDest;
+        this.longDestination = longDestination;
+        this.latDestination = latDestination;
+        this.fee = fee;
+        this.parent = parent;
+        this.journey = journey;
+        this.cod = cod;
+        this.shipper = shipper;
+        this.statusCode = statusCode;
+        this.miss = miss;
+        this.sendImages = sendImages;
+        this.receiveImages = receiveImages;
+        this.sendSignature = sendSignature;
+        this.receiveSignature = receiveSignature;
+        this.qrcode = qrcode;
+        this.signature = signature;
+        this.paid = paid;
+        this.createdAt = createdAt;
+        this.lastUpdate = lastUpdate;
+        this.orderCode = orderCode;
+    }
+
+
+
     public Long getId() {
         return id;
     }
@@ -486,5 +542,27 @@ public class Order {
     public void setOrderCode(Long orderCode) {
         this.orderCode = orderCode;
     }
+
+
+
+    @Override
+    public String toString() {
+        return "Order [id=" + id + ", orderId=" + orderId + ", userId=" + userId + ", agencyId=" + agencyId
+                + ", serviceType=" + serviceType + ", nameSender=" + nameSender + ", phoneNumberSender="
+                + phoneNumberSender + ", nameReceiver=" + nameReceiver + ", phoneNumberReceiver=" + phoneNumberReceiver
+                + ", mass=" + mass + ", height=" + height + ", width=" + width + ", length=" + length
+                + ", provinceSource=" + provinceSource + ", districtSource=" + districtSource + ", wardSource="
+                + wardSource + ", detailSource=" + detailSource + ", longSource=" + longSource + ", latSource="
+                + latSource + ", provinceDest=" + provinceDest + ", districtDest=" + districtDest + ", wardDest="
+                + wardDest + ", detailDest=" + detailDest + ", longDestination=" + longDestination + ", latDestination="
+                + latDestination + ", fee=" + fee + ", parent=" + parent + ", journey=" + journey + ", cod=" + cod
+                + ", shipper=" + shipper + ", statusCode=" + statusCode + ", miss=" + miss + ", sendImages="
+                + sendImages + ", receiveImages=" + receiveImages + ", sendSignature=" + sendSignature
+                + ", receiveSignature=" + receiveSignature + ", qrcode=" + qrcode + ", signature=" + signature
+                + ", paid=" + paid + ", createdAt=" + createdAt + ", lastUpdate=" + lastUpdate + ", orderCode="
+                + orderCode + "]";
+    }
+
+    
 }
 

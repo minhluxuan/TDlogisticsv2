@@ -3,12 +3,16 @@ package project.tdlogistics.orders.repositories;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+
+import project.tdlogistics.orders.entities.Order;
 
 @Repository
 public class OrderRepositoryImplement implements OrderRepositoryInterface {
@@ -52,6 +56,14 @@ public class OrderRepositoryImplement implements OrderRepositoryInterface {
         Object[] values = conditions.values().toArray();
 
         return jdbcTemplate.update(query, values);
+    }
+
+    @Override
+    public Order getOneOrder(String orderId, String postalCode) {
+        String orderTable = (postalCode == null) ? "orders" : (postalCode + "_orders");
+        String query = "SELECT * FROM " + orderTable + " WHERE order_id = ? LIMIT 1";
+        List<Order> orders = jdbcTemplate.query(query,  new BeanPropertyRowMapper<>(Order.class), new Object[]{orderId});
+        return orders.isEmpty() ? null : orders.get(0);
     }
 
 }

@@ -1,4 +1,4 @@
-package project.tdlogistics.shipments.repositories;
+package project.tdlogistics.orders.repositories;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
