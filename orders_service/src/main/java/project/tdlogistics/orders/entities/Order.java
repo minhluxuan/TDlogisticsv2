@@ -12,6 +12,10 @@ import jakarta.persistence.TemporalType;
 import project.tdlogistics.orders.configurations.ListToStringConverter;
 
 import java.util.Date;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 @Entity
 @Table(name = "orders")
@@ -42,16 +46,17 @@ public class Order {
     private String phoneNumberReceiver;
 
     @Column(name = "mass")
-    private float mass;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Float mass;
 
     @Column(name = "height")
-    private float height;
+    private Float height;
 
     @Column(name = "width")
-    private float width;
+    private Float width;
 
     @Column(name = "length")
-    private float length;
+    private Float length;
 
     @Column(name = "province_source", length = 30)
     private String provinceSource;
@@ -66,10 +71,10 @@ public class Order {
     private String detailSource;
 
     @Column(name = "long_source")
-    private double longSource;
+    private Double longSource;
 
     @Column(name = "lat_source")
-    private double latSource;
+    private Double latSource;
 
     @Column(name = "province_dest", length = 30)
     private String provinceDest;
@@ -84,29 +89,29 @@ public class Order {
     private String detailDest;
 
     @Column(name = "long_destination")
-    private double longDestination;
+    private Double longDestination;
 
     @Column(name = "lat_destination")
-    private double latDestination;
+    private Double latDestination;
 
     @Column(name = "fee")
-    private float fee;
+    private Float fee;
 
     @Column(name = "parent", length = 25)
     private String parent;
 
     @Column(name = "journey", columnDefinition = "LONGTEXT")
     @Convert(converter = ListToStringConverter.class)
-    private String journey;
+    private List<String> journey;
 
     @Column(name = "COD")
-    private float cod;
+    private Float cod;
 
     @Column(name = "shipper", length = 25)
     private String shipper;
 
     @Column(name = "status_code")
-    private int statusCode;
+    private Integer statusCode;
 
     @Column(name = "miss")
     private byte miss;
@@ -130,7 +135,7 @@ public class Order {
     private String signature;
 
     @Column(name = "paid")
-    private boolean paid;
+    private Boolean paid;
 
     @Column(name = "created_at", updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
@@ -150,13 +155,13 @@ public class Order {
     
 
     public Order(String orderId, String userId, String agencyId, String serviceType, String nameSender,
-            String phoneNumberSender, String nameReceiver, String phoneNumberReceiver, float mass, float height,
-            float width, float length, String provinceSource, String districtSource, String wardSource,
-            String detailSource, double longSource, double latSource, String provinceDest, String districtDest,
-            String wardDest, String detailDest, double longDestination, double latDestination, float fee, String parent,
-            String journey, float cod, String shipper, int statusCode, byte miss, String sendImages,
+            String phoneNumberSender, String nameReceiver, String phoneNumberReceiver, Float mass, Float height,
+            Float width, Float length, String provinceSource, String districtSource, String wardSource,
+            String detailSource, Double longSource, Double latSource, String provinceDest, String districtDest,
+            String wardDest, String detailDest, Double longDestination, Double latDestination, Float fee, String parent,
+            List<String> journey, Float cod, String shipper, Integer statusCode, byte miss, String sendImages,
             String receiveImages, String sendSignature, String receiveSignature, String qrcode, String signature,
-            boolean paid, Date createdAt, Date lastUpdate, Long orderCode) {
+            Boolean paid, Date createdAt, Date lastUpdate, Long orderCode) {
         this.orderId = orderId;
         this.userId = userId;
         this.agencyId = agencyId;
@@ -266,35 +271,35 @@ public class Order {
         this.phoneNumberReceiver = phoneNumberReceiver;
     }
 
-    public float getMass() {
+    public Float getMass() {
         return mass;
     }
 
-    public void setMass(float mass) {
+    public void setMass(Float mass) {
         this.mass = mass;
     }
 
-    public float getHeight() {
+    public Float getHeight() {
         return height;
     }
 
-    public void setHeight(float height) {
+    public void setHeight(Float height) {
         this.height = height;
     }
 
-    public float getWidth() {
+    public Float getWidth() {
         return width;
     }
 
-    public void setWidth(float width) {
+    public void setWidth(Float width) {
         this.width = width;
     }
 
-    public float getLength() {
+    public Float getLength() {
         return length;
     }
 
-    public void setLength(float length) {
+    public void setLength(Float length) {
         this.length = length;
     }
 
@@ -330,19 +335,19 @@ public class Order {
         this.detailSource = detailSource;
     }
 
-    public double getLongSource() {
+    public Double getLongSource() {
         return longSource;
     }
 
-    public void setLongSource(double longSource) {
+    public void setLongSource(Double longSource) {
         this.longSource = longSource;
     }
 
-    public double getLatSource() {
+    public Double getLatSource() {
         return latSource;
     }
 
-    public void setLatSource(double latSource) {
+    public void setLatSource(Double latSource) {
         this.latSource = latSource;
     }
 
@@ -378,27 +383,27 @@ public class Order {
         this.detailDest = detailDest;
     }
 
-    public double getLongDestination() {
+    public Double getLongDestination() {
         return longDestination;
     }
 
-    public void setLongDestination(double longDestination) {
+    public void setLongDestination(Double longDestination) {
         this.longDestination = longDestination;
     }
 
-    public double getLatDestination() {
+    public Double getLatDestination() {
         return latDestination;
     }
 
-    public void setLatDestination(double latDestination) {
+    public void setLatDestination(Double latDestination) {
         this.latDestination = latDestination;
     }
 
-    public float getFee() {
+    public Float getFee() {
         return fee;
     }
 
-    public void setFee(float fee) {
+    public void setFee(Float fee) {
         this.fee = fee;
     }
 
@@ -410,19 +415,19 @@ public class Order {
         this.parent = parent;
     }
 
-    public String getJourney() {
+    public List<String> getJourney() {
         return journey;
     }
 
-    public void setJourney(String journey) {
+    public void setJourney(List<String> journey) {
         this.journey = journey;
     }
 
-    public float getCod() {
+    public Float getCod() {
         return cod;
     }
 
-    public void setCod(float cod) {
+    public void setCod(Float cod) {
         this.cod = cod;
     }
 
@@ -434,11 +439,11 @@ public class Order {
         this.shipper = shipper;
     }
 
-    public int getStatusCode() {
+    public Integer getStatusCode() {
         return statusCode;
     }
 
-    public void setStatusCode(int statusCode) {
+    public void setStatusCode(Integer statusCode) {
         this.statusCode = statusCode;
     }
 
@@ -498,11 +503,11 @@ public class Order {
         this.signature = signature;
     }
 
-    public boolean isPaid() {
+    public Boolean isPaid() {
         return paid;
     }
 
-    public void setPaid(boolean paid) {
+    public void setPaid(Boolean paid) {
         this.paid = paid;
     }
 

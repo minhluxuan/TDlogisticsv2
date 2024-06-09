@@ -23,7 +23,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import jakarta.transaction.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import project.tdlogistics.orders.configurations.ListToStringConverter;
 import project.tdlogistics.orders.entities.Order;
+import project.tdlogistics.orders.repositories.ColumnNameMapper;
 import project.tdlogistics.orders.repositories.DBUtils;
 import project.tdlogistics.orders.repositories.OrderRepository;
 import project.tdlogistics.orders.repositories.OrderRepositoryImplement;
@@ -44,6 +47,7 @@ public class OrderService {
 
     @Autowired 
     private DBUtils dbUtils;
+
 
     // Implement relative methods here
     public Optional<Order> checkExistOrder(Order criteria) {
@@ -81,7 +85,7 @@ public class OrderService {
 
         String agencyId = "TD_71000_089204006685";
         String postalCode = getPostalCodeFromAgencyId(agencyId);
-        info.setJourney("[]");
+        // info.setJourney("[]");
         // String[] areaAgencyIdSubParts = managedAgency.getAgencyId().split("_");
         // info.setAgencyId(managedAgency.getAgencyId());
         String[] areaAgencyIdSubParts = agencyId.split("_");
@@ -95,7 +99,7 @@ public class OrderService {
         String provinceDest = info.getProvinceDest().replaceAll("^(Thành phố\\s*|Tỉnh\\s*)", "").trim();
         
         // info.setFee(serviceFeeCalculator.calculateFee(info.getServiceType(), provinceSource, provinceDest, info.getMass(), 0.15, false));
-        info.setFee(30000);
+        info.setFee(30000F);
         info.setPaid(false);
 
         // String orderCodeRandom = randomStringGenerator.generate(15, RandomStringGenerator.Numeric);
@@ -151,13 +155,13 @@ public class OrderService {
         if (info.getStatusCode() == OrderStatus.PROCESSING.getCode()) {
             String orderMessage = formattedTime + ": Đơn hàng đang được bưu tá đến nhận";
             OrderStatus orderStatusCode = OrderStatus.TAKING;
-            setJourney(info.getOrderId(), orderMessage, orderStatusCode);
-            // setJourney(orderId, orderMessage, orderStatusCode, orderRequest.getOrderId().split("_")[1]);
+            setJourney(info.getOrderId(), orderMessage, orderStatusCode, null);
+            setJourney(info.getOrderId(), orderMessage, orderStatusCode, postalCode);
         } else if (info.getStatusCode() == OrderStatus.RECEIVED.getCode()) {
             String orderMessage = formattedTime + ": Đơn hàng đã được bưu cục tiếp nhận";
             OrderStatus orderStatusCode = OrderStatus.ENTER_AGENCY;
-            setJourney(info.getOrderId(), orderMessage, orderStatusCode);
-            // setJourney(orderId, orderMessage, orderStatusCode, orderRequest.getOrderId().split("_")[1]);
+            setJourney(info.getOrderId(), orderMessage, orderStatusCode, null);
+            setJourney(info.getOrderId(), orderMessage, orderStatusCode, postalCode);
         }
 
         // userService.updateUserInfo(new UserUpdateInfo(orderRequest.getProvinceSource(), orderRequest.getDistrictSource(), orderRequest.getWardSource(), orderRequest.getDetailSource()), user.getPhoneNumber());
@@ -175,8 +179,11 @@ public class OrderService {
             try {
                 Object value = field.get(info);
                 if (value != null) {
-                    fields.add(field.getName());
+                    fields.add(ColumnNameMapper.mappingColumn(field.getName()));
                     values.add(value);
+                } else {
+                    fields.add(ColumnNameMapper.mappingColumn(field.getName()));
+                    values.add(null);
                 }
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
@@ -218,14 +225,16 @@ public class OrderService {
             try {
                 Object value = field.get(criteria);
                 if (value != null) {
-                    fields.add(field.getName());
+                    fields.add(ColumnNameMapper.mappingColumn(field.getName()));
                     values.add(value);
                 }
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
-
+        System.out.println("UFUUFFUFUFUFUFUFUFU");
+        System.out.println(fields.toString());
+        System.out.println(values.toString());
         return dbUtils.find(ordersTable, fields, values, false, null, null, Order.class);
     }
 
@@ -293,32 +302,35 @@ public class OrderService {
         return orderRepositoryImplement.cancelOrderWithoutTimeConstraint(conditions);
     }
 
-    @SuppressWarnings("unchecked")
-    @Transactional
-    public void setJourney(String orderId, String orderMessage, OrderStatus orderStatus) {
-        // String orderTable = postalCode != null ? postalCode + "_orders" : "orders";
+    public boolean setJourney(String orderId, String orderMessage, OrderStatus orderStatus, String postalCode) {
+        String orderTable = postalCode != null ? postalCode + "_orders" : "orders";
 
-        Optional<Order> optionalOrder = orderRepository.findByOrderId(orderId);
-        if (optionalOrder.isPresent()) {
-            Order order = optionalOrder.get();
-            List<String> journey;
-            try {
-                journey = order.getJourney() != null ? objectMapper.readValue(order.getJourney(), List.class) : new ArrayList<>();
-            } catch (JsonProcessingException e) {
-                journey = new ArrayList<>();
-            }
-
-            journey.add(orderMessage);
-
-            try {
-                order.setJourney(objectMapper.writeValueAsString(journey));
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-
-            order.setStatusCode(orderStatus.getCode());
-            orderRepository.save(order);
+        Order order = getOneOrder(orderId, postalCode);
+        if(order == null) {
+            return false;
         }
+
+        List<String> journey = order.getJourney();
+        if(journey == null) {
+            journey = new ArrayList<>();
+        }
+
+        journey.add(orderMessage);
+    
+        String journeyAsString = null;
+        try {
+            journeyAsString = objectMapper.writeValueAsString(journey);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace(); // Handle the exception appropriately
+            return false;
+        }
+
+        List<String> fields = Arrays.asList("journey", "status_code");
+        List<Object> values = Arrays.asList(journeyAsString, orderStatus.getCode());
+        List<String> conditionFields = Arrays.asList("order_id");
+        List<Object> conditionValues = Arrays.asList(orderId);
+        
+        return dbUtils.update(orderTable, fields, values, conditionFields, conditionValues) > 0;
     }
 
 

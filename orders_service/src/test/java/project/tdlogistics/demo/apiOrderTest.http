@@ -1,5 +1,4 @@
 
-
 POST http://localhost:8080/v2/orders/create
 content-type: application/json
 
@@ -33,3 +32,14 @@ content-type: application/json
 {
     "orderId": "TD_71000_2024053111341801"
 }
+
+###
+POST http://localhost:8080/v2/orders/search
+content-type: application/json
+
+{
+    
+}
+
+###
+DELETE http://localhost:8080/v2/orders/cancel?orderId=TD_71000_20240609153935094

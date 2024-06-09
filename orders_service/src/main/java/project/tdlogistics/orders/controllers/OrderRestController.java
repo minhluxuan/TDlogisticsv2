@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/v2/orders")
 public class OrderRestController {
     @Autowired
-    OrderService orderService;
+    private OrderService orderService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -78,7 +78,7 @@ public class OrderRestController {
     }
     
     @PostMapping(value = "/search")
-    public ResponseEntity<Response<List<Order>>> getOrders(@RequestBody Order info,
+    public ResponseEntity<Response<List<Order>>> getOrders(@RequestBody Order criteria,
                                        @RequestParam(required = false, defaultValue = "0") int rows,
                                        @RequestParam(required = false, defaultValue = "0") int page) {
         try {
@@ -92,11 +92,11 @@ public class OrderRestController {
             }
 
             // Convert the info map to an Order object
-            Order criteria = objectMapper.convertValue(info, Order.class);
-
+            // Order criteria = objectMapper.convertValue(info, Order.class);
+            System.out.println(criteria);
             List<Order> result = new ArrayList<>();
             
-            final String userRole = "USER";
+            final String userRole = "ADMIN";
             if (List.of("USER", "BUSINESS").contains(userRole)) {
                 result = orderService.getOrders(criteria, null);
             } else if (List.of("AGENCY_MANAGER", "AGENCY_TELLER", "AGENCY_HUMAN_RESOURCE_MANAGER", "AGENCY_COMPLAINTS_SOLVER", "AGENCY_SHIPPER").contains(userRole)) {
@@ -244,18 +244,19 @@ public class OrderRestController {
     }
     
     @DeleteMapping("/cancel")
-    public ResponseEntity<Response<Order>> cancelOrder(@RequestParam Map<String, String> conditions) throws Exception {
+    public ResponseEntity<Response<Order>> cancelOrder(@RequestParam Map<String, Object> conditions) throws Exception {
         try {
             final String userRole = "USER";
-            final String userId = "3123uuer";
-            Map<String, Object> processedCondition = new HashMap<>(conditions);
+            final String userId = "123mlnq3456";
+            // Map<String, Object> processedCondition = new HashMap<>(conditions);
+            System.out.println(conditions.toString());
             if(List.of("USER").contains(userRole)) {
                 conditions.put("userId", userId);
-                final int resultCancelingOrder = orderService.cancelOrderWithTimeConstraint(processedCondition);
+                final int resultCancelingOrder = orderService.cancelOrderWithTimeConstraint(conditions);
                 if(resultCancelingOrder == 0) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Order>(
                         true,
-                        "Đơn hàng có mã đơn hàng " + conditions.get("order_id") + " không tồn tại hoặc quá hạn để hủy.",
+                        "Đơn hàng có mã đơn hàng " + conditions.get("orderId") + " không tồn tại hoặc quá hạn để hủy.",
                         null
                     ));
                 }
@@ -267,11 +268,11 @@ public class OrderRestController {
             }
             else if(List.of("AGENCY_MANAGER", "AGENCY_TELLER").contains(userRole)) {
                 conditions.put("agencyId", userId);
-                final int resultCancelingOrder = orderService.cancelOrderWithTimeConstraint(processedCondition);
+                final int resultCancelingOrder = orderService.cancelOrderWithTimeConstraint(conditions);
                 if(resultCancelingOrder == 0) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Order>(
                         true,
-                        "Đơn hàng có mã đơn hàng " + conditions.get("order_id") + " không tồn tại hoặc quá hạn để hủy.",
+                        "Đơn hàng có mã đơn hàng " + conditions.get("orderId") + " không tồn tại hoặc quá hạn để hủy.",
                         null
                     ));
                 }
@@ -282,11 +283,11 @@ public class OrderRestController {
                 ));
             } 
             else {
-                final int resultCancelingOrder = orderService.cancelOrderWithoutTimeConstrain(processedCondition);
+                final int resultCancelingOrder = orderService.cancelOrderWithoutTimeConstrain(conditions);
                 if(resultCancelingOrder == 0) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Order>(
                         true,
-                        "Đơn hàng có mã đơn hàng " + conditions.get("order_id") + " không tồn tại hoặc quá hạn để hủy.",
+                        "Đơn hàng có mã đơn hàng " + conditions.get("orderId") + " không tồn tại hoặc quá hạn để hủy.",
                         null
                     ));
                 }
