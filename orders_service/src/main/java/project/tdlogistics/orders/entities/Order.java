@@ -17,11 +17,7 @@ import java.util.Date;
 @Table(name = "orders")
 public class Order {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", columnDefinition = "INT UNSIGNED")
-    private Long id;
-
-    @Column(name = "order_id", length = 30)
+    @Column(name = "order_id", nullable = false, length = 30)
     private String orderId;
 
     @Column(name = "user_id", length = 25)
@@ -153,7 +149,7 @@ public class Order {
 
     
 
-    public Order(Long id, String orderId, String userId, String agencyId, String serviceType, String nameSender,
+    public Order(String orderId, String userId, String agencyId, String serviceType, String nameSender,
             String phoneNumberSender, String nameReceiver, String phoneNumberReceiver, float mass, float height,
             float width, float length, String provinceSource, String districtSource, String wardSource,
             String detailSource, double longSource, double latSource, String provinceDest, String districtDest,
@@ -161,7 +157,6 @@ public class Order {
             String journey, float cod, String shipper, int statusCode, byte miss, String sendImages,
             String receiveImages, String sendSignature, String receiveSignature, String qrcode, String signature,
             boolean paid, Date createdAt, Date lastUpdate, Long orderCode) {
-        this.id = id;
         this.orderId = orderId;
         this.userId = userId;
         this.agencyId = agencyId;
@@ -206,14 +201,6 @@ public class Order {
     }
 
 
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getOrderId() {
         return orderId;
@@ -547,7 +534,7 @@ public class Order {
 
     @Override
     public String toString() {
-        return "Order [id=" + id + ", orderId=" + orderId + ", userId=" + userId + ", agencyId=" + agencyId
+        return "Order [orderId=" + orderId + ", userId=" + userId + ", agencyId=" + agencyId
                 + ", serviceType=" + serviceType + ", nameSender=" + nameSender + ", phoneNumberSender="
                 + phoneNumberSender + ", nameReceiver=" + nameReceiver + ", phoneNumberReceiver=" + phoneNumberReceiver
                 + ", mass=" + mass + ", height=" + height + ", width=" + width + ", length=" + length

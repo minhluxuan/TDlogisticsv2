@@ -95,13 +95,16 @@ public class OrderRestController {
             Order criteria = objectMapper.convertValue(info, Order.class);
 
             List<Order> result = new ArrayList<>();
+            
             final String userRole = "USER";
             if (List.of("USER", "BUSINESS").contains(userRole)) {
-                result = orderService.getOrders(criteria, rows, page);
+                result = orderService.getOrders(criteria, null);
             } else if (List.of("AGENCY_MANAGER", "AGENCY_TELLER", "AGENCY_HUMAN_RESOURCE_MANAGER", "AGENCY_COMPLAINTS_SOLVER", "AGENCY_SHIPPER").contains(userRole)) {
-                //result = orderService.getOrdersOfAgency(agencyIdSubParts[1], info, rows, page);
+                final String userId = "TD_71000_089204006685";
+                final String postalCode = orderService.getPostalCodeFromAgencyId(userId);
+                result = orderService.getOrders(criteria, postalCode);
             } else {
-                //result = orderService.getOrders(info, rows, page);
+                result = orderService.getOrders(criteria, null);
             }
 
             return ResponseEntity.status(HttpStatus.OK).body(new Response<List<Order>>(
@@ -150,16 +153,12 @@ public class OrderRestController {
                     null
                 ));
             }
-            ObjectMapper objectMapper = new ObjectMapper();
-            String json;
-            try {
-                json = objectMapper.writeValueAsString(info);
-                System.out.println(json);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-            Order resultCreatingOrder = orderService.createNewOrder(info);
-            if(resultCreatingOrder == null) {
+            
+            //Debug
+            System.out.println(info.toString());
+
+            final boolean resultCreatingOrder = orderService.createNewOrder(info);
+            if(!resultCreatingOrder) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<Order>(
                     true,
                     "Tạo đơn không thành công. Vui lòng thử lại!",

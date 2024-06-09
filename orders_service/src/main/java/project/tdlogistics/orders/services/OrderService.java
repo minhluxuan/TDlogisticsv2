@@ -1,7 +1,9 @@
 package project.tdlogistics.orders.services;
 
+import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.transaction.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import project.tdlogistics.orders.entities.Order;
+import project.tdlogistics.orders.repositories.DBUtils;
 import project.tdlogistics.orders.repositories.OrderRepository;
 import project.tdlogistics.orders.repositories.OrderRepositoryImplement;
 
@@ -38,6 +41,9 @@ public class OrderService {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired 
+    private DBUtils dbUtils;
 
     // Implement relative methods here
     public Optional<Order> checkExistOrder(Order criteria) {
@@ -62,18 +68,7 @@ public class OrderService {
         
     }
 
-    public List<Order> getOrders(Order criteria, int rows, int page) {  
-        ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreNullValues();
-        Example<Order> example = Example.of(criteria, matcher);
-         // Create a PageRequest object to specify the page number and page size
-        Pageable pageable = PageRequest.of(page, rows);
-        
-        // Use the example and pageable object to find all matching orders in the repository
-        Page<Order> orderPage = orderRepository.findAll(example, pageable);
-        return orderPage.getContent();    
-    }
-
-    public Order createNewOrder(Order info) {
+    public boolean createNewOrder(Order info) {
         // Agency managedAgency = orderService.findingManagedAgency(info.getWardSource(), info.getDistrictSource(), info.getProvinceSource());
 
         // Shipper shipper = shipperService.getOneStaff(managedAgency.getShipper());
@@ -85,6 +80,7 @@ public class OrderService {
         String formattedTime = setDateFormat.format(createdTime);
 
         String agencyId = "TD_71000_089204006685";
+        String postalCode = getPostalCodeFromAgencyId(agencyId);
         info.setJourney("[]");
         // String[] areaAgencyIdSubParts = managedAgency.getAgencyId().split("_");
         // info.setAgencyId(managedAgency.getAgencyId());
@@ -116,7 +112,12 @@ public class OrderService {
         info.setCreatedAt(createdTime);
         final Order resultCreatingOrder = orderRepository.save(info);
         if (resultCreatingOrder == null) {
-            return null;
+            return false;
+        }
+
+        final boolean resultCreatingOrderInAgency = createNewOrderInAgency(info, postalCode);
+        if(!resultCreatingOrderInAgency) {
+            return false;
         }
 
         // boolean createdOrderInAgency = orderService.createOrderInAgencyTable(orderRequest, managedAgency.getPostalCode());
@@ -160,7 +161,29 @@ public class OrderService {
         }
 
         // userService.updateUserInfo(new UserUpdateInfo(orderRequest.getProvinceSource(), orderRequest.getDistrictSource(), orderRequest.getWardSource(), orderRequest.getDetailSource()), user.getPhoneNumber());
-        return info;
+        return true;
+    }
+
+    public boolean createNewOrderInAgency(Order info, String postalCode) {
+        String ordersTable = (postalCode == null) ? "orders" : (postalCode + "_orders");
+        List<String> fields = new ArrayList<>();
+        List<Object> values = new ArrayList<>();
+
+        // Use reflection to get fields and values
+        for (Field field : Order.class.getDeclaredFields()) {
+            field.setAccessible(true); // Ensure we can access private fields
+            try {
+                Object value = field.get(info);
+                if (value != null) {
+                    fields.add(field.getName());
+                    values.add(value);
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return dbUtils.insert(ordersTable, fields, values) > 0;
     }
 
     public Order updateOrder(Order info, Map<String, String> conditions) {
@@ -182,6 +205,36 @@ public class OrderService {
 
         orderRepository.save(optionalOrder.get());
         return optionalOrder.get();
+    }
+
+    public List<Order> getOrders (Order criteria, String postalCode) {
+        String ordersTable = (postalCode == null) ? "orders" : (postalCode + "_orders");
+        List<String> fields = new ArrayList<>();
+        List<Object> values = new ArrayList<>();
+
+        // Use reflection to get fields and values
+        for (Field field : Order.class.getDeclaredFields()) {
+            field.setAccessible(true); // Ensure we can access private fields
+            try {
+                Object value = field.get(criteria);
+                if (value != null) {
+                    fields.add(field.getName());
+                    values.add(value);
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return dbUtils.find(ordersTable, fields, values, false, null, null, Order.class);
+    }
+
+    public Order getOneOrder (String orderId, String postalCode) {
+        final String ordersTable = (postalCode == null) ? "orders" : (postalCode + "_orders");
+
+        List<String> fields = Arrays.asList("order_id");
+        List<Object> values = Arrays.asList(orderId);
+        return dbUtils.findOneIntersect(ordersTable, fields, values, Order.class);
     }
 
     public enum OrderStatus {
