@@ -1,0 +1,45 @@
+
+POST http://localhost:8080/v2/orders/create
+content-type: application/json
+
+{
+    "nameReceiver": "NguyenVanB",
+    "phoneNumberReceiver": "0787919943",
+    "mass": 24,
+    "height": 30,
+    "width": 25,
+    "length": 60,
+    "provinceSource": "Tỉnh Bà Rịa - Vũng Tàu",
+    "districtSource": "Huyện Đất Đỏ",
+    "wardSource": "Thị trấn Đất Đỏ",
+    "detailSource": "Đường tỉnh 52, tổ 6 Khu phố Hiệp Hòa",
+    "provinceDest": "Tỉnh An Giang", 
+    "districtDest": "Thành phố Long Xuyên",
+    "wardDest": "Phường Mỹ Long",
+    "detailDest": "20 Lý Thái Tổ",
+    "longSource": 107.271563,
+    "latSource": 10.477812,
+    "longDestination": 105.442062,
+    "latDestination": 10.377187,
+    "cod": 32000,
+    "serviceType": "CPN"
+}
+
+###
+POST http://localhost:8080/v2/orders/check
+content-type: application/json
+
+{
+    "orderId": "TD_71000_2024053111341801"
+}
+
+###
+POST http://localhost:8080/v2/orders/search
+content-type: application/json
+
+{
+    
+}
+
+###
+DELETE http://localhost:8080/v2/orders/cancel?orderId=TD_71000_20240609153935094
