@@ -176,7 +176,6 @@ public class CustomerRestController {
         }
     }
 
-    @SuppressWarnings("null")
     @GetMapping("/avatar/get")
     public ResponseEntity<byte[]> getAvatar(
         @RequestHeader(name = "role") Role role,

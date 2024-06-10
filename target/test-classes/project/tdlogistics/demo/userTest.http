@@ -1,14 +1,4 @@
-POST http://localhost:8081/v2/auth/otp/send
-Content-Type: application/json
-
-{
-    "phoneNumber": "0981430418",
-    "email": "minh.luxuanhcmut@hcmut.edu.vn"
-}
-
-###
-
-GET http://localhost:8081/v2/customers/
+GET http://localhost:8762/v2/customers/?customerId=0fd0c668-1e0a-4861-8aa0-f5e68ed0fcb7
 
 ###
 
@@ -78,7 +68,7 @@ agencyId: DL_78300_077165007713
 
 ###
 
-POST http://localhost:8081/v2/users/staffs/search
+POST http://localhost:8762/v2/staffs/search
 Content-Type: application/json
 
 {
@@ -86,7 +76,7 @@ Content-Type: application/json
 
 ###
 
-PUT http://localhost:8081/v2/staffs/update?staffId=DL_78300_077204005693
+PUT http://localhost:8762/v2/staffs/update?staffId=DL_78300_077204005693
 Content-Type: application/json
 
 {

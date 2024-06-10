@@ -1,4 +1,17 @@
-POST http://localhost:8762/v2/auth/login
+POST http://localhost:8762/v2/auth/basic/register
+Content-Type: application/json
+
+{
+    "username": "minhluxuan2k4",
+    "password": "MinhLuXuan@2k4",
+    "phoneNumber": "0981430418",
+    "email": "minhfaptv@gmail.com",
+    "role": "ADMIN"
+}
+
+###
+
+POST http://localhost:8762/v2/auth/basic/login
 Content-Type: application/json
 
 {
@@ -8,7 +21,7 @@ Content-Type: application/json
 
 ###
 
-POST http://localhost:8081/v2/auth/otp/send
+POST http://localhost:8762/v2/auth/otp/send
 Content-Type: application/json
 
 {
@@ -18,11 +31,11 @@ Content-Type: application/json
 
 ###
 
-POST http://localhost:8081/v2/auth/otp/verify
+POST http://localhost:8762/v2/auth/otp/verify
 Content-Type: application/json
 
 {
     "email": "minhfaptv@gmail.com",
     "phoneNumber": "0981430418",
-    "otp": "5875"
+    "otp": "9902"
 }

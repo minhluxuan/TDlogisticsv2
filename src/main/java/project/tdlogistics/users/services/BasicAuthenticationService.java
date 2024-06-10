@@ -40,21 +40,22 @@ public class BasicAuthenticationService {
 
     public AuthenticationResponse register(Account request) throws ExecutionException, InterruptedException {
         // check if user already exist. if exist than authenticate the user
-        if (repository.findByUsername(request.getUsername()).isPresent()) {
-            return new AuthenticationResponse(null, "User already exist");
+        if (repository.findByUsername(request.getUsername()).isPresent()) {System.out.println("HERE1");
+            return new AuthenticationResponse(null, "Tên đăng nhập đã tồn tại. Vui lòng chọn tên đăng nhập khác");
         }
-
+        System.out.println("HERE2");
         Account account = new Account();
         account.setUsername(request.getUsername());
         account.setPassword(passwordEncoder.encode(request.getPassword()));
         account.setRole(request.getRole());
         
-        String jwt = jwtService.generateToken(account, "STAFF");
+        System.out.println("HERE3");
         System.out.println(account);
-        repository.save(account);
-
-        saveUserToken(jwt, account);
-        return new AuthenticationResponse(jwt, "User registration was successful");
+        final Account createdAccount = repository.save(account);
+        System.out.println("HERE4");
+        String jwt = jwtService.generateToken(createdAccount, "STAFF");
+        saveUserToken(jwt, createdAccount);System.out.println("HERE5");
+        return new AuthenticationResponse(jwt, "Tạo tài khoản thành công");
     }
 
     public AuthenticationResponse authenticate(Account request) throws RuntimeException, ExecutionException, InterruptedException {
@@ -72,11 +73,11 @@ public class BasicAuthenticationService {
             revokeAllTokenByAccount(account);
             saveUserToken(jwt, account);
 
-            return new AuthenticationResponse(jwt, "User login was successful");
+            return new AuthenticationResponse(jwt, "Xác thực thành công");
         } catch (UsernameNotFoundException e) {
-            return new AuthenticationResponse(null, "User not found");
+            return new AuthenticationResponse(null, "Xác thực thất bại");
         } catch (AuthenticationException e) {
-            return new AuthenticationResponse(null, "Authentication failed");
+            return new AuthenticationResponse(null, "Xác thực thất bại");
         }
     }
     

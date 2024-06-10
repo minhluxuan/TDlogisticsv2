@@ -2,6 +2,9 @@ package project.tdlogistics.users.services;
 
 import project.tdlogistics.users.entities.Account;
 import project.tdlogistics.users.entities.Customer;
+import project.tdlogistics.users.entities.Staff;
+import project.tdlogistics.users.repositories.CustomerRepository;
+import project.tdlogistics.users.repositories.StaffRepository;
 import project.tdlogistics.users.repositories.TokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -11,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
@@ -19,9 +23,13 @@ public class JwtService {
 
     private final String SECRET_KEY = "BvPHGM8C0ia4uOuxxqPD5DTbWC9F9TWvPStp3pb7ARo0oK2mJ3pd3YG4lxA9i8bj6OTbadwezxgeEByY";
     private final TokenRepository tokenRepository;
+    private final StaffRepository staffRepository;
+    private final CustomerRepository customerRepository;
 
-    public JwtService(TokenRepository tokenRepository) {
+    public JwtService(TokenRepository tokenRepository, StaffRepository staffRepository, CustomerRepository customerRepository) {
         this.tokenRepository = tokenRepository;
+        this.staffRepository = staffRepository;
+        this.customerRepository = customerRepository;
     }
 
     public String extractAccountId(String token) {
@@ -62,11 +70,13 @@ public class JwtService {
 
     public String generateToken(Account account, String option) {
         if (option.equals("STAFF")) {
+            final Optional<Staff> optionalStaff = staffRepository.findByAccount(account);
+            if (optionalStaff.isEmpty()) return null;
             String token = Jwts
                 .builder()
                 .subject(account.getId())
-                .claim("username", account.getUsername())
-                .claim("role", account.getRole())
+                .claim("userId", optionalStaff.get().getStaffId())
+                .claim("agencyId", optionalStaff.get().getAgencyId())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + 24*60*60*1000 ))
                 .signWith(getSigninKey())
@@ -75,16 +85,19 @@ public class JwtService {
             return token;
         }
         else if (option.equals("CUSTOMER")) {
+            final Optional<Customer> optionalCustomer = customerRepository.findByAccount(account);
+            if (optionalCustomer.isEmpty()) return null;
             String token = Jwts
                 .builder()
                 .subject(account.getId())
-                .claim("phoneNumber", account.getPhoneNumber())
                 .claim("role", account.getRole())
+                .claim("userId", optionalCustomer.get().getId())
+                .claim("agencyId", null)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + 24*60*60*1000 ))
                 .signWith(getSigninKey())
                 .compact();
-
+            System.out.println(token);
             return token;
         }
 

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.jsonwebtoken.lang.Collections;
+import jakarta.ws.rs.ForbiddenException;
 import project.tdlogistics.users.entities.Account;
 import project.tdlogistics.users.entities.Agency;
 import project.tdlogistics.users.entities.Response;
@@ -273,14 +274,16 @@ public class StaffRestController {
 
         if (Set.of(
             Role.AGENCY_MANAGER,
-            Role.AGENCY_HUMAN_RESOURCE_MANAGER
+            Role.AGENCY_HUMAN_RESOURCE_MANAGER,
+            Role.AGENCY_TELLER,
+            Role.AGENCY_COMPLAINTS_SOLVER
         ).contains(role)) {
             criteria.setAgencyId(agencyId);
             final List<Staff> staffs = staffService.getStaffs(criteria);
             return ResponseEntity.status(HttpStatus.OK).body(new Response<List<Staff>>(false, "Lấy dữ liệu thành công", staffs));
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(new Response<List<Staff>>(false, "Lấy dữ liệu thành công", Collections.emptyList()));
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Response<List<Staff>>(false, "Người dùng không được phép truy cập tài nguyên này", null));
     }
 
     @SuppressWarnings("unlikely-arg-type")
@@ -292,6 +295,10 @@ public class StaffRestController {
         @RequestParam(value = "staffId", required = true) String staffId,
         @RequestBody Staff payload
     ) {
+        if (!List.of(Role.ADMIN, Role.MANAGER, Role.HUMAN_RESOURCE_MANAGER, Role.AGENCY_MANAGER, Role.AGENCY_HUMAN_RESOURCE_MANAGER).contains(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Response<Staff>(false, "Người dùng không được phép truy cập tài nguyên này", null)); 
+        }
+
         try {
             final String[] updatorIdSubParts = agencyId.split("_");
             final String[] staffIdSubParts = staffId.split("_");
@@ -383,7 +390,6 @@ public class StaffRestController {
         @RequestParam(name = "staffId") String staffId,
         @RequestParam("avatar") MultipartFile file
     ) {
-        role = Role.ADMIN;
         if (!List.of(Role.ADMIN, Role.AGENCY_MANAGER, Role.HUMAN_RESOURCE_MANAGER, Role.AGENCY_MANAGER, Role.AGENCY_HUMAN_RESOURCE_MANAGER).contains(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Response<Staff>(true, "Người dùng không được phép truy cập tài nguyên này", null));
         }
@@ -432,17 +438,13 @@ public class StaffRestController {
         }
     }
 
-    @SuppressWarnings("null")
     @GetMapping("/avatar/get")
     public ResponseEntity<byte[]> getAvatar(
-        // @RequestHeader(name = "role") Role role,
-        // @RequestHeader(name = "userId") String userId,
-        // @RequestHeader(name = "agencyId") String agencyId,
+        @RequestHeader(name = "role") Role role,
+        @RequestHeader(name = "userId") String userId,
+        @RequestHeader(name = "agencyId") String agencyId,
         @RequestParam(name = "staffId") String staffId
     ) {
-        Role role = Role.ADMIN;
-        String agencyId = "BC_fhwsjfnwskfws";
-        String userId = "BC_wjkdfnwfw";
         try {
             if (List.of(Role.ADMIN, Role.MANAGER, Role.HUMAN_RESOURCE_MANAGER, Role.TELLER, Role.COMPLAINTS_SOLVER).contains(role)) {
                 final Optional<Staff> optionalStaff = staffService.getStaffById(staffId);
@@ -496,20 +498,26 @@ public class StaffRestController {
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<Response<Staff>> deleteStaff(@RequestParam(value = "staffId", required = true) String staffId) {
+    public ResponseEntity<Response<Staff>> deleteStaff(
+        @RequestHeader(name = "role") Role role,
+        @RequestHeader(name = "userId") String userId,
+        @RequestHeader(name = "agencyId") String agencyId,
+        @RequestParam(value = "staffId", required = true) String staffId
+    ) {
+        if (!List.of(Role.ADMIN, Role.AGENCY_MANAGER, Role.HUMAN_RESOURCE_MANAGER, Role.AGENCY_MANAGER, Role.AGENCY_HUMAN_RESOURCE_MANAGER).contains(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Response<Staff>(true, "Người dùng không được phép truy cập tài nguyên này", null));
+        }
+
+        final String[] updatorIdSubParts = agencyId.split("_");
+        final String[] staffIdSubParts = staffId.split("_");
+        if (Set.of(
+            Role.AGENCY_MANAGER,
+            Role.AGENCY_HUMAN_RESOURCE_MANAGER
+        ).contains(role) && (!updatorIdSubParts[0].equals(staffIdSubParts[0]) || !updatorIdSubParts[1].equals(staffIdSubParts[1]))) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Staff>(true, "Nhân viên " + staffId + " không tồn tại trong bưu cục " + agencyId, null));
+        }
+
         try {
-            final Role role = Role.AGENCY_HUMAN_RESOURCE_MANAGER; // This should be dynamically determined in real scenarios
-            final String agencyId = "BC_71000_077204005692";
-
-            final String[] updatorIdSubParts = agencyId.split("_");
-            final String[] staffIdSubParts = staffId.split("_");
-            if (Set.of(
-                Role.AGENCY_MANAGER,
-                Role.AGENCY_HUMAN_RESOURCE_MANAGER
-            ).contains(role) && (!updatorIdSubParts[0].equals(staffIdSubParts[0]) || !updatorIdSubParts[1].equals(staffIdSubParts[1]))) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Staff>(true, "Nhân viên " + staffId + " không tồn tại trong bưu cục " + agencyId, null));
-            }
-
             final Optional<Staff> optionalStaff = staffService.getStaffById(staffId);
             if (optionalStaff.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Staff>(true, "Nhân viên không tồn tại", null));

@@ -4,8 +4,11 @@ import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 
 @Configuration
 public class MQConfiguration {
@@ -73,5 +76,12 @@ public class MQConfiguration {
     @Bean
     Binding fileBinding(Queue fileQueue, DirectExchange exchange) {
         return BindingBuilder.bind(fileQueue).to(exchange).with("rpc.file");
+    }
+
+    @Bean
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
+        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+        rabbitTemplate.setReplyTimeout(5000);
+        return rabbitTemplate;
     }
 }
