@@ -25,6 +25,7 @@ import project.tdlogistics.orders.services.OrderService;
 import project.tdlogistics.orders.services.OrderService.OrderStatus;
 import project.tdlogistics.orders.entities.Order;
 import project.tdlogistics.orders.entities.Response;
+import project.tdlogistics.orders.entities.Ward;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -127,7 +128,20 @@ public class OrderRestController {
             final String userRole = "USER";
             final String userId = "123mlnq3456";
             final String userPhone = "0787919942";
-           
+
+            final Ward managedAgency = orderService.findManagedAgency(info.getWardSource(), info.getDistrictSource(), info.getProvinceSource());
+            if(managedAgency == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Order>(
+                    true,
+                    "Xin lỗi quý khách. Hiện tại dịch vụ của TDLogistics chưa có mặt tại địa điểm này!",
+                    null
+                ));
+            }
+
+            info.setAgencyId(managedAgency.getAgencyId());
+
+            // info.setAgencyId("BC_71000_089204008886");
+
             if (List.of("USER").contains(userRole)) {
                 // ValidationResult validationResult = orderService.validateCreatingOrder(orderRequest);
                 // if (!validationResult.isValid()) {
@@ -154,8 +168,7 @@ public class OrderRestController {
                 ));
             }
             
-            //Debug
-            System.out.println(info.toString());
+            
 
             final boolean resultCreatingOrder = orderService.createNewOrder(info);
             if(!resultCreatingOrder) {
@@ -305,7 +318,5 @@ public class OrderRestController {
             ));
         } 
     }
-
-    
 
 }

@@ -16,6 +16,16 @@ public class MQConfiguration {
     }
 
     @Bean
+    public Queue ordersQueue() {
+        return new Queue("rpc.orders", true);
+    }
+
+    @Bean
+    Binding ordersBinding(Queue ordersQueue, DirectExchange exchange) {
+        return BindingBuilder.bind(ordersQueue).to(exchange).with("rpc.orders");
+    }
+
+    @Bean
     public Queue usersQueue() {
         return new Queue("rpc.users", true);
     }

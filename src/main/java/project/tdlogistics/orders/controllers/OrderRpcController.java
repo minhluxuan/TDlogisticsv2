@@ -21,14 +21,14 @@ public class OrderRpcController {
             switch (request.getOperation()) {
                 // Handle each operation here
                 case "example":
-                    return (new ObjectMapper().registerModule(new JavaTimeModule())).writeValueAsString(new Response<Order>(HttpStatus.BAD_REQUEST, true, "example message", null));
+                    return (new ObjectMapper().registerModule(new JavaTimeModule())).writeValueAsString(new Response<Order>(400, true, "example message", null));
                 
                 default:
-                    return (new ObjectMapper().registerModule(new JavaTimeModule())).writeValueAsString(new Response<Order>(HttpStatus.BAD_REQUEST, true, "Yêu cầu không hợp lệ", null));
+                    return (new ObjectMapper().registerModule(new JavaTimeModule())).writeValueAsString(new Response<Order>(400, true, "Yêu cầu không hợp lệ", null));
             }           
         } catch (Exception e) {
             e.printStackTrace();
-            return (new ObjectMapper()).writeValueAsString(new Response<Order>(HttpStatus.INTERNAL_SERVER_ERROR, true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
+            return (new ObjectMapper()).writeValueAsString(new Response<Order>(404, true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
         }
     }
 

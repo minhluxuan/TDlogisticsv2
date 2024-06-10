@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,12 +21,18 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import jakarta.transaction.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import project.tdlogistics.orders.configurations.ListToStringConverter;
+import project.tdlogistics.orders.entities.Agency;
 import project.tdlogistics.orders.entities.Order;
+import project.tdlogistics.orders.entities.Request;
+import project.tdlogistics.orders.entities.Response;
+import project.tdlogistics.orders.entities.UnitRequest;
+import project.tdlogistics.orders.entities.Ward;
 import project.tdlogistics.orders.repositories.ColumnNameMapper;
 import project.tdlogistics.orders.repositories.DBUtils;
 import project.tdlogistics.orders.repositories.OrderRepository;
@@ -47,6 +54,11 @@ public class OrderService {
 
     @Autowired 
     private DBUtils dbUtils;
+
+    @Autowired
+    private AmqpTemplate amqpTemplate;
+
+    private String exchange = "rpc-direct-exchange";
 
 
     // Implement relative methods here
@@ -73,21 +85,15 @@ public class OrderService {
     }
 
     public boolean createNewOrder(Order info) {
-        // Agency managedAgency = orderService.findingManagedAgency(info.getWardSource(), info.getDistrictSource(), info.getProvinceSource());
 
-        // Shipper shipper = shipperService.getOneStaff(managedAgency.getShipper());
-        // if (shipper == null) {
-        //     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(true, "Xin lỗi quý khách. Khu vực của quý khách hiện chưa có shipper nào phục vụ."));
-        // }
         Date createdTime = new Date();
         SimpleDateFormat setDateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         String formattedTime = setDateFormat.format(createdTime);
 
-        String agencyId = "TD_71000_089204006685";
+        String agencyId = info.getAgencyId();
         String postalCode = getPostalCodeFromAgencyId(agencyId);
         
         String[] areaAgencyIdSubParts = agencyId.split("_");
-        info.setAgencyId(agencyId);
 
         String orderCode = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(createdTime);
         info.setOrderId(areaAgencyIdSubParts[0] + "_" + areaAgencyIdSubParts[1] + "_" + orderCode);
@@ -112,6 +118,7 @@ public class OrderService {
         // info.setQrCode(paymentResult.getQrCode());
         info.setQrcode("123456");
         info.setCreatedAt(createdTime);
+        System.out.println(String.format("Timeer: %s", createdTime.toString()));
         final Order resultCreatingOrder = orderRepository.save(info);
         if (resultCreatingOrder == null) {
             return false;
@@ -323,6 +330,21 @@ public class OrderService {
         return dbUtils.update(orderTable, fields, values, conditionFields, conditionValues) > 0;
     }
 
+    public Ward findManagedAgency(String ward, String district, String province) throws JsonProcessingException {
+        if(ward == null || district == null || province == null) {
+            throw new IllegalArgumentException(String.format("Thiếu thông tin đơn vị hành chính"));
+        }
 
+        final String jsonRequestCheckingExistDistrict = objectMapper.writeValueAsString(new Request<Ward>("findWards", null, new Ward(province, district, ward)));
+        final String jsonResponseCheckingExistDistrict = (String) amqpTemplate.convertSendAndReceive(exchange, "rpc.administrative", jsonRequestCheckingExistDistrict);
+
+        final Response<List<Ward>> response = objectMapper.readValue(jsonResponseCheckingExistDistrict, new TypeReference<Response<List<Ward>>>() {});
+        if (response != null && response.getData() != null) {
+            return response.getData().get(0);
+        } else {
+            return null;
+        }
+
+    }
 
 }
