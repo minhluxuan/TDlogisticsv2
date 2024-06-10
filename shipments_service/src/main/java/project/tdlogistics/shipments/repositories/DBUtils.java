@@ -192,16 +192,16 @@ public class DBUtils {
         return jdbcTemplate.update(query, allValues.toArray());
     }
 
-    public int deleteOne(String table, String[] fields, Object[] values) {
-        if (fields.length != values.length) {
-            throw new IllegalArgumentException("Fields and values array lengths must match.");
+    public int deleteOne(String table, List<String> fields, List<Object> values) {
+        if (fields.size() != values.size()) {
+            throw new IllegalArgumentException("Fields and values list sizes must match.");
         }
 
-        String whereClause = String.join(" AND ", fields);
+        String whereClause = String.join(" AND ", fields.stream().map(field -> field + " = ?").toArray(String[]::new));
 
         String query = String.format("DELETE FROM %s WHERE %s LIMIT 1", table, whereClause);
 
-        return jdbcTemplate.update(query, values);
+        return jdbcTemplate.update(query, values.toArray());
     }
 
     public int deleteMany(String table, String[] fields, Object[] values) {

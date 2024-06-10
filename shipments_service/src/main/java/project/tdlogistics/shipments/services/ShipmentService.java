@@ -608,4 +608,12 @@ public class ShipmentService {
         return dbUtils.find(shipmentTable, fields, values, false, null, null, Shipment.class);
     }
 
+    public boolean deleteShipment(String shipmentId, String postalCode) {
+        final String shipmentTable = (postalCode == null) ? "shipment" : (postalCode + "_shipment");
+        List<String> fields = Arrays.asList("shipment_id");
+        List<Object> values = Arrays.asList(shipmentId);
+
+        return dbUtils.deleteOne(shipmentTable, fields, values) > 0;
+    }
+
 }

@@ -22,7 +22,7 @@ import project.tdlogistics.shipments.entities.ListResponse;
 import project.tdlogistics.shipments.entities.Request;
 import project.tdlogistics.shipments.services.ShipmentService;
 
-
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -561,7 +561,7 @@ public class ShipmentRestController {
     }
 
     @PutMapping("/accept")
-    public ResponseEntity<Response<Shipment>> approveNewShipment(@RequestParam Map<String, String> queryParams) {
+    public ResponseEntity<Response<Shipment>> approveNewShipment(@RequestParam Map<String, String> queryParams) throws Exception {
         Date approveTime = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         String formattedTime = formatter.format(approveTime);
@@ -656,6 +656,130 @@ public class ShipmentRestController {
                 null
             ));
         }
+    }
+
+    // Order service to getOneOrder(order_id)
+    // @PostMapping("/get_orders")
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<Response<Shipment>> deleteShipment(@RequestParam Map<String, String> queryParams) throws Exception {
+        
+        final String shipmentId = queryParams.get("shipmentId");
+        final String agencyId = "BC_71000_089204006685";
+        final String userRole = "MANAGER";
+
+        if(List.of("AGENCY_MANAGER", "AGENCY_TELLER").contains(userRole)) {
+            final String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
+            final Shipment shipment = shipmentService.getOneShipment(shipmentId, postalCode);
+            if(shipment == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                    true,
+                    "Lô hàng không tồn tại",
+                    null
+                ));
+            }
+
+            if(shipment.getStatus() > 0) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<>(
+                    true,
+                    "Lô hàng không còn khả năng để xóa. Vui lòng liên hệ lên tổng cục để được hỗ trợ.",
+                    null
+                ));
+            }
+
+            final boolean resultDeletingShipment = shipmentService.deleteShipment(shipmentId, postalCode);
+            if(!resultDeletingShipment) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                    true,
+                    "Lô hàng không tồn tại trong cơ sở dữ liệu bưu cục",
+                    null
+                ));
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(new Response<>(
+                true,
+                "Xóa lô hàng thành công",
+                null
+            ));
+
+        }
+        else if(List.of("MANAGER", "TELLER").contains(userRole)) {
+            final String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
+            final Shipment shipment = shipmentService.getOneShipment(shipmentId, postalCode);
+            if(shipment == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                    true,
+                    "Lô hàng không tồn tại",
+                    null
+                ));
+            }
+
+            if(shipment.getStatus() > 3) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<>(
+                    true,
+                    "Lô hàng không còn khả năng để xóa. Vui lòng liên hệ lên tổng cục để được hỗ trợ.",
+                    null
+                ));
+            }
+
+            final boolean resultDeletingShipment = shipmentService.deleteShipment(shipmentId, postalCode);
+            if(!resultDeletingShipment) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                    true,
+                    "Lô hàng không tồn tại trong cơ sở dữ liệu bưu cục",
+                    null
+                ));
+            }
+
+            final String[] shipmentIdSubPart = shipmentId.split("_");
+            if(shipmentIdSubPart[0] == "BC" || shipmentIdSubPart[0] == "DL") {
+                shipmentService.updateShipmentStatus(shipmentId, 0, shipmentIdSubPart[1]);
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(new Response<>(
+                true,
+                "Xóa lô hàng thành công",
+                null
+            ));
+        }
+
+        final String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
+        final Shipment shipment = shipmentService.getOneShipment(shipmentId, null);
+        if(shipment == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                true,
+                "Lô hàng không tồn tại",
+                null
+            ));
+        }
+
+        if(shipment.getStatus() > 3) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<>(
+                true,
+                "Lô hàng không còn khả năng để xóa. Vui lòng liên hệ lên tổng cục để được hỗ trợ.",
+                null
+            ));
+        }
+
+        final boolean resultDeletingShipment = shipmentService.deleteShipment(shipmentId, null);
+        if(!resultDeletingShipment) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                true,
+                "Lô hàng không tồn tại trong cơ sở dữ liệu bưu cục",
+                null
+            ));
+        }
+
+        final String[] shipmentIdSubPart = shipmentId.split("_");
+        if(shipmentIdSubPart[0] == "BC" || shipmentIdSubPart[0] == "DL") {
+            shipmentService.updateShipmentStatus(shipmentId, 0, shipmentIdSubPart[1]);
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(new Response<>(
+            true,
+            "Xóa lô hàng thành công",
+            null
+        ));
     }
 
 }
