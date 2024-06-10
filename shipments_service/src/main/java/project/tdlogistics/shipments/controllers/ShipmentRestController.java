@@ -613,4 +613,49 @@ public class ShipmentRestController {
             null
         ));
     }
+
+    @PostMapping("/get")
+    public ResponseEntity<Response<List<Shipment>>> getShipments(@RequestBody Shipment criteria,
+                                       @RequestParam(required = false, defaultValue = "0") int rows,
+                                       @RequestParam(required = false, defaultValue = "0") int page) {
+        try {
+            // Validate pagination conditions
+            if (rows < 0 || page < 0) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<List<Shipment>>(
+                    true,
+                    "Lỗi định dạng trang",
+                    null
+                ));
+            }
+
+            // Convert the info map to an Shipment object
+            // Shipment criteria = objectMapper.convertValue(info, Shipment.class);
+            System.out.println(criteria);
+            List<Shipment> result = new ArrayList<>();
+            
+            final String userRole = "ADMIN";
+            if (List.of("USER", "BUSINESS").contains(userRole)) {
+                result = shipmentService.getShipments(criteria, null);
+            } else if (List.of("AGENCY_MANAGER", "AGENCY_TELLER", "AGENCY_HUMAN_RESOURCE_MANAGER", "AGENCY_COMPLAINTS_SOLVER", "AGENCY_SHIPPER").contains(userRole)) {
+                final String userId = "TD_71000_089204006685";
+                final String postalCode = shipmentService.getPostalCodeFromAgencyId(userId);
+                result = shipmentService.getShipments(criteria, postalCode);
+            } else {
+                result = shipmentService.getShipments(criteria, null);
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(new Response<List<Shipment>>(
+                false,
+                "Lấy thông tin đơn hàng thành công!",
+                result
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<List<Shipment>>(
+                true,
+                e.getMessage(),
+                null
+            ));
+        }
+    }
+
 }

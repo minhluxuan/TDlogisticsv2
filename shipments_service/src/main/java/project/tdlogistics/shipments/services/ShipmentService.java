@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.Optional;
@@ -26,6 +27,7 @@ import com.mysql.cj.x.protobuf.MysqlxDatatypes.Array;
 import jakarta.transaction.Transactional;
 import project.tdlogistics.shipments.entities.ListResponse;
 import project.tdlogistics.shipments.entities.Shipment;
+import project.tdlogistics.shipments.repositories.ColumnNameMapper;
 import project.tdlogistics.shipments.repositories.DBUtils;
 import project.tdlogistics.shipments.repositories.ShipmentRepository;
 import project.tdlogistics.shipments.repositories.ShipmentRepositoryImplement;
@@ -583,4 +585,27 @@ public class ShipmentService {
 
         return new ListResponse(acceptedNumber, acceptedArray, notAcceptedNumber, notAcceptedArray);
     }
+
+    public List<Shipment> getShipments (Shipment criteria, String postalCode) {
+        String shipmentTable = (postalCode == null) ? "shipment" : (postalCode + "_shipment");
+        List<String> fields = new ArrayList<>();
+        List<Object> values = new ArrayList<>();
+
+        // Use reflection to get fields and values
+        for (Field field : Shipment.class.getDeclaredFields()) {
+            field.setAccessible(true); // Ensure we can access private fields
+            try {
+                Object value = field.get(criteria);
+                if (value != null) {
+                    fields.add(ColumnNameMapper.mappingColumn(field.getName()));
+                    values.add(value);
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        return dbUtils.find(shipmentTable, fields, values, false, null, null, Shipment.class);
+    }
+
 }

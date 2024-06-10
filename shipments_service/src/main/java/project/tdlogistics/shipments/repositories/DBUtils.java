@@ -147,13 +147,14 @@ public class DBUtils {
         if (fields == null || values == null || fields.isEmpty() || values.isEmpty()) {
             throw new IllegalArgumentException("Fields and values must not be empty");
         }
-
+    
         String query = "INSERT INTO " + table + " (" +
                        String.join(", ", fields) + 
                        ") VALUES (" +
-                       String.join(", ", fields.stream().map(field -> "?").toArray(String[]::new)) + 
+                       String.join(", ", values.stream().map(v -> "?").toArray(String[]::new)) + 
                        ")";
-
+        System.out.println(query);
+        System.out.println(values.toString());
         return jdbcTemplate.update(query, values.toArray());
     }
 
