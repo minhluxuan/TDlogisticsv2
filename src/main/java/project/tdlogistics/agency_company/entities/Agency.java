@@ -2,7 +2,6 @@ package project.tdlogistics.agency_company.entities;
 
 import jakarta.persistence.*;
 import project.tdlogistics.agency_company.configurations.ListToStringConverter;
-import project.tdlogistics.agency_company.entities.DTOs.AgencyCreateDTO;
 
 import java.util.List;
 

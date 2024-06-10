@@ -38,7 +38,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/v2/agencies")
-public class AgencyController {
+public class AgencyRestController {
     private static final List<String> agencyCannotBeAffected = List.of("TD_00000_077165007713");
 
     private final AgencyCompanyService agencycompanyService;
@@ -52,7 +52,7 @@ public class AgencyController {
     private String exchange = "rpc-direct-exchange";
 
     @Autowired
-    public AgencyController(ObjectMapper objectMapper, AgencyCompanyService agencycompanyService, AgencyService agencyService,
+    public AgencyRestController(ObjectMapper objectMapper, AgencyCompanyService agencycompanyService, AgencyService agencyService,
             FileUploadService fileService) {
         this.objectMapper = objectMapper;
         this.agencycompanyService = agencycompanyService;
@@ -61,7 +61,7 @@ public class AgencyController {
     }
 
     @GetMapping("/check")
-    public ResponseEntity<Response<Agency>> checkAgency(@RequestParam(name = "agencyId") String agencyId) {
+    public ResponseEntity<Response<Agency>> checkExistAgency(@RequestParam(name = "agencyId") String agencyId) {
         try {
             final Optional<Agency> optionalAgency = agencyService.checkExistAgency(agencyId);
             if (optionalAgency.isPresent()) {

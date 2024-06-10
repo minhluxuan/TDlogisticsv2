@@ -36,13 +36,11 @@ import java.util.Optional;
 public class AgencyService {
     final String regexPersonnel = "^(TD|BC|DL)_\\d{5}_\\d{12}$";
     private final AgencyRepository agencyRepository;
-    private final AgencyCompanyRepository agencyCompanyRepository;
+
     private final ObjectMapper objectMapper;
 
-    @Autowired
-    public AgencyService(AgencyRepository agencyRepository, AgencyCompanyRepository agencyCompanyRepository,  ObjectMapper objectMapper) {
+    public AgencyService(AgencyRepository agencyRepository, ObjectMapper objectMapper) {
         this.agencyRepository = agencyRepository;
-        this.agencyCompanyRepository = agencyCompanyRepository;
         this.objectMapper = objectMapper;
     }
 

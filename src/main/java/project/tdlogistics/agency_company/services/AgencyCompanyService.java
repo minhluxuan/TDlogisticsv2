@@ -1,7 +1,6 @@
 package project.tdlogistics.agency_company.services;
 
 import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
@@ -12,7 +11,6 @@ import project.tdlogistics.agency_company.repositories.AgencyCompanyRepository;
 public class AgencyCompanyService {
     private final AgencyCompanyRepository agencyCompanyRepository;
 
-    @Autowired
     public AgencyCompanyService(AgencyCompanyRepository agencyCompanyRepository) {
         this.agencyCompanyRepository = agencyCompanyRepository;
     }

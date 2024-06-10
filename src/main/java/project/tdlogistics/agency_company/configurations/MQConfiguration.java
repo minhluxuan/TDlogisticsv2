@@ -16,13 +16,13 @@ public class MQConfiguration {
     }
 
     @Bean
-    public Queue usersQueue() {
-        return new Queue("rpc.users", true);
+    public Queue agencyQueue() {
+        return new Queue("rpc.agency", true);
     }
 
     @Bean
-    Binding usersBinding(Queue usersQueue, DirectExchange exchange) {
-        return BindingBuilder.bind(usersQueue).to(exchange).with("rpc.users");
+    Binding agencyBinding(Queue agencyQueue, DirectExchange exchange) {
+        return BindingBuilder.bind(agencyQueue).to(exchange).with("rpc.agency");
     }
 
     // @Bean
