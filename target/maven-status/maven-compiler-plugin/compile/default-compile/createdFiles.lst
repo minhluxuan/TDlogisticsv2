@@ -1,6 +1,6 @@
 com\example\demo\configuration\RouterValidator.class
-com\example\demo\DemoApplication.class
 com\example\demo\configuration\AuthenticationFilter.class
 com\example\demo\configuration\GatewayConfiguration.class
 com\example\demo\models\ReponseObject.class
 com\example\demo\configuration\JwtUtil.class
+com\example\demo\models\Role.class
