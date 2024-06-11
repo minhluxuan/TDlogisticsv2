@@ -11,7 +11,7 @@ Content-Type: application/json
 
 ###
 
-POST http://localhost:8762/v2/auth/basic/login
+POST http://localhost:8081/v2/auth/basic/login
 Content-Type: application/json
 
 {
@@ -31,7 +31,7 @@ Content-Type: application/json
 
 ###
 
-POST http://localhost:8762/v2/auth/otp/verify
+POST http://localhost:8081/v2/auth/otp/verify
 Content-Type: application/json
 
 {

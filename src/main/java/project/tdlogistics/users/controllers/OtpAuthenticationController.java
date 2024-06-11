@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-
+// @CrossOrigin(origins = {"http://127.0.0.1:5500", "http://192.168.1.9:8762"}, allowCredentials = "true")
 @RestController
 @RequestMapping("/v2/auth/otp")
 public class OtpAuthenticationController {
@@ -45,8 +45,6 @@ public class OtpAuthenticationController {
 
     private String exchange = "rpc-direct-exchange";
 
-
-    @CrossOrigin
     @PostMapping("/send")
     public ResponseEntity<Response<String>> sendOtp(
             @RequestBody Otp request
@@ -81,7 +79,6 @@ public class OtpAuthenticationController {
         }
     } 
 
-    @CrossOrigin
     @PostMapping("/verify")
     public ResponseEntity<Response<String>> verifyOtp(
             @RequestBody Otp request, HttpServletResponse servletResponse
