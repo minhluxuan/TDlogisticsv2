@@ -1,17 +1,67 @@
 package project.tdlogistics.shipments.repositories;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import project.tdlogistics.shipments.entities.Shipment;
 
+@Repository
 public class ShipmentRepositoryImplement implements ShipmentRepositoryInterface {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private DBUtils dbUtils;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Override
+    public boolean createNewShipment(Shipment shipment, String postalCode) {
+        String shipmentTable = (postalCode == null) ? "shipment" : (postalCode + "_shipment");
+        List<String> fields = new ArrayList<>();
+        List<Object> values = new ArrayList<>();
+
+        // Use reflection to get fields and values
+        for (Field field : Shipment.class.getDeclaredFields()) {
+            field.setAccessible(true); // Ensure we can access private fields
+            try {
+                Object value = field.get(shipment);
+                if(field.getName().equals("journey") || field.getName().equals("orderIds")) {
+                    fields.add(ColumnNameMapper.mappingColumn(field.getName()));
+                    String valueAsString = null;
+                    try {
+                        valueAsString = objectMapper.writeValueAsString(value);
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace(); // Handle the exception appropriately
+                        return false;
+                    }
+                    values.add(valueAsString);
+                }
+                else if (value != null) {
+                    fields.add(ColumnNameMapper.mappingColumn(field.getName()));
+                    values.add(value);
+                } else {
+                    fields.add(ColumnNameMapper.mappingColumn(field.getName()));
+                    values.add(null);
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return dbUtils.insert(shipmentTable, fields, values) > 0;
+    }
 
     @Override
     public boolean updateParentAndIncreaseMass(Shipment shipment, String orderId, String postalCode) {
@@ -61,8 +111,8 @@ public class ShipmentRepositoryImplement implements ShipmentRepositoryInterface 
         // Order order = orderService.findOneOrder(orderId, ordersTable);
         // String orderParent = order.getParent();
         String orderParent = "TD_71000_2244556677";
-        if(orderParent == shipment.getShipmentId()) {
-            System.out.println("Order was added to shipment before.");
+        if(orderParent == null) {
+            System.out.println("Order was remove before.");
             return false;
         }
 

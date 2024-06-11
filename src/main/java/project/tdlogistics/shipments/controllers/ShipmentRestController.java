@@ -50,12 +50,15 @@ public class ShipmentRestController {
             // }
             info.setAgencyId("TD_71000_089204006685");
             System.out.println(info);
-            shipmentService.createNewShipment(info, "AGENCY_MANAGER");
-            return ResponseEntity.status(HttpStatus.CREATED).body(new Response<>(false, "Tạo lô hàng mới thành công", info));
+            final Shipment result = shipmentService.createNewShipment(info, "AGENCY_MANAGER");
+            if(result == null) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
+            }
+            return ResponseEntity.status(HttpStatus.CREATED).body(new Response<>(false, "Tạo lô hàng mới thành công", result));
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(true, e.getMessage(), null));
         }
     }
     
@@ -78,7 +81,7 @@ public class ShipmentRestController {
     }
     
     @PostMapping("/add_orders")
-    public ResponseEntity<Response<List<String>>> addOrdersToShipment(@RequestParam Map<String, String> queryParams,
+    public ResponseEntity<Response<ListResponse>> addOrdersToShipment(@RequestParam Map<String, String> queryParams,
                                                 @RequestBody Shipment info) {
         try {
             // Validate request
@@ -91,7 +94,7 @@ public class ShipmentRestController {
                 // String agencyId = user.getAgencyId();
                 String agencyId = "TD_71000_089204006685";
                 String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
-                Shipment shipment = shipmentService.getOneShipment(queryParams.get("shipment_id"), postalCode);
+                Shipment shipment = shipmentService.getOneShipment(queryParams.get("shipmentId"), postalCode);
                 if(shipment == null) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
                         true, 
@@ -103,11 +106,10 @@ public class ShipmentRestController {
 
                 // Shipment result = shipmentService.addOrdersToShipment(shipment, requestBody.getOrderIds(), postalCode);
                 ListResponse resultAddingOrders = shipmentService.addOrders(shipment, info.getOrderIds(), postalCode);
-                List<String> acceptedArray = resultAddingOrders.getAcceptedArray();
                 return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response<>(
                     false, 
                     "Thêm đơn hàng vào lô thành công", 
-                    acceptedArray
+                    resultAddingOrders
                 ));
             } else if (List.of("MANAGER", "TELLER").contains(userRole)) {
                 // String agencyId = user.getAgencyId();
@@ -126,11 +128,10 @@ public class ShipmentRestController {
                 // Shipment result = shipmentService.addOrdersToShipment(shipment, requestBody.getOrderIds(), postalCode);
                 shipmentService.addOrders(shipment, info.getOrderIds(), postalCode);
                 ListResponse resultAddingOrders = shipmentService.addOrders(shipment, info.getOrderIds(), null);
-                List<String> acceptedArray = resultAddingOrders.getAcceptedArray();
                 return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response<>(
                     false, 
                     "Thêm đơn hàng vào lô thành công", 
-                    acceptedArray
+                    resultAddingOrders
                 ));
             }
 
@@ -147,11 +148,10 @@ public class ShipmentRestController {
 
             // Shipment result = shipmentService.addOrdersToShipment(shipment, requestBody.getOrderIds(), postalCode);
             ListResponse resultAddingOrders = shipmentService.addOrders(shipment, info.getOrderIds(), postalCode);
-            List<String> acceptedArray = resultAddingOrders.getAcceptedArray();
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response<>(
                 false, 
                 "Thêm đơn hàng vào lô thành công", 
-                acceptedArray
+                resultAddingOrders
             ));
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -161,7 +161,7 @@ public class ShipmentRestController {
     }
    
     @PostMapping("/remove_orders")
-    public ResponseEntity<Response<List<String>>> removeOrdersFromShipment(@RequestParam Map<String, String> queryParams,
+    public ResponseEntity<Response<ListResponse>> removeOrdersFromShipment(@RequestParam Map<String, String> queryParams,
                                                 @RequestBody Shipment info) {
         try {
             // Validate request
@@ -174,7 +174,7 @@ public class ShipmentRestController {
                 // String agencyId = user.getAgencyId();
                 String agencyId = "TD_71000_089204006685";
                 String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
-                Shipment shipment = shipmentService.getOneShipment(queryParams.get("shipment_id"), postalCode);
+                Shipment shipment = shipmentService.getOneShipment(queryParams.get("shipmentId"), postalCode);
                 if(shipment == null) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
                         true, 
@@ -185,12 +185,12 @@ public class ShipmentRestController {
                 
 
                 // Shipment result = shipmentService.addOrdersToShipment(shipment, requestBody.getOrderIds(), postalCode);
-                ListResponse resultAddingOrders = shipmentService.removeOrders(shipment, info.getOrderIds(), postalCode);
-                List<String> acceptedArray = resultAddingOrders.getAcceptedArray();
+                ListResponse resultRemoveOrders = shipmentService.removeOrders(shipment, info.getOrderIds(), postalCode);
+
                 return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response<>(
                     false, 
-                    "Thêm đơn hàng vào lô thành công", 
-                    acceptedArray
+                    "Xóa đơn hàng vào lô thành công", 
+                    resultRemoveOrders
                 ));
             } else if (List.of("MANAGER", "TELLER").contains(userRole)) {
                 // String agencyId = user.getAgencyId();
@@ -207,12 +207,11 @@ public class ShipmentRestController {
 
                 // Shipment result = shipmentService.removeOrdersFromShipment(shipment, requestBody.getOrderIds(), postalCode);
                 shipmentService.removeOrders(shipment, info.getOrderIds(), postalCode);
-                ListResponse resultAddingOrders = shipmentService.removeOrders(shipment, info.getOrderIds(), null);
-                List<String> acceptedArray = resultAddingOrders.getAcceptedArray();
+                ListResponse resultRemoveOrders = shipmentService.removeOrders(shipment, info.getOrderIds(), null);
                 return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response<>(
                     false, 
-                    "Thêm đơn hàng vào lô thành công", 
-                    acceptedArray
+                    "Xóa đơn hàng vào lô thành công", 
+                    resultRemoveOrders
                 ));
             }
 
@@ -228,12 +227,11 @@ public class ShipmentRestController {
             
 
             // Shipment result = shipmentService.removeOrdersToShipment(shipment, requestBody.getOrderIds(), postalCode);
-            ListResponse resultAddingOrders = shipmentService.removeOrders(shipment, info.getOrderIds(), postalCode);
-            List<String> acceptedArray = resultAddingOrders.getAcceptedArray();
+            ListResponse resultRemoveOrders = shipmentService.removeOrders(shipment, info.getOrderIds(), postalCode);
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response<>(
                 false, 
-                "Thêm đơn hàng vào lô thành công", 
-                acceptedArray
+                "Xóa đơn hàng vào lô thành công", 
+                resultRemoveOrders
             ));
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -331,11 +329,11 @@ public class ShipmentRestController {
     }
 
     @PostMapping("/get_journey")
-    public ResponseEntity<Response<List<Map<String, String>>>> getJourney(@RequestParam Map<String, String> queryParams) {
+    public ResponseEntity<Response<List<String>>> getJourney(@RequestParam Map<String, String> queryParams) {
         try {
 
             String shipmentId = queryParams.get("shipment_id");
-            List<Map<String, String>> journey = shipmentService.getJourney(shipmentId);
+            List<String> journey = shipmentService.getJourney(shipmentId);
             return ResponseEntity.status(HttpStatus.OK).body(new Response<> (
                 false,
                 "Lấy thông tin hành trình thành công!",
@@ -554,7 +552,7 @@ public class ShipmentRestController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(
                 true,
-                "Đã xảy ra lỗi. Vui lòng thử lại.",
+                e.getMessage(),
                 null
             ));
         }
@@ -614,7 +612,7 @@ public class ShipmentRestController {
         ));
     }
 
-    @PostMapping("/get")
+    @PostMapping("/search")
     public ResponseEntity<Response<List<Shipment>>> getShipments(@RequestBody Shipment criteria,
                                        @RequestParam(required = false, defaultValue = "0") int rows,
                                        @RequestParam(required = false, defaultValue = "0") int page) {

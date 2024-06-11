@@ -48,6 +48,9 @@ public class DBUtils {
 
             try {
                 List<T> results = namedParameterJdbcTemplate.query(queryBuilder.toString(), params, new BeanPropertyRowMapper<>(type)); 
+                if(results.size() == 0) {
+                    return null;
+                }
                 return results.get(0);
             } catch (EmptyResultDataAccessException e) {
                 return null;
@@ -82,6 +85,9 @@ public class DBUtils {
 
             try {
                 List<T> results = namedParameterJdbcTemplate.query(queryBuilder.toString(), params, new BeanPropertyRowMapper<>(type)); 
+                if(results.size() == 0) {
+                    return null;
+                }
                 return results.get(0);
             } catch (EmptyResultDataAccessException e) {
                 return null;

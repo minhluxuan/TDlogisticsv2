@@ -5,3 +5,43 @@ Content-Type: application/json
 {
 
 }
+
+###
+POST http://localhost:8080/v2/shipments/search
+Content-Type: application/json
+
+{
+    "shipmentId": "TD_71000_20240612002814469"
+}
+
+###
+PUT http://localhost:8080/v2/shipments/accept?shipmentId=TD_71000_20240612002814469
+Content-Type: application/json
+
+{
+    
+}
+
+###
+POST http://localhost:8080/v2/shipments/confirm_create
+Content-Type: application/json
+
+{
+    "shipmentId": "TD_71000_20240612002814469"
+}
+
+###
+POST http://localhost:8080/v2/shipments/add_orders?shipmentId=TD_71000_20240612002814469
+Content-Type: application/json
+
+{
+    "orderIds": ["BC_71000_2024520105429692", "BC_71000_202442910452665", "BC_71000_202442910333051"]
+}
+
+###
+POST http://localhost:8080/v2/shipments/remove_orders?shipmentId=BC_71000_2024228225740952
+Content-Type: application/json
+
+{
+    "orderIds": ["BC_71000_2024520105429692", "BC_71000_202442910452665"]
+}

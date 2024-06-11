@@ -14,6 +14,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 @Entity
 @Table(name = "shipment")
 public class Shipment {
@@ -59,6 +61,7 @@ public class Shipment {
     private String vehicleId;
 
     @Column(name = "mass", columnDefinition = "float default 0")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Float mass = 0.0f;
 
     @Column(name = "order_ids", columnDefinition = "longtext")
@@ -79,11 +82,42 @@ public class Shipment {
     @Column(name = "last_update", columnDefinition = "datetime default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP")
     private Date lastUpdate;
 
-    @Column(name = "journey", columnDefinition = "longtext", length = 16777215)
-    @Convert(converter = ListMapToStringConverter.class)
-    private List<Map<String, String>> journey;
+    @Column(name = "journey",  columnDefinition = "LONGTEXT")
+    @Convert(converter = ListToStringConverter.class)
+    private List<String> journey;
+
+    
 
     // Getters and Setters
+
+    public Shipment(String shipmentId, String agencyId, String agencyIdDest, Float longSource, Float latSource,
+            String currentAgencyId, Float currentLat, Float currentLong, Float longDestination, Float latDestination,
+            String transportPartnerId, String staffId, String vehicleId, Float mass, List<String> orderIds,
+            String parent, Integer status, Date createdAt, Date lastUpdate, List<String> journey) {
+        this.shipmentId = shipmentId;
+        this.agencyId = agencyId;
+        this.agencyIdDest = agencyIdDest;
+        this.longSource = longSource;
+        this.latSource = latSource;
+        this.currentAgencyId = currentAgencyId;
+        this.currentLat = currentLat;
+        this.currentLong = currentLong;
+        this.longDestination = longDestination;
+        this.latDestination = latDestination;
+        this.transportPartnerId = transportPartnerId;
+        this.staffId = staffId;
+        this.vehicleId = vehicleId;
+        this.mass = mass;
+        this.orderIds = orderIds;
+        this.parent = parent;
+        this.status = status;
+        this.createdAt = createdAt;
+        this.lastUpdate = lastUpdate;
+        this.journey = journey;
+    }
+
+    public Shipment() {
+    }
 
     public String getShipmentId() {
         return shipmentId;
@@ -237,11 +271,25 @@ public class Shipment {
         this.lastUpdate = lastUpdate;
     }
 
-    public List<Map<String, String>> getJourney() {
+    public List<String> getJourney() {
         return journey;
     }
 
-    public void setJourney(List<Map<String, String>> journey) {
+    public void setJourney(List<String> journey) {
         this.journey = journey;
     }
+
+    @Override
+    public String toString() {
+        return "Shipment [shipmentId=" + shipmentId + ", agencyId=" + agencyId + ", agencyIdDest=" + agencyIdDest
+                + ", longSource=" + longSource + ", latSource=" + latSource + ", currentAgencyId=" + currentAgencyId
+                + ", currentLat=" + currentLat + ", currentLong=" + currentLong + ", longDestination=" + longDestination
+                + ", latDestination=" + latDestination + ", transportPartnerId=" + transportPartnerId + ", staffId="
+                + staffId + ", vehicleId=" + vehicleId + ", mass=" + mass + ", orderIds=" + orderIds + ", parent="
+                + parent + ", status=" + status + ", createdAt=" + createdAt + ", lastUpdate=" + lastUpdate
+                + ", journey=" + journey + "]";
+    }
+
+    
+    
 }

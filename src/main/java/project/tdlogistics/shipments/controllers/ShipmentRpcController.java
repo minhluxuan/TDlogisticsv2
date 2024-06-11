@@ -13,7 +13,7 @@ import project.tdlogistics.shipments.entities.Response;
 
 @Controller
 public class ShipmentRpcController {
-    @RabbitListener(queues = "rpc.Shipments")
+    @RabbitListener(queues = "rpc.shipments")
     private String handleRpcRequest(String jsonRequest) throws Exception {
         try {
             ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());

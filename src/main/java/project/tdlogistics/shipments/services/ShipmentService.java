@@ -62,45 +62,50 @@ public class ShipmentService {
         shipment.setShipmentId(shipmentId);
         shipment.setCreatedAt(createdTime);
         shipment.setLastUpdate(createdTime);
+        shipment.setOrderIds(new ArrayList<>());
+        String postalCode = null;
+
         if(shipment.getAgencyIdDest() != null) {
             // Agency agency = agencyRepository.findOneByAgencyId(shipment.getAgencyIdDest());
             // shipment.setLatDestination(agency.getLatitude());
             // shipment.setLongDestination(agency.getLongitude());
         }
 
-        Map<String, String> journeyInfo = new HashMap<>();
-
+        List<String> journeyInfo = new ArrayList<>();
+        boolean resultCreatingShipment = false;
         if(userRole.equals("AGENCY_MANAGER") || userRole.equals("AGENCY_TELLER")) {
             // const postalCode = utils.getPostalCodeFromAgencyID(req.user.agency_id);
-            final String postalCode = "71000"; 
-            journeyInfo.put("time", formattedTime);
-            journeyInfo.put("message", String.format("Lô hàng được tạo tại Bưu cục/Đại lý %s bởi nhân viên %s.", "TD_71000_089204006685", "TD_71000_0123456789"));
+            postalCode = getPostalCodeFromAgencyId(agencyIdSource);  
+            journeyInfo.add(String.format("%s: Lô hàng được tạo tại Bưu cục/Đại lý %s bởi nhân viên %s.", formattedTime, "TD_71000_089204006685", "TD_71000_0123456789"));
+            shipment.setStatus(0);
+            shipment.setJourney(journeyInfo);
+            resultCreatingShipment = shipmentRepositoryImplement.createNewShipment(shipment, postalCode);
+            // shipment.setJourney(journeyInfo);
+            // setJourney(shipmentId, formattedTime, shipmentId, postalCode);
         } 
         else if(userRole.equals("MANAGER") || userRole.equals("TELLER")) {
             // const postalCode = utils.getPostalCodeFromAgencyID(req.user.agency_id);
-            final String postalCode = "00001";
-            journeyInfo.put("time", formattedTime);
-            journeyInfo.put("message", String.format("Lô hàng được tạo tại trung tâm chia chọn %s bởi nhân viên %s.", "TD_00001_089204006685", "TD_00001_0123456789"));
+            postalCode = getPostalCodeFromAgencyId(agencyIdSource);
+            journeyInfo.add(String.format("%s: Lô hàng được tạo tại trung tâm chia chọn %s bởi nhân viên %s.", formattedTime, "TD_00001_089204006685", "TD_00001_0123456789"));
+            shipment.setStatus(2);
+            shipment.setJourney(journeyInfo);
+            shipmentRepositoryImplement.createNewShipment(shipment, postalCode);
+            resultCreatingShipment = shipmentRepositoryImplement.createNewShipment(shipment, null);
+            
+            // setJourney(shipmentId, formattedTime, shipmentId, postalCode);
+            // setJourney(shipmentId, formattedTime, shipmentId, null);
         } 
         else if(userRole.equals("ADMIN")) {
-            journeyInfo.put("time", formattedTime);
-            journeyInfo.put("message", String.format("Lô hàng được tạo tại Tổng cục %s bởi nhân viên %s.", "TD_00001_089204006685", "TD_00001_0123456789"));      
+            journeyInfo.add(String.format("%s: Lô hàng được tạo tại Tổng cục %s bởi nhân viên %s.", formattedTime, "TD_00001_089204006685", "TD_00001_0123456789"));      
+            shipment.setStatus(2);
+            shipment.setJourney(journeyInfo);
+            resultCreatingShipment = shipmentRepositoryImplement.createNewShipment(shipment, null);
+            // shipment.setJourney(journeyInfo);
+            // setJourney(shipmentId, formattedTime, shipmentId, null);
         }
-        // Create a list to hold the journey info maps
-        List<Map<String, String>> journeyInfoList = new ArrayList<>();
-        journeyInfoList.add(journeyInfo);
-        
-        // Without converter
-        // Convert journeyInfoList to JSON string
-        // ObjectMapper objectMapper = new ObjectMapper(); // Assuming you have Jackson ObjectMapper
-        // String journeyInfoJson = objectMapper.writeValueAsString(journeyInfoList);
-
-        // With converter
-        shipment.setStatus(0);
-        shipment.setJourney(journeyInfoList);
-
-
-        shipmentRepository.save(shipment);
+        if(!resultCreatingShipment) {
+            return null;
+        }
         return shipment;
     }
 
@@ -116,18 +121,6 @@ public class ShipmentService {
         }
     }
 
-    // public Optional<Shipment> checkExistShipment(Shipment criteria, String postalCode) {
-    //     ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreNullValues();
-    //     Example<Shipment> example = Example.of(criteria, matcher);
-    //     List<Shipment> shipments = shipmentRepository.findAll(example);
-    //     if (shipments.size() == 1) {
-    //         final Shipment shipment = shipments.get(0);
-    //         return Optional.of(shipment);
-    //     } else {
-    //         return Optional.empty();
-    //     }
-    // }
-
     public boolean checkExistShipment(String shipmentId, String postalCode) {
         Shipment shipment = shipmentRepositoryImplement.getOneShipment(shipmentId, postalCode);
         if(shipment != null) {
@@ -136,27 +129,24 @@ public class ShipmentService {
         return false;
     }
 
-
-    public Shipment getOneShipment(String shipemtId, String postalCode) {
-        return shipmentRepositoryImplement.getOneShipment(shipemtId, postalCode);
+    public Shipment getOneShipment(String shipmentId, String postalCode) {
+        final String table = (postalCode == null) ? "shipment" : (postalCode + "_shipment");
+        List<String> fields = Arrays.asList("shipment_id");
+        List<Object> values = Arrays.asList(shipmentId);
+        return dbUtils.findOneIntersect(table, fields, values, Shipment.class);
     }
  
-    public ListResponse addOrders(Shipment shipment, List<String> orderIds, String postalCode) {
-
-        
+    public ListResponse addOrders(Shipment shipment, List<String> orderIds, String postalCode) {   
         int acceptedNumber = 0;
         List<String> acceptedArray = new ArrayList<>();
         int notAcceptedNumber = 0;
         List<String> notAcceptedArray = new ArrayList<>();
         
-        List<String> prevOrderIds = shipment.getOrderIds();
-        if (prevOrderIds.size() == 0) {
-            prevOrderIds = new ArrayList<>();
-        }
 
+        System.out.println(shipment.getOrderIds().toString());
         for (String orderId : orderIds) {
-            if (!prevOrderIds.contains(orderId) && updateParentAndIncreaseMass(shipment, orderId, postalCode)) {
-                prevOrderIds.add(orderId);
+            if (!shipment.getOrderIds().contains(orderId) && updateParentAndIncreaseMass(shipment, orderId, postalCode)) {
+                shipment.getOrderIds().add(orderId);
                 acceptedNumber++;
                 acceptedArray.add(orderId);
             } else {
@@ -165,13 +155,21 @@ public class ShipmentService {
             }
         }
 
-        shipment.setOrderIds(prevOrderIds);
+
+        shipment.setOrderIds(shipment.getOrderIds());
         if(postalCode == null) {
             shipmentRepository.save(shipment);
         } else {
             final String shipmentTable = postalCode + "_shipment";
+            String stringifyOrderIds;
+            try {
+                stringifyOrderIds = objectMapper.writeValueAsString(shipment.getOrderIds());
+            } catch (JsonProcessingException e) {
+                System.out.println("Error converting OrderIds to JSON: " + e.getMessage());
+                return null;
+            }
             List<String> fields = Arrays.asList("order_ids");
-            List<Object> values = Arrays.asList(shipment.getOrderIds());
+            List<Object> values = Arrays.asList(stringifyOrderIds);
             List<String> conditionFields = Arrays.asList("shipment_id");
             List<Object> conditionValues = Arrays.asList(shipment.getShipmentId());
             dbUtils.update(shipmentTable, fields, values, conditionFields, conditionValues);
@@ -184,9 +182,7 @@ public class ShipmentService {
         return shipmentRepositoryImplement.updateParentAndIncreaseMass(shipment, orderId, postalCode);
     }
 
-    public ListResponse removeOrders(Shipment shipment, List<String> orderIds, String postalCode) {
-
-        
+    public ListResponse removeOrders(Shipment shipment, List<String> orderIds, String postalCode) {     
         int acceptedNumber = 0;
         List<String> acceptedArray = new ArrayList<>();
         int notAcceptedNumber = 0;
@@ -207,14 +203,21 @@ public class ShipmentService {
                 notAcceptedArray.add(orderId);
             }
         }
-
+        System.out.println(prevOrderIds.toString());
         shipment.setOrderIds(prevOrderIds);
         if(postalCode == null) {
             shipmentRepository.save(shipment);
         } else {
             final String shipmentTable = postalCode + "_shipment";
+            String stringifyOrderIds;
+            try {
+                stringifyOrderIds = objectMapper.writeValueAsString(shipment.getOrderIds());
+            } catch (JsonProcessingException e) {
+                System.out.println("Error converting OrderIds to JSON: " + e.getMessage());
+                return null;
+            }
             List<String> fields = Arrays.asList("order_ids");
-            List<Object> values = Arrays.asList(shipment.getOrderIds());
+            List<Object> values = Arrays.asList(stringifyOrderIds);
             List<String> conditionFields = Arrays.asList("shipment_id");
             List<Object> conditionValues = Arrays.asList(shipment.getShipmentId());
             dbUtils.update(shipmentTable, fields, values, conditionFields, conditionValues);
@@ -226,7 +229,6 @@ public class ShipmentService {
     public boolean updateParentAndDecreaseMass(Shipment shipment, String orderId, String postalCode) {     
         return shipmentRepositoryImplement.updateParentAndDecreaseMass(shipment, orderId, postalCode);
     }
-
 
     public String generateShipmentId(String agencyId, Date createdTime) {
         if (agencyId == null || agencyId.isEmpty() || !agencyId.contains("_")) {
@@ -301,23 +303,14 @@ public class ShipmentService {
             return false;
         }
 
-        // Without converter
+        message = updatedTime + ": " + message;
 
-        // List<Map<String, String>> journey = new ArrayList<>();
-        // try {
-        //     journey = new ObjectMapper().readValue(shipment.getJourney(), new TypeReference<List<Map<String, String>>>(){});
-        // } catch (IOException e) {
-        //     e.printStackTrace();
-        // }
-        
         // With coverter
-        List<Map<String, String>> journey = shipment.getJourney();
-
-        Map<String, String> newJourneyEntry = new HashMap<>();
-        newJourneyEntry.put("time", updatedTime);
-        newJourneyEntry.put("message", message);
-        journey.add(newJourneyEntry);
-
+        List<String> journey = shipment.getJourney();
+        if(journey == null) {
+            journey = new ArrayList<>();
+        }
+        journey.add(message);
         String stringifyJourney;
         try {
             stringifyJourney = objectMapper.writeValueAsString(journey);
@@ -348,7 +341,7 @@ public class ShipmentService {
 
     }
 
-    public List<Map<String, String>> getJourney(String shipmentId) {
+    public List<String> getJourney(String shipmentId) {
         Shipment shipment = shipmentRepositoryImplement.getOneShipment(shipmentId, null);
     
         if (shipment == null) {
@@ -453,110 +446,10 @@ public class ShipmentService {
     }
 
     public boolean confirmCreateShipment(Shipment shipment, String postalCode) {
-        String shipmentTable = (postalCode == null) ? "shipment" : (postalCode + "_shipment");
-        List<String> fields = new ArrayList<>();
-        List<Object> values = new ArrayList<>();
-    
-        // Manually add fields and corresponding values
-        fields.add("shipment_id");
-        values.add(shipment.getShipmentId());
-    
-        if (shipment.getAgencyId() != null) {
-            fields.add("agency_id");
-            values.add(shipment.getAgencyId());
+        if(!shipmentRepositoryImplement.createNewShipment(shipment, null)) {
+            return false;
         }
-    
-        if (shipment.getAgencyIdDest() != null) {
-            fields.add("agency_id_dest");
-            values.add(shipment.getAgencyIdDest());
-        }
-    
-        if (shipment.getLongSource() != null) {
-            fields.add("long_source");
-            values.add(shipment.getLongSource());
-        }
-    
-        if (shipment.getLatSource() != null) {
-            fields.add("lat_source");
-            values.add(shipment.getLatSource());
-        }
-    
-        if (shipment.getCurrentAgencyId() != null) {
-            fields.add("current_agency_id");
-            values.add(shipment.getCurrentAgencyId());
-        }
-    
-        if (shipment.getCurrentLat() != null) {
-            fields.add("current_lat");
-            values.add(shipment.getCurrentLat());
-        }
-    
-        if (shipment.getCurrentLong() != null) {
-            fields.add("current_long");
-            values.add(shipment.getCurrentLong());
-        }
-    
-        if (shipment.getLongDestination() != null) {
-            fields.add("long_destination");
-            values.add(shipment.getLongDestination());
-        }
-    
-        if (shipment.getLatDestination() != null) {
-            fields.add("lat_destination");
-            values.add(shipment.getLatDestination());
-        }
-    
-        if (shipment.getTransportPartnerId() != null) {
-            fields.add("transport_partner_id");
-            values.add(shipment.getTransportPartnerId());
-        }
-    
-        if (shipment.getStaffId() != null) {
-            fields.add("staff_id");
-            values.add(shipment.getStaffId());
-        }
-    
-        if (shipment.getVehicleId() != null) {
-            fields.add("vehicle_id");
-            values.add(shipment.getVehicleId());
-        }
-    
-        if (shipment.getMass() != null) {
-            fields.add("mass");
-            values.add(shipment.getMass());
-        }
-    
-        if (shipment.getOrderIds() != null) {
-            fields.add("order_ids");
-            values.add(shipment.getOrderIds());
-        }
-    
-        if (shipment.getParent() != null) {
-            fields.add("parent");
-            values.add(shipment.getParent());
-        }
-    
-        if (shipment.getStatus() != null) {
-            fields.add("status");
-            values.add(shipment.getStatus());
-        }
-    
-        if (shipment.getCreatedAt() != null) {
-            fields.add("created_at");
-            values.add(shipment.getCreatedAt());
-        }
-    
-        if (shipment.getLastUpdate() != null) {
-            fields.add("last_update");
-            values.add(shipment.getLastUpdate());
-        }
-    
-        if (shipment.getJourney() != null) {
-            fields.add("journey");
-            values.add(shipment.getJourney());
-        }
-    
-        return dbUtils.insert(shipmentTable, fields, values) > 0;
+        return shipmentRepositoryImplement.createNewShipment(shipment, postalCode);
     }
     
 
@@ -605,6 +498,8 @@ public class ShipmentService {
             }
         }
         
+        System.out.println(values.toString());
+
         return dbUtils.find(shipmentTable, fields, values, false, null, null, Shipment.class);
     }
 

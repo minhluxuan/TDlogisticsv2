@@ -8,8 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.util.Map;
-
-@Converter
+@Converter(autoApply = true)
 public class ListMapToStringConverter implements AttributeConverter<List<Map<String, String>>, String> {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -28,6 +27,7 @@ public class ListMapToStringConverter implements AttributeConverter<List<Map<Str
 
     @Override
     public List<Map<String, String>> convertToEntityAttribute(String dbData) {
+        System.out.println("Attempting to convert dbData to List<Map<String, String>>: " + dbData);
         if (dbData == null) {
             return List.of(); // or return a default value
         }
@@ -37,4 +37,5 @@ public class ListMapToStringConverter implements AttributeConverter<List<Map<Str
             throw new RuntimeException("Error converting string to list", e);
         }
     }
+
 }
