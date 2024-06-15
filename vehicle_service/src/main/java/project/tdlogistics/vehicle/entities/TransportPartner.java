@@ -2,9 +2,11 @@ package project.tdlogistics.vehicle.entities;
 
 import org.hibernate.validator.constraints.EAN;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Entity;
 
-@Entity
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TransportPartner {
     private String name;
 

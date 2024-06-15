@@ -14,10 +14,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-@Entity
-@Table(name = "shipment")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Shipment {
 
     @Id

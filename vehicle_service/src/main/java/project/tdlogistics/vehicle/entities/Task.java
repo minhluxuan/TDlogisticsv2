@@ -1,8 +1,10 @@
 package project.tdlogistics.vehicle.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Entity;
 
-@Entity
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Task {
     private String name;
     private String shipmentId;

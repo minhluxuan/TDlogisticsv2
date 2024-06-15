@@ -77,28 +77,30 @@ public class VehicleService {
     }
 
     public List<Vehicle> getManyVehicles(Vehicle criteria) throws Exception {
+
         ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreNullValues();
         Example<Vehicle> example = Example.of(criteria, matcher);
         List<Vehicle> resultGetVehicles = vehicleRepository.findAll(example);
+
         for (Vehicle vehicle : resultGetVehicles) {
-            // transportPartnerService.getOneTransportPartner(vehicle.getTransportPartnerId());
+            // agency
             Agency resultGetOneAgency = agencyService.getOneAgencyById(vehicle.getAgencyId());
             if (resultGetOneAgency == null) {
                 throw new EntityNotFoundException("Agency with id " + vehicle.getAgencyId() + " not found");
             }
             final String agencyName = resultGetOneAgency.getName();
             vehicle.setAgencyName(agencyName);
-            // staff
 
+            // staff
             Optional<Staff> resultGetOneStaffOpt = staffService.getOneStaffById(vehicle.getStaffId());
             if (resultGetOneStaffOpt.isEmpty()) {
                 throw new EntityNotFoundException("Staff with id " + vehicle.getStaffId() + " not found");
             }
-
             Staff resultGetOneStaff = resultGetOneStaffOpt.get();
             final String staffName = resultGetOneStaff.getName();
             vehicle.setStaffName(staffName);
 
+            // transportPartner - ko throw exception do transportPartner co the null
             TransportPartner resultGetOneTransportPartner = transportPartnerService
                     .getOneTransportPartnerById(vehicle.getTransportPartnerId());
             if (resultGetOneTransportPartner != null) {
@@ -119,7 +121,7 @@ public class VehicleService {
         Optional<Vehicle> existingVehicleOpt = vehicleRepository.findById(updatedVehicle.getVehicleId());
 
         if (!existingVehicleOpt.isPresent()) {
-            throw new EntityNotFoundException("Vehicle with id " + updatedVehicle.getVehicleId() + " not found");
+            throw new EntityNotFoundException("Xe với id " + updatedVehicle.getVehicleId() + " không tồn tại");
         }
 
         Vehicle existingVehicle = existingVehicleOpt.get();
@@ -137,7 +139,7 @@ public class VehicleService {
 
         Optional<Vehicle> vehicleOpt = vehicleRepository.findById(vehicleId);
         if (!vehicleOpt.isPresent()) {
-            throw new EntityNotFoundException("Vehicle with id " + vehicleId + " not found");
+            throw new EntityNotFoundException("Xe với id " + vehicleId + " không tồn tại");
         }
         Vehicle resultGetOneVehicle = vehicleOpt.get();
         Float currentMass = resultGetOneVehicle.getMass();
@@ -145,7 +147,7 @@ public class VehicleService {
             // call for shipment service
             Optional<Shipment> resultGetOneShipmentOpt = shipmentService.getOneShipment(shipmentId);
             if (resultGetOneShipmentOpt.isEmpty()) {
-                throw new EntityNotFoundException("Shipment with id " + shipmentId + " not found");
+                throw new EntityNotFoundException("Shipment với id " + shipmentId + " không tồn tại");
             }
             Shipment resultGetOneShipment = resultGetOneShipmentOpt.get();
 
@@ -154,7 +156,7 @@ public class VehicleService {
                 currentMass += resultGetOneShipment.getMass();
             } else {
                 throw new IllegalArgumentException(
-                        "Shipment with id " + shipmentId + " already exists in vehicle with id " + vehicleId);
+                        "Shipment với id " + shipmentId + " đã thuộc về xe có id " + vehicleId);
 
             }
         }
@@ -166,7 +168,7 @@ public class VehicleService {
     public void deleteShipmentFromVehicle(String vehicleId, List<String> shipmentIds) throws Exception {
         Optional<Vehicle> vehicleOpt = vehicleRepository.findById(vehicleId);
         if (!vehicleOpt.isPresent()) {
-            throw new EntityNotFoundException("Vehicle with id " + vehicleId + " not found");
+            throw new EntityNotFoundException("Xe với id " + vehicleId + " không tồn tại");
         }
         Vehicle vehicle = vehicleOpt.get();
         Float currentMass = vehicle.getMass();
@@ -174,7 +176,7 @@ public class VehicleService {
             // call for shipment service
             Optional<Shipment> shipmentOpt = shipmentService.getOneShipment(shipmentId);
             if (shipmentOpt.isEmpty()) {
-                throw new EntityNotFoundException("Shipment with id " + shipmentId + " not found");
+                throw new EntityNotFoundException("Shipment với id " + shipmentId + " không tồn tại");
             }
             Shipment shipment = shipmentOpt.get();
             if (vehicle.getShipmentIds().contains(shipment.getShipmentId())) {
@@ -182,7 +184,7 @@ public class VehicleService {
                 currentMass -= shipment.getMass();
             } else {
                 throw new IllegalArgumentException(
-                        "Shipment with id " + shipmentId + " does not exist in vehicle with id " + vehicleId);
+                        "Shipment với id " + shipmentId + " không ở trong xe có id " + vehicleId);
             }
         }
         vehicle.setMass(currentMass);
@@ -192,11 +194,11 @@ public class VehicleService {
     public void deleteVehicle(String vehicleId) {
         Optional<Vehicle> vehicleOpt = vehicleRepository.findById(vehicleId);
         if (!vehicleOpt.isPresent()) {
-            throw new EntityNotFoundException("Vehicle with id " + vehicleId + " not found");
+            throw new EntityNotFoundException("Xe với id " + vehicleId + " không tồn tại");
         }
         Vehicle vehicle = vehicleOpt.get();
         if (vehicle.getShipmentIds().size() > 0) {
-            throw new IllegalArgumentException("Vehicle with id " + vehicleId + " has shipments");
+            throw new IllegalArgumentException("Xe với id " + vehicleId + " đang chứa shipment");
         }
         vehicleRepository.deleteById(vehicleId);
     }
