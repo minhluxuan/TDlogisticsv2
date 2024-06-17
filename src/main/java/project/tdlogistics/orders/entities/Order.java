@@ -3,8 +3,6 @@ package project.tdlogistics.orders.entities;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -13,8 +11,8 @@ import project.tdlogistics.orders.configurations.ListToStringConverter;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -102,9 +100,9 @@ public class Order {
     @Column(name = "parent", length = 25)
     private String parent;
 
-    @Column(name = "journey", columnDefinition = "LONGTEXT")
+    @Column(name = "journey")
     @Convert(converter = ListToStringConverter.class)
-    private List<String> journey;
+    private List<Map<String, String>> journey;
 
     @Column(name = "COD")
     private Float cod;
@@ -161,7 +159,7 @@ public class Order {
             Float width, Float length, String provinceSource, String districtSource, String wardSource,
             String detailSource, Double longSource, Double latSource, String provinceDest, String districtDest,
             String wardDest, String detailDest, Double longDestination, Double latDestination, Float fee, String parent,
-            List<String> journey, Float cod, String shipper, Integer statusCode, byte miss, String sendImages,
+            List<Map<String, String>> journey, Float cod, String shipper, Integer statusCode, byte miss, String sendImages,
             String receiveImages, String sendSignature, String receiveSignature, String qrcode, String signature,
             Boolean paid, Date createdAt, Date lastUpdate, Long orderCode) {
         this.orderId = orderId;
@@ -417,11 +415,11 @@ public class Order {
         this.parent = parent;
     }
 
-    public List<String> getJourney() {
+    public List<Map<String, String>> getJourney() {
         return journey;
     }
 
-    public void setJourney(List<String> journey) {
+    public void setJourney(List<Map<String, String>> journey) {
         this.journey = journey;
     }
 

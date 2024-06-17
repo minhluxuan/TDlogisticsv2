@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,12 +26,14 @@ import project.tdlogistics.orders.services.OrderService;
 import project.tdlogistics.orders.services.OrderService.OrderStatus;
 import project.tdlogistics.orders.entities.Order;
 import project.tdlogistics.orders.entities.Response;
+import project.tdlogistics.orders.entities.Role;
 import project.tdlogistics.orders.entities.Ward;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
@@ -40,127 +43,94 @@ public class OrderRestController {
     @Autowired
     private OrderService orderService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
    @PostMapping("/check")
     public ResponseEntity<Response<Order>> checkExistOrder(@RequestBody Order criteria) throws Exception {
         try {
-            
-            ObjectMapper objectMapper = new ObjectMapper();
-            String json;
-            try {
-                json = objectMapper.writeValueAsString(criteria);
-                System.out.println(json);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
+            Optional<Order> optionalOrder = orderService.checkExistOrder(criteria);
+            if (optionalOrder.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.OK).body(new Response<Order>(false, "Đơn hàng không tồn tại", null));
             }
 
-            Optional<Order> OrderOptional;
-            try {
-                OrderOptional = orderService.checkExistOrder(criteria);
-            } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(false, "Đơn hàng không tồn tại.", null));
-            }
-
-            
-            if (OrderOptional.isPresent()) {
-                final Response response = new Response<>(false, "Đơn hàng đã tồn tại.", OrderOptional.get());
-                return ResponseEntity.status(HttpStatus.OK).body(response);
-            }
-
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(false, "Đơn hàng không tồn tại.", null));
-
-            
+            return ResponseEntity.status(HttpStatus.OK).body(new Response<Order>(false, "Đơn hàng đã tồn tại", optionalOrder.get()));
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
         }
     }
     
     @PostMapping(value = "/search")
-    public ResponseEntity<Response<List<Order>>> getOrders(@RequestBody Order criteria,
-                                       @RequestParam(required = false, defaultValue = "0") int rows,
-                                       @RequestParam(required = false, defaultValue = "0") int page) {
+    public ResponseEntity<Response<List<Order>>> getOrders(
+        @RequestHeader(name = "role") Role role,
+        @RequestHeader(name = "userId") String userId,
+        @RequestHeader(name = "agencyId", required = false) String agencyId,
+        @RequestBody Order criteria,
+        @RequestParam(required = false, defaultValue = "0") int rows,
+        @RequestParam(required = false, defaultValue = "0") int page) {
         try {
-            // Validate pagination conditions
-            if (rows < 0 || page < 0) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<List<Order>>(
-                    true,
-                    "Lỗi định dạng trang",
-                    null
+            if (Set.of(Role.CUSTOMER, Role.BUSINESS).contains(role)) {
+                return ResponseEntity.status(HttpStatus.OK).body(new Response<List<Order>>(
+                    false,
+                    "Lấy thông tin thành công", 
+                    orderService.getOrders(criteria, null)
+                ));
+            } 
+            
+            if (Set.of(
+                Role.AGENCY_MANAGER, Role.AGENCY_HUMAN_RESOURCE_MANAGER,
+                Role.AGENCY_TELLER, Role.AGENCY_COMPLAINTS_SOLVER,
+                Role.SHIPPER).contains(role)
+            ) {
+                final String postalCode = orderService.getPostalCodeFromAgencyId(agencyId);
+                return ResponseEntity.status(HttpStatus.OK).body(new Response<List<Order>>(
+                    false,
+                    "Lấy thông tin thành công", 
+                    orderService.getOrders(criteria, postalCode)
+                ));
+            } 
+
+            if (Set.of(
+                Role.ADMIN,Role.MANAGER,
+                Role.HUMAN_RESOURCE_MANAGER, Role.TELLER,
+                Role.COMPLAINTS_SOLVER, Role.SHIPPER).contains(role)
+            ) {
+                return ResponseEntity.status(HttpStatus.OK).body(new Response<List<Order>>(
+                    false,
+                    "Lấy thông tin thành công", 
+                    orderService.getOrders(criteria, null)
                 ));
             }
 
-            // Convert the info map to an Order object
-            // Order criteria = objectMapper.convertValue(info, Order.class);
-            System.out.println(criteria);
-            List<Order> result = new ArrayList<>();
-            
-            final String userRole = "ADMIN";
-            if (List.of("USER", "BUSINESS").contains(userRole)) {
-                result = orderService.getOrders(criteria, null);
-            } else if (List.of("AGENCY_MANAGER", "AGENCY_TELLER", "AGENCY_HUMAN_RESOURCE_MANAGER", "AGENCY_COMPLAINTS_SOLVER", "AGENCY_SHIPPER").contains(userRole)) {
-                final String userId = "TD_71000_089204006685";
-                final String postalCode = orderService.getPostalCodeFromAgencyId(userId);
-                result = orderService.getOrders(criteria, postalCode);
-            } else {
-                result = orderService.getOrders(criteria, null);
-            }
-
-            return ResponseEntity.status(HttpStatus.OK).body(new Response<List<Order>>(
-                false,
-                "Lấy thông tin đơn hàng thành công!",
-                result
-            ));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Response<List<Order>>(true, "Người dùng không được phép truy cập tài nguyên này", null));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<List<Order>>(
-                true,
-                e.getMessage(),
-                null
-            ));
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<List<Order>>(true, "Đã xảy ra lỗi. Vui lòng thử lại", null));
         }
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Response<Order>> createNewOrder(@RequestBody Order info) throws Exception {
+    public ResponseEntity<Response<Order>> createNewOrder(
+        @RequestHeader(name = "role") Role role,
+        @RequestHeader(name = "userId") String userId,
+        @RequestHeader(name = "agencyId", required = false) String agencyId,
+        @RequestBody Order payload
+    ) throws Exception {
         try {
-            final String userRole = "USER";
-            final String userId = "123mlnq3456";
-            final String userPhone = "0787919942";
 
-            final Ward managedAgency = orderService.findManagedAgency(info.getWardSource(), info.getDistrictSource(), info.getProvinceSource());
-            if(managedAgency == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Order>(
-                    true,
-                    "Xin lỗi quý khách. Hiện tại dịch vụ của TDLogistics chưa có mặt tại địa điểm này!",
-                    null
-                ));
-            }
+            // Check exist agency and shipper serving here\
+            String agencyIdWillServer = "BC_71000_077165007713";
+            payload.setAgencyId(agencyIdWillServer);
 
-            info.setAgencyId(managedAgency.getAgencyId());
-
-            // info.setAgencyId("BC_71000_089204008886");
-
-            if (List.of("USER").contains(userRole)) {
-                // ValidationResult validationResult = orderService.validateCreatingOrder(orderRequest);
-                // if (!validationResult.isValid()) {
-                //     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(true, validationResult.getMessage()));
-                // }
-                info.setUserId(userId);
-                info.setPhoneNumberSender(userPhone);
+            if (Set.of(Role.CUSTOMER).contains(role)) {
+                payload.setUserId(userId);
+                payload.setPhoneNumberSender(payload.getPhoneNumberSender());
                 OrderStatus orderStatus = OrderStatus.PROCESSING;
-                info.setStatusCode(orderStatus.getCode());
-            } else if (List.of("ADMIN", "MANAGER", "TELLER", "AGENCY_MANAGER", "AGENCY_TELLER").contains(userRole)) {
-                // ValidationResult validationResult = orderService.validateCreatingOrderByAdmin(info);
-                // if (!validationResult.isValid()) {
-                //     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(true, validationResult.getMessage()));
-                // }
+                payload.setStatusCode(orderStatus.getCode());
+            } else if (Set.of(Role.ADMIN, Role.MANAGER, Role.HUMAN_RESOURCE_MANAGER, Role.AGENCY_MANAGER, Role.AGENCY_TELLER).contains(role)) {
                 OrderStatus orderStatus = OrderStatus.RECEIVED;
-                info.setStatusCode(orderStatus.getCode());
+                payload.setStatusCode(orderStatus.getCode());
             }
 
-            if ("NNT".equals(info.getServiceType()) && !info.getProvinceSource().equals(info.getProvinceDest())) {
+            if ("NNT".equals(payload.getServiceType()) && !payload.getProvinceSource().equals(payload.getProvinceDest())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<Order>(
                     true,
                     "Đơn hàng phải được giao nội tỉnh!",
@@ -168,10 +138,8 @@ public class OrderRestController {
                 ));
             }
             
-            
-
-            final boolean resultCreatingOrder = orderService.createNewOrder(info);
-            if(!resultCreatingOrder) {
+            final Order createdOrder = orderService.createNewOrder(payload);
+            if (createdOrder == null) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<Order>(
                     true,
                     "Tạo đơn không thành công. Vui lòng thử lại!",
@@ -182,9 +150,10 @@ public class OrderRestController {
             return ResponseEntity.status(HttpStatus.CREATED).body(new Response<Order>(
                 true,
                 "Tạo đơn hàng thành công.",
-                null
+                createdOrder
             ));
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<Order>(
                 true,
                 e.getMessage(),
@@ -194,58 +163,54 @@ public class OrderRestController {
     }
     
     @PostMapping("/update")
-    public ResponseEntity<Response<Order>> updateOrder(@RequestBody Order info,
-                                                    @RequestParam Map<String, String> queryParams) throws Exception {
+    public ResponseEntity<Response<Order>> updateOrder(
+        @RequestHeader(name = "role") Role role,
+        @RequestHeader(name = "userId") String userId,
+        @RequestHeader(name = "agencyId", required = false) String agencyId,
+        @RequestParam(name = "orderId") String orderId,
+        @RequestBody Order payload
+    ) {
         try {
-            //TODO: process POST request
-            // Validate query parameters and body
-            // String error1 = orderService.validateQueryUpdatingOrder(queryParams);
-            // if (error1 != null) {
-            //     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<Order>(
-            //             true,
-            //             error1,
-            //             null
-            //         ));
-            // }
+            if (Set.of(Role.AGENCY_MANAGER, Role.AGENCY_TELLER).contains(role)) {
+                final Order updatedOrder = orderService.updateOrder(payload, orderId, agencyId);
 
-            // String error2 = orderService.validateUpdatingOrder(orderUpdateRequest);
-            // if (error2 != null) {
-            //     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<Order>(
-            //             true,
-            //             error2,
-            //             null
-            //         ));
-            // }
-
-            final String userRole = "SHIPPER";
-            final String agencyId = "TD_71000_089204006685";
-            if (List.of("AGENCY_MANAGER", "AGENCY_TELLER").contains(userRole)) {
-                // queryParams.put("agency_id", user.getAgencyId());
-                queryParams.put("agency_id", agencyId);
-            } else if (List.of("SHIPPER", "AGENCY_SHIPPER", "PARTNER_SHIPPER").contains(userRole)) {
-                String postalCode = orderService.getPostalCodeFromAgencyId(agencyId);
-                // boolean taskExists = shippersService.checkExistTask(new TaskRequest(queryParams.get("order_id")), postalCode);
-                // if (!taskExists) {
-                //     return ResponseEntity.status(404).body(Map.of("error", true, "message", "Đơn hàng " + queryParams.get("order_id") + " không tồn tại."));
-                // }
-                queryParams.put("agency_id", agencyId);
-            }
-
-            try {
-                orderService.updateOrder(info, queryParams);
-            } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Order>(
+                if (updatedOrder == null) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Order>(
+                        true,
+                        String.format("Đơn hàng %s không tồn tại", orderId),
+                        null
+                    ));
+                }
+                
+                return ResponseEntity.status(HttpStatus.CREATED).body(new Response<Order>(
                     true,
-                    e.getMessage(),
-                    null
+                    "Cập nhật đơn hàng thành công",
+                    updatedOrder
+                ));
+            }
+            
+            if (Set.of(Role.SHIPPER).contains(role)) {
+                String postalCode = orderService.getPostalCodeFromAgencyId(agencyId);
+                
+                // Check exist task here
+
+                final Order updatedOrder = orderService.updateOrder(payload, orderId, agencyId);
+                if (updatedOrder == null) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Order>(
+                        false,
+                        String.format("Đơn hàng %s không tồn tại", orderId),
+                        null
+                    ));
+                }
+                
+                return ResponseEntity.status(HttpStatus.CREATED).body(new Response<Order>(
+                    false,
+                    "Cập nhật đơn hàng thành công",
+                    updatedOrder
                 ));
             }
 
-            return ResponseEntity.status(HttpStatus.OK).body(new Response<Order>(
-                false,
-                "Cập nhật đơn hàng thành công",
-                null
-            ));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Response<Order>(true, "Người dùng không được phép truy cập tài nguyên này", null));
         }  catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<Order>(
                 true,
@@ -253,7 +218,6 @@ public class OrderRestController {
                 null
             ));
         }                                             
-        
     }
     
     @DeleteMapping("/cancel")
