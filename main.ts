@@ -15,7 +15,7 @@ export class AuthOperation {
     private baseUrl: String;
     
     constructor() {
-        this.baseUrl = "http://localhost:8081/v2/auth/otp";
+        this.baseUrl = "https://api2.tdlogistics.net.vn/v2/auth/otp";
     }
 
     async sendOtp(payload: SendingOtp) {
@@ -73,7 +73,7 @@ export class CustomerOperation {
     private baseUrl: String;
 
     constructor() {
-        this.baseUrl = "http://localhost:8081/v2/customers";
+        this.baseUrl = "https://api2.tdlogistics.net.vn/v2/customers";
     }
 
     async getAuthenticatedCustomerInfo() {
@@ -234,7 +234,7 @@ export interface CancelingOrderCondition {
 export class OrdersOperation {
     private baseUrl: string;
     constructor() {
-        this.baseUrl = "http://localhost:8080/v2/orders";
+        this.baseUrl = "https://api2.tdlogistics.net.vn/v2/orders";
     }
 
     async create(payload: UpdatingOrderInfo) {
