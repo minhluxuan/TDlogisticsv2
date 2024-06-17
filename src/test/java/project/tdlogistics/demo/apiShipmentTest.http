@@ -11,11 +11,11 @@ POST http://localhost:8080/v2/shipments/search
 Content-Type: application/json
 
 {
-    "shipmentId": "TD_71000_20240612002814469"
+    "shipmentId": "TD_71000_20240612003111232"
 }
 
 ###
-PUT http://localhost:8080/v2/shipments/accept?shipmentId=TD_71000_20240612002814469
+PUT http://localhost:8080/v2/shipments/accept?shipmentId=TD_71000_20240612003111232
 Content-Type: application/json
 
 {
@@ -27,11 +27,11 @@ POST http://localhost:8080/v2/shipments/confirm_create
 Content-Type: application/json
 
 {
-    "shipmentId": "TD_71000_20240612002814469"
+    "shipmentId": "TD_71000_20240612003111232"
 }
 
 ###
-POST http://localhost:8080/v2/shipments/add_orders?shipmentId=TD_71000_20240612002814469
+POST http://localhost:8080/v2/shipments/add_orders?shipmentId=TD_71000_20240612003111232
 Content-Type: application/json
 
 {

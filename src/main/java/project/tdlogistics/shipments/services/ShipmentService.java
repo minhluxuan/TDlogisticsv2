@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -22,10 +23,15 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.mysql.cj.x.protobuf.MysqlxDatatypes.Array;
 
 import jakarta.transaction.Transactional;
+import project.tdlogistics.shipments.entities.Agency;
 import project.tdlogistics.shipments.entities.ListResponse;
+import project.tdlogistics.shipments.entities.Order;
+import project.tdlogistics.shipments.entities.Request;
+import project.tdlogistics.shipments.entities.Response;
 import project.tdlogistics.shipments.entities.Shipment;
 import project.tdlogistics.shipments.repositories.ColumnNameMapper;
 import project.tdlogistics.shipments.repositories.DBUtils;
@@ -48,11 +54,14 @@ public class ShipmentService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    // @Autowired
-    // private AgencyRepository agencyRepository;
+    @Autowired
+    private AmqpTemplate amqpTemplate;
+
+    private String exchange = "rpc-direct-exchange";
+
 
     public Shipment createNewShipment(Shipment shipment, String userRole) throws JsonProcessingException {
-        // Set created time and format it
+        
         Date createdTime = new Date();
         SimpleDateFormat setDateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         String formattedTime = setDateFormat.format(createdTime);
@@ -66,25 +75,25 @@ public class ShipmentService {
         String postalCode = null;
 
         if(shipment.getAgencyIdDest() != null) {
-            // Agency agency = agencyRepository.findOneByAgencyId(shipment.getAgencyIdDest());
-            // shipment.setLatDestination(agency.getLatitude());
-            // shipment.setLongDestination(agency.getLongitude());
+            Agency agency = getOneAgency(shipment.getAgencyIdDest());
+            shipment.setLatDestination(agency.getLatitude());
+            shipment.setLongDestination(agency.getLongitude());
         }
 
         List<String> journeyInfo = new ArrayList<>();
         boolean resultCreatingShipment = false;
         if(userRole.equals("AGENCY_MANAGER") || userRole.equals("AGENCY_TELLER")) {
-            // const postalCode = utils.getPostalCodeFromAgencyID(req.user.agency_id);
+            
             postalCode = getPostalCodeFromAgencyId(agencyIdSource);  
             journeyInfo.add(String.format("%s: Lô hàng được tạo tại Bưu cục/Đại lý %s bởi nhân viên %s.", formattedTime, "TD_71000_089204006685", "TD_71000_0123456789"));
             shipment.setStatus(0);
             shipment.setJourney(journeyInfo);
             resultCreatingShipment = shipmentRepositoryImplement.createNewShipment(shipment, postalCode);
-            // shipment.setJourney(journeyInfo);
-            // setJourney(shipmentId, formattedTime, shipmentId, postalCode);
+            shipment.setJourney(journeyInfo);
+            setJourney(shipmentId, formattedTime, shipmentId, postalCode);
         } 
         else if(userRole.equals("MANAGER") || userRole.equals("TELLER")) {
-            // const postalCode = utils.getPostalCodeFromAgencyID(req.user.agency_id);
+           
             postalCode = getPostalCodeFromAgencyId(agencyIdSource);
             journeyInfo.add(String.format("%s: Lô hàng được tạo tại trung tâm chia chọn %s bởi nhân viên %s.", formattedTime, "TD_00001_089204006685", "TD_00001_0123456789"));
             shipment.setStatus(2);
@@ -92,16 +101,16 @@ public class ShipmentService {
             shipmentRepositoryImplement.createNewShipment(shipment, postalCode);
             resultCreatingShipment = shipmentRepositoryImplement.createNewShipment(shipment, null);
             
-            // setJourney(shipmentId, formattedTime, shipmentId, postalCode);
-            // setJourney(shipmentId, formattedTime, shipmentId, null);
+            setJourney(shipmentId, formattedTime, shipmentId, postalCode);
+            setJourney(shipmentId, formattedTime, shipmentId, null);
         } 
         else if(userRole.equals("ADMIN")) {
             journeyInfo.add(String.format("%s: Lô hàng được tạo tại Tổng cục %s bởi nhân viên %s.", formattedTime, "TD_00001_089204006685", "TD_00001_0123456789"));      
             shipment.setStatus(2);
             shipment.setJourney(journeyInfo);
             resultCreatingShipment = shipmentRepositoryImplement.createNewShipment(shipment, null);
-            // shipment.setJourney(journeyInfo);
-            // setJourney(shipmentId, formattedTime, shipmentId, null);
+            shipment.setJourney(journeyInfo);
+            setJourney(shipmentId, formattedTime, shipmentId, null);
         }
         if(!resultCreatingShipment) {
             return null;
@@ -379,70 +388,59 @@ public class ShipmentService {
         return shipmentRepositoryImplement.updateStatus(shipmentId, status, postalCode);
     }
 
-    public ListResponse decomposeShipment (List<String> orderIds, String shipmentId, String agencyId, String postalCode) {
+    public ListResponse decomposeShipment (List<String> orderIds, String shipmentId, String agencyId, String postalCode) throws Exception {
         int updatedNumber = 0;
         List<String> updatedArray = new ArrayList<>();
+        int notUpdatedNumber = 0;
+        List<String> notUpdatedArray = new ArrayList<>();
         Set<String> orderIdsSet = new HashSet<>(orderIds);
         
         // Format the current date and time
         String formattedTime = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date());
 
-        // Fetch agency details
-        // Agency Service
-        // Map<String, Object> agency = findOneIntersect("agency", Collections.singletonList("agency_id"), Collections.singletonList(agencyId));
-        // if (agency == null || !agency.containsKey("agency_name")) {
-        //     throw new Exception("Agency not found");
-        // }
-        // String agencyName = agency.get("agency_name").toString();
-        // String orderMessage = formattedTime + ": Đơn hàng đã đến " + agencyName;
-
-        String agencyName = "Bưu cục Quận 1";
-        String orderMessage = formattedTime + ": Đơn hàng đã đến " + agencyName;
-        if(postalCode == null) {
-
-            // Order service
-            // Update orders
-            // for (String orderId : orderIdsSet) {
-            //     int resultUpdatingOneOrder = updateOne("orders", Collections.singletonList("parent"), Collections.singletonList(null), Collections.singletonList("order_id"), Collections.singletonList(orderId));
-            //     boolean resultUpdatingOneOrderStatus = orderService.setJourney(orderId, orderMessage, "enter_agency");
-        
-            //     if (resultUpdatingOneOrder > 0 && resultUpdatingOneOrderStatus) {
-            //         updatedNumber++;
-            //         updatedArray.add(orderId);
-            //     }
-            // }
-
-            for (String orderId : orderIdsSet) {
-                if (true) {
-                    updatedNumber++;
-                    updatedArray.add(orderId);
-                }
-            }
-            updateShipmentStatus(shipmentId, 6, null);
-
-            return new ListResponse(updatedNumber, updatedArray, 0, null); 
+        Agency agency = getOneAgency(agencyId);
+        if(agency == null) {
+            throw new Exception("Agency not found");
         }
-        // Order service
-        // Update orders
-        // for (String orderId : orderIdsSet) {
-        //     int resultUpdatingOneOrder = updateOne("orders", Collections.singletonList("parent"), Collections.singletonList(null), Collections.singletonList("order_id"), Collections.singletonList(orderId));
-        //     boolean resultUpdatingOneOrderStatus = orderService.setJourney(orderId, orderMessage, "enter_agency");
-        //*Set order message in agency table */
-        //     if (resultUpdatingOneOrder > 0 && resultUpdatingOneOrderStatus) {
-        //         updatedNumber++;
-        //         updatedArray.add(orderId);
-        //     }
-        // }
 
+        String agencyName = agency.getAgencyName();
+        String orderMessage = formattedTime + ": Đơn hàng đã đến " + agencyName;
+
+        Order criteria = new Order();
         for (String orderId : orderIdsSet) {
-            if (true) {
+            Map<String, Object> conditions = new HashMap<>();
+            conditions.put("orderId", orderId);
+
+            Order resultGettingOrder = getOneOrder(orderId);
+            if(resultGettingOrder == null) {
+                notUpdatedNumber++;
+                notUpdatedArray.add(orderId);
+            }
+
+            List<String> journey = resultGettingOrder.getJourney();
+            if(journey == null) {
+                journey = new ArrayList<>();
+            }
+
+            journey.add(orderMessage);
+        
+            criteria.setJourney(journey);
+            criteria.setStatusCode(12);
+
+            final boolean resultUpdatingOrder = updateOneOrder(criteria, conditions, postalCode);
+            if(resultUpdatingOrder) {
                 updatedNumber++;
                 updatedArray.add(orderId);
+            } else {
+                notUpdatedNumber++;
+                notUpdatedArray.add(orderId);
             }
+
         }
         updateShipmentStatus(shipmentId, 6, null);
 
-        return new ListResponse(updatedNumber, updatedArray, 0, null);
+        return new ListResponse(updatedNumber, updatedArray, notUpdatedNumber, notUpdatedArray); 
+       
     }
 
     public boolean confirmCreateShipment(Shipment shipment, String postalCode) {
@@ -484,9 +482,9 @@ public class ShipmentService {
         List<String> fields = new ArrayList<>();
         List<Object> values = new ArrayList<>();
 
-        // Use reflection to get fields and values
+        
         for (Field field : Shipment.class.getDeclaredFields()) {
-            field.setAccessible(true); // Ensure we can access private fields
+            field.setAccessible(true); 
             try {
                 Object value = field.get(criteria);
                 if (value != null) {
@@ -510,5 +508,67 @@ public class ShipmentService {
 
         return dbUtils.deleteOne(shipmentTable, fields, values) > 0;
     }
+
+    public Agency getOneAgency(String agencyid) throws JsonProcessingException {
+        if(agencyid == null) {
+            throw new IllegalArgumentException(String.format("Thiếu thông tin bưu cục"));
+        }
+        Agency agency = new Agency();
+        agency.setAgencyId(agencyid);   
+
+        final String jsonRequestFindOneShipment = objectMapper.writeValueAsString(new Request<Agency>("findOneAgency", null, agency));
+        final String jsonResponseFindOneShipment = (String) amqpTemplate.convertSendAndReceive(exchange, "rpc.agency", jsonRequestFindOneShipment);
+
+        final Response<Agency> response = objectMapper.readValue(jsonResponseFindOneShipment, new TypeReference<Response<Agency>>() {});
+        if (response != null && response.getData() != null) {
+            return response.getData();
+        } else {
+            return null;
+        }
+        
+    }
+
+    public boolean updateOneOrder(Order criteria, Map<String, Object> conditions, String postalCode) throws JsonProcessingException{
+        if(criteria == null) {
+            throw new IllegalArgumentException(String.format("Thiếu thông tin đơn hàng"));
+        }
+
+        if(postalCode != null) {
+            conditions.put("postalCode", postalCode);
+        }
+
+        HashMap<String, Object> conditionsAsHashMap = new HashMap<>(conditions);
+
+        final String jsonRequestUpdatingOneOrder = objectMapper.writeValueAsString(new Request<Order>("updateOneOrder", conditionsAsHashMap, criteria));
+        final String jsonResponseUpdatingOneOrder = (String) amqpTemplate.convertSendAndReceive(exchange, "rpc.orders", jsonRequestUpdatingOneOrder);
+
+        final Response<Integer> response = objectMapper.readValue(jsonResponseUpdatingOneOrder, new TypeReference<Response<Integer>>() {});
+        if (response != null && response.getData() != null) {
+            return response.getData() > 0;
+        } else {
+            return false;
+        }
+
+    }
+
+    public Order getOneOrder(String orderId) throws JsonProcessingException{
+        if(orderId == null) {
+            throw new IllegalArgumentException(String.format("Thiếu thông tin đơn hàng"));
+        }
+
+        Order criteria = new Order();
+        criteria.setOrderId(orderId);
+
+        final String jsonRequestFindingOneOrder = objectMapper.writeValueAsString(new Request<Order>("findOneOrder", null, criteria));
+        final String jsonResponseFindingOneOrder = (String) amqpTemplate.convertSendAndReceive(exchange, "rpc.orders", jsonRequestFindingOneOrder);
+
+        final Response<Order> response = objectMapper.readValue(jsonResponseFindingOneOrder, new TypeReference<Response<Order>>() {});
+        if (response != null && response.getData() != null) {
+            return response.getData();
+        } else {
+            return null;
+        }
+
+    } 
 
 }
