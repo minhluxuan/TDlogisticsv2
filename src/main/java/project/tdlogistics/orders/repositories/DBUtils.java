@@ -89,6 +89,7 @@ public class DBUtils {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public <T> List<T> find(String table, List<String> fields, List<Object> values, boolean desc, Integer limit, Integer offset, Class<T> type) {
         String query;
         MapSqlParameterSource params = new MapSqlParameterSource();
@@ -139,8 +140,8 @@ public class DBUtils {
                 params.addValue("limit", limit);
             }
         }
-
-        return namedParameterJdbcTemplate.query(query, params, new BeanPropertyRowMapper<>(type));
+        
+        return (List<T>) namedParameterJdbcTemplate.query(query, params, new OrderRowMapper());
     }
 
     public int insert(String table, List<String> fields, List<Object> values) {

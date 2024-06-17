@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -12,34 +13,22 @@ import java.util.Optional;
 
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 
-import jakarta.transaction.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import project.tdlogistics.orders.configurations.ListToStringConverter;
-import project.tdlogistics.orders.entities.Agency;
 import project.tdlogistics.orders.entities.Order;
 import project.tdlogistics.orders.entities.Request;
 import project.tdlogistics.orders.entities.Response;
-import project.tdlogistics.orders.entities.UnitRequest;
 import project.tdlogistics.orders.entities.Ward;
 import project.tdlogistics.orders.repositories.ColumnNameMapper;
 import project.tdlogistics.orders.repositories.DBUtils;
 import project.tdlogistics.orders.repositories.OrderRepository;
 import project.tdlogistics.orders.repositories.OrderRepositoryImplement;
-
-
+import project.tdlogistics.orders.configurations.MyBeanUtils;
 
 @Service
 public class OrderService {
@@ -61,32 +50,12 @@ public class OrderService {
 
     private String exchange = "rpc-direct-exchange";
 
-
-    // Implement relative methods here
     public Optional<Order> checkExistOrder(Order criteria) {
-        // ExampleMatcher matcher = ExampleMatcher.matching()
-        //                             .withIgnorePaths("id")
-        //                             .withMatcher("orderId", ExampleMatcher.GenericPropertyMatchers.exact())
-        //                             .withIgnoreNullValues();
-        // Example<Order> example = Example.of(criteria, matcher);
-        // List<Order> orders = orderRepository.findAll(example);
         Optional<Order> matchingOrder = orderRepository.findByOrderId(criteria.getOrderId());
-        // System.out.printf("Check gone %d", orders.size());
-        // if (orders.size() == 1) {
-        //     System.out.println("Check gone here 1");
-        //     final Order order = orders.get(0);
-        //     return Optional.of(order);
-        // } else {
-        //     System.out.println("Check gone here 2");
-        //     return Optional.empty();
-        // }
-        
         return Optional.ofNullable(matchingOrder.get());
-        
     }
 
-    public boolean createNewOrder(Order info) {
-
+    public Order createNewOrder(Order info) {
         Date createdTime = new Date();
         SimpleDateFormat setDateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         String formattedTime = setDateFormat.format(createdTime);
@@ -99,7 +68,6 @@ public class OrderService {
         String orderCode = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(createdTime);
         info.setOrderId(areaAgencyIdSubParts[0] + "_" + areaAgencyIdSubParts[1] + "_" + orderCode);
 
-        System.out.println(info.getProvinceSource());
         String provinceSource = info.getProvinceSource().replaceAll("^(Thành phố\\s*|Tỉnh\\s*)", "").trim();
         String provinceDest = info.getProvinceDest().replaceAll("^(Thành phố\\s*|Tỉnh\\s*)", "").trim();
         
@@ -108,7 +76,7 @@ public class OrderService {
         info.setPaid(false);
 
         // String orderCodeRandom = randomStringGenerator.generate(15, RandomStringGenerator.Numeric);
-        Long orderCodeRandom = (long) 123456789;
+        Long orderCodeRandom = (Long) 123456789L;
         info.setOrderCode(orderCodeRandom);
         // PaymentServiceResult paymentResult = paymentService.createPaymentService(Long.parseLong(orderCodeRandom), info.getFee(), "THANH TOAN DON HANG");
         
@@ -119,56 +87,36 @@ public class OrderService {
         // info.setQrCode(paymentResult.getQrCode());
         info.setQrcode("123456");
         info.setCreatedAt(createdTime);
-        System.out.println(String.format("Timeer: %s", createdTime.toString()));
-        final Order resultCreatingOrder = orderRepository.save(info);
-        if (resultCreatingOrder == null) {
-            return false;
-        }
 
-        final boolean resultCreatingOrderInAgency = createNewOrderInAgency(info, postalCode);
-        if(!resultCreatingOrderInAgency) {
-            return false;
-        }
+        final Map<String, String> elm0 = new HashMap<String, String>();
+        elm0.put("message", "Đơn hàng được tạo thành công");
+        info.setJourney(List.of(elm0, elm0));
+        System.out.println("HERE");
+        orderRepository.save(info);
 
-        // String postalCode = utils.getPostalCodeFromAgencyID(managedAgency.getShipper());
-        // String postalCode = getPostalCodeFromAgencyId(agencyId);
-        // List<String> acceptedOrders = shipperService.assignNewTasks(Collections.singletonList(orderRequest.getOrderId()), managedAgency.getShipper(), postalCode);
-
-        // for (String orderId : acceptedOrders) {
-        //     String orderMessage;
-        //     int orderStatusCode;
-        //     String formattedTime = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date());
-        //     Order order = orderService.getOneOrder(orderId);
-
-        //     if (order.getStatusCode() == serviceStatus.getProcessingCode()) {
-        //         orderMessage = formattedTime + ": Đơn hàng đang được bưu tá đến nhận";
-        //         orderStatusCode = serviceStatus.getTakingCode();
-        //         orderService.setJourney(orderId, orderMessage, orderStatusCode);
-        //         orderService.setJourney(orderId, orderMessage, orderStatusCode, orderRequest.getOrderId().split("_")[1]);
-        //     } else if (order.getStatusCode() == serviceStatus.getReceivedCode()) {
-        //         orderMessage = formattedTime + ": Đơn hàng đã được bưu cục tiếp nhận";
-        //         orderStatusCode = serviceStatus.getEnterAgencyCode();
-        //         orderService.setJourney(orderId, orderMessage, orderStatusCode);
-        //         orderService.setJourney(orderId, orderMessage, orderStatusCode, orderRequest.getOrderId().split("_")[1]);
-        //     }
+        // final boolean resultCreatingOrderInAgency = createNewOrderInAgency(info, postalCode);
+        // if(!resultCreatingOrderInAgency) {
+        //     return false;
         // }
 
-        if (info.getStatusCode() == OrderStatus.PROCESSING.getCode()) {
-            String orderMessage = formattedTime + ": Đơn hàng đang được bưu tá đến nhận";
-            OrderStatus orderStatusCode = OrderStatus.TAKING;
-            setJourney(info.getOrderId(), orderMessage, orderStatusCode, null);
-            setJourney(info.getOrderId(), orderMessage, orderStatusCode, postalCode);
-        } else if (info.getStatusCode() == OrderStatus.RECEIVED.getCode()) {
-            String orderMessage = formattedTime + ": Đơn hàng đã được bưu cục tiếp nhận";
-            OrderStatus orderStatusCode = OrderStatus.ENTER_AGENCY;
-            setJourney(info.getOrderId(), orderMessage, orderStatusCode, null);
-            setJourney(info.getOrderId(), orderMessage, orderStatusCode, postalCode);
-        }
+        // if (info.getStatusCode() == OrderStatus.PROCESSING.getCode()) {
+        //     String orderMessage = formattedTime + ": Đơn hàng đang được bưu tá đến nhận";
+        //     OrderStatus orderStatusCode = OrderStatus.TAKING;
+        //     setJourney(info.getOrderId(), orderMessage, orderStatusCode, null);
+        //     setJourney(info.getOrderId(), orderMessage, orderStatusCode, postalCode);
+        // } else if (info.getStatusCode() == OrderStatus.RECEIVED.getCode()) {
+        //     String orderMessage = formattedTime + ": Đơn hàng đã được bưu cục tiếp nhận";
+        //     OrderStatus orderStatusCode = OrderStatus.ENTER_AGENCY;
+        //     setJourney(info.getOrderId(), orderMessage, orderStatusCode, null);
+        //     setJourney(info.getOrderId(), orderMessage, orderStatusCode, postalCode);
+        // }
 
         // userService.updateUserInfo(new UserUpdateInfo(orderRequest.getProvinceSource(), orderRequest.getDistrictSource(), orderRequest.getWardSource(), orderRequest.getDetailSource()), user.getPhoneNumber());
-        return true;
+        final Optional<Order> optionalCreatedOrder = orderRepository.findByOrderId(info.getOrderId());
+        return optionalCreatedOrder.isPresent() ? optionalCreatedOrder.get() : null;
     }
 
+    @SuppressWarnings("unchecked")
     public boolean createNewOrderInAgency(Order info, String postalCode) {
         String ordersTable = (postalCode == null) ? "orders" : (postalCode + "_orders");
         List<String> fields = new ArrayList<>();
@@ -180,6 +128,12 @@ public class OrderService {
             try {
                 Object value = field.get(info);
                 if (value != null) {
+                    if (field.getName().equals("journey")) {
+                        fields.add(ColumnNameMapper.mappingColumn(field.getName()));
+                        values.add(JsonUtils.convertListToJson((List<String>) value));
+                        continue;
+                    }
+
                     fields.add(ColumnNameMapper.mappingColumn(field.getName()));
                     values.add(value);
                 } else {
@@ -194,22 +148,16 @@ public class OrderService {
         return dbUtils.insert(ordersTable, fields, values) > 0;
     }
 
-    public Order updateOrder(Order info, Map<String, String> conditions) {
-        Optional<Order> optionalOrder = orderRepository.findByOrderIdAndAgencyId(conditions.get("orderId"), conditions.get("agencyId"));
-        if(optionalOrder == null) {
+    public Order updateOrder(Order info, String orderId, String agencyId) {
+        Optional<Order> optionalOrder = orderRepository.findByOrderIdAndAgencyId(orderId, agencyId);
+        
+        if (optionalOrder.isEmpty()) {
             return null;
         }
-        if(optionalOrder.isPresent()) {
-            if (info.getMass() != 0) {
-                optionalOrder.get().setMass(info.getMass());
-            }
-            if (info.getOrderCode() != null) {
-                optionalOrder.get().setOrderCode(info.getOrderCode());
-            }
-            if (info.getQrcode() != null) {
-                optionalOrder.get().setQrcode(info.getQrcode());
-            }
-        }
+        
+        // Bổ sung cập nhật trong csdl của agency
+
+        MyBeanUtils.copyNonNullProperties(info, optionalOrder.get());
 
         orderRepository.save(optionalOrder.get());
         return optionalOrder.get();
@@ -265,7 +213,10 @@ public class OrderService {
                 e.printStackTrace();
             }
         }
-        return dbUtils.find(ordersTable, fields, values, false, null, null, Order.class);
+
+        List<Order> orders = dbUtils.find(ordersTable, fields, values, false, null, null, Order.class);
+        return orders;
+    
     }
 
     public Order getOneOrder (String orderId, String postalCode) {
@@ -340,12 +291,12 @@ public class OrderService {
             return false;
         }
 
-        List<String> journey = order.getJourney();
+        List<Map<String, String>> journey = order.getJourney();
         if(journey == null) {
             journey = new ArrayList<>();
         }
 
-        journey.add(orderMessage);
+        journey.add(new HashMap<>());
     
         String journeyAsString = null;
         try {

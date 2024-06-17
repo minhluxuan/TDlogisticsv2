@@ -15,11 +15,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import jakarta.transaction.Transactional;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
-import project.tdlogistics.orders.entities.Order;
-import project.tdlogistics.orders.repositories.ColumnNameMapper;
 
 @Repository
 public class OrderRepositoryImplement implements OrderRepositoryInterface {

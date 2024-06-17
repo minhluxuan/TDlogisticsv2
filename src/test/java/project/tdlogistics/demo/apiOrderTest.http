@@ -1,6 +1,9 @@
 
 POST http://localhost:8080/v2/orders/create
-content-type: application/json
+Content-Type: application/json
+role: CUSTOMER
+userId: 0dd743e8-d876-4804-be5d-9c5905e1622b
+
 
 {
     "nameReceiver": "NguyenVanB",
@@ -36,6 +39,9 @@ content-type: application/json
 ###
 POST http://localhost:8080/v2/orders/search
 content-type: application/json
+role: CUSTOMER
+userId: 0dd743e8-d876-4804-be5d-9c5905e1622b
+
 
 {
     
