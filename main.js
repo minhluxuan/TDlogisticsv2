@@ -36,16 +36,16 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CustomerOperation = exports.AuthOperation = void 0;
+exports.OrdersOperation = exports.CustomerOperation = exports.AuthOperation = void 0;
 var axios_1 = require("axios");
 var AuthOperation = /** @class */ (function () {
     function AuthOperation() {
         this.baseUrl = "http://localhost:8081/v2/auth/otp";
     }
     AuthOperation.prototype.sendOtp = function (payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_1;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -65,9 +65,9 @@ var AuthOperation = /** @class */ (function () {
         });
     };
     AuthOperation.prototype.verifyOtp = function (payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_2;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -94,9 +94,9 @@ var CustomerOperation = /** @class */ (function () {
         this.baseUrl = "http://localhost:8081/v2/customers";
     }
     CustomerOperation.prototype.getAuthenticatedCustomerInfo = function () {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_3;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -116,9 +116,9 @@ var CustomerOperation = /** @class */ (function () {
         });
     };
     CustomerOperation.prototype.updateInfo = function (params, payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_4;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -140,9 +140,9 @@ var CustomerOperation = /** @class */ (function () {
         });
     };
     CustomerOperation.prototype.search = function (payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_5;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -164,9 +164,9 @@ var CustomerOperation = /** @class */ (function () {
         });
     };
     CustomerOperation.prototype.updateAvatar = function (payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_6;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -188,9 +188,9 @@ var CustomerOperation = /** @class */ (function () {
         });
     };
     CustomerOperation.prototype.getAvatar = function (params) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_7;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -214,3 +214,135 @@ var CustomerOperation = /** @class */ (function () {
     return CustomerOperation;
 }());
 exports.CustomerOperation = CustomerOperation;
+var OrdersOperation = /** @class */ (function () {
+    function OrdersOperation() {
+        this.baseUrl = "http://localhost:8080/v2/orders";
+    }
+    OrdersOperation.prototype.create = function (payload) {
+        var _a, _b;
+        return __awaiter(this, void 0, void 0, function () {
+            var response, data, error_8;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        _c.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, axios_1.default.put("".concat(this.baseUrl, "/create"), payload, {
+                                withCredentials: true,
+                            })];
+                    case 1:
+                        response = _c.sent();
+                        data = response.data;
+                        return [2 /*return*/, { error: data.error, data: data.data, message: data.message }];
+                    case 2:
+                        error_8 = _c.sent();
+                        console.log("Error updating order: ", (_a = error_8 === null || error_8 === void 0 ? void 0 : error_8.response) === null || _a === void 0 ? void 0 : _a.data);
+                        console.error("Request that caused the error: ", error_8 === null || error_8 === void 0 ? void 0 : error_8.request);
+                        return [2 /*return*/, { error: (_b = error_8 === null || error_8 === void 0 ? void 0 : error_8.response) === null || _b === void 0 ? void 0 : _b.data, request: error_8 === null || error_8 === void 0 ? void 0 : error_8.request, status: error_8.response ? error_8.response.status : null }];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    OrdersOperation.prototype.get = function (payload) {
+        var _a, _b;
+        return __awaiter(this, void 0, void 0, function () {
+            var response, data, error_9;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        _c.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, axios_1.default.post("".concat(this.baseUrl, "/search"), payload, {
+                                withCredentials: true,
+                            })];
+                    case 1:
+                        response = _c.sent();
+                        data = response.data;
+                        return [2 /*return*/, { error: data.error, data: data.data, message: data.message }];
+                    case 2:
+                        error_9 = _c.sent();
+                        console.log("Error getting orders: ", (_a = error_9 === null || error_9 === void 0 ? void 0 : error_9.response) === null || _a === void 0 ? void 0 : _a.data);
+                        console.error("Request that caused the error: ", error_9 === null || error_9 === void 0 ? void 0 : error_9.request);
+                        return [2 /*return*/, { error: (_b = error_9 === null || error_9 === void 0 ? void 0 : error_9.response) === null || _b === void 0 ? void 0 : _b.data, request: error_9 === null || error_9 === void 0 ? void 0 : error_9.request, status: error_9.response ? error_9.response.status : null }];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    OrdersOperation.prototype.checkExist = function (params) {
+        var _a, _b;
+        return __awaiter(this, void 0, void 0, function () {
+            var response, data, error_10;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        _c.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, axios_1.default.get("".concat(this.baseUrl, "/check?orderId=").concat(params.orderId), {
+                                withCredentials: true,
+                            })];
+                    case 1:
+                        response = _c.sent();
+                        data = response.data;
+                        return [2 /*return*/, { error: data.error, exist: data.existed, message: data.message }];
+                    case 2:
+                        error_10 = _c.sent();
+                        console.log("Error checking exist order: ", (_a = error_10 === null || error_10 === void 0 ? void 0 : error_10.response) === null || _a === void 0 ? void 0 : _a.data);
+                        console.error("Request that caused the error: ", error_10 === null || error_10 === void 0 ? void 0 : error_10.request);
+                        return [2 /*return*/, { error: (_b = error_10 === null || error_10 === void 0 ? void 0 : error_10.response) === null || _b === void 0 ? void 0 : _b.data, request: error_10 === null || error_10 === void 0 ? void 0 : error_10.request, status: error_10.response ? error_10.response.status : null }];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    OrdersOperation.prototype.update = function (payload, params) {
+        var _a, _b;
+        return __awaiter(this, void 0, void 0, function () {
+            var response, data, error_11;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        _c.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, axios_1.default.put("".concat(this.baseUrl, "/update?orderId=").concat(params.orderId), payload, {
+                                withCredentials: true,
+                            })];
+                    case 1:
+                        response = _c.sent();
+                        data = response.data;
+                        return [2 /*return*/, { error: data.error, data: data.data, message: data.message }];
+                    case 2:
+                        error_11 = _c.sent();
+                        console.log("Error updating order: ", (_a = error_11 === null || error_11 === void 0 ? void 0 : error_11.response) === null || _a === void 0 ? void 0 : _a.data);
+                        console.error("Request that caused the error: ", error_11 === null || error_11 === void 0 ? void 0 : error_11.request);
+                        return [2 /*return*/, { error: (_b = error_11 === null || error_11 === void 0 ? void 0 : error_11.response) === null || _b === void 0 ? void 0 : _b.data, request: error_11 === null || error_11 === void 0 ? void 0 : error_11.request, status: error_11.response ? error_11.response.status : null }];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    OrdersOperation.prototype.cancel = function (params) {
+        var _a, _b;
+        return __awaiter(this, void 0, void 0, function () {
+            var response, data, error_12;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        _c.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, axios_1.default.delete("".concat(this.baseUrl, "/cancel?orderId=").concat(params.orderId), {
+                                withCredentials: true,
+                            })];
+                    case 1:
+                        response = _c.sent();
+                        data = response.data;
+                        return [2 /*return*/, { error: data.error, message: data.message }];
+                    case 2:
+                        error_12 = _c.sent();
+                        console.log("Error canceling order: ", (_a = error_12 === null || error_12 === void 0 ? void 0 : error_12.response) === null || _a === void 0 ? void 0 : _a.data);
+                        console.error("Request that caused the error: ", error_12 === null || error_12 === void 0 ? void 0 : error_12.request);
+                        return [2 /*return*/, { error: (_b = error_12 === null || error_12 === void 0 ? void 0 : error_12.response) === null || _b === void 0 ? void 0 : _b.data, request: error_12 === null || error_12 === void 0 ? void 0 : error_12.request, status: error_12.response ? error_12.response.status : null }];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    return OrdersOperation;
+}());
+exports.OrdersOperation = OrdersOperation;

@@ -143,3 +143,174 @@ export class CustomerOperation {
         }
     }
 }
+
+export interface CheckingExistOrderCondition {
+    orderId: string,
+}
+
+export interface GettingOrdersConditions {
+    orderId: string,
+    nameReceiver?: string,
+    phoneReceiver?: string,
+    provinceSource?: string,
+    districtSource?: string,
+    wardSource?: string,
+    provinceDest?: string,
+    districtDest?: string,
+    wardDest?: string,
+    serviceType?: number,
+}
+
+export interface CreatingOrderByUserInformation {
+    nameSender: string,
+    nameReceiver: string,
+    phoneNumberReceiver: string,
+    mass: number,
+    height: number,
+    width: number,
+    length: number,
+    provinceSource: string,
+    districtSource: string,
+    wardSource: string,
+    detailSource: string,
+    provinceDest: string,
+    districtDest: string,
+    wardDest: string,
+    detailDest: string,
+    longSource: number,
+    latSource: number,
+    longDestination: number,
+    latDestination: number,
+    cod: number,
+    serviceType: string,
+}
+
+
+export interface CreatingOrderByAdminAndAgencyInformation {
+    nameSender: string,
+    phoneNumberSender: string,
+    nameReceiver: string,
+    phoneNumberReceiver: string,
+    mass: number,
+    height: number,
+    width: number,
+    length: number,
+    provinceSource: string,
+    districtSource: string,
+    wardSource: string,
+    detailSource: string,
+    provinceDest: string,
+    districtDest: string,
+    wardDest: string,
+    detailDest: string,
+    longSource: number,
+    latSource: number,
+    longDestination: number,
+    latDestination: number,
+    cod: number,
+    serviceType: string,
+}
+
+
+export interface UpdatingOrderCondition {
+    orderId: string,
+}
+
+export interface UpdatingOrderInfo {
+    mass?: number,
+    height?: number,
+    width?: number,
+    length?: number,
+    COD?: number,
+    statusCode?: number, 
+}
+
+export interface CancelingOrderCondition {
+    orderId: string,
+}
+
+
+
+export class OrdersOperation {
+    private baseUrl: string;
+    constructor() {
+        this.baseUrl = "http://localhost:8080/v2/orders";
+    }
+
+    async create(payload: UpdatingOrderInfo) {
+        try {
+            const response = await axios.put(`${this.baseUrl}/create`, payload, {
+                withCredentials: true,
+            });
+
+            const data = response.data;
+            return { error: data.error, data: data.data, message: data.message };
+        } catch (error: any) {
+            console.log("Error updating order: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+        }
+    }
+
+    async get(payload: GettingOrdersConditions) {
+        try {
+            const response = await axios.post(`${this.baseUrl}/search`, payload, {
+                withCredentials: true,
+            });
+
+            const data = response.data;
+            return { error: data.error, data: data.data, message: data.message };
+        } catch (error: any) {
+            console.log("Error getting orders: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+        }
+    }
+
+
+    async checkExist(params: CheckingExistOrderCondition) {
+        try {
+            const response = await axios.get(`${this.baseUrl}/check?orderId=${params.orderId}`, {
+                withCredentials: true,
+            });
+
+            const data = response.data;
+            return { error: data.error, exist: data.existed, message: data.message };
+        } catch (error: any) {
+            console.log("Error checking exist order: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+        }
+    }
+
+    async update(payload: UpdatingOrderInfo, params: UpdatingOrderCondition) {
+        try {
+            const response = await axios.put(`${this.baseUrl}/update?orderId=${params.orderId}`, payload, {
+                withCredentials: true,
+            });
+
+            const data = response.data;
+            return { error: data.error, data: data.data, message: data.message };
+        } catch (error: any) {
+            console.log("Error updating order: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+        }
+    }
+
+    async cancel(params: CancelingOrderCondition) {
+        try {
+            const response = await axios.delete(`${this.baseUrl}/cancel?orderId=${params.orderId}`, {
+                withCredentials: true,
+            });
+
+            const data = response.data;
+            return { error: data.error, message: data.message };
+        } catch (error: any) {
+            console.log("Error canceling order: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+        }
+    }
+
+}
