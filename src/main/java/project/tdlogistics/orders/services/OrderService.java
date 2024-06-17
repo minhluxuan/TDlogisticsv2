@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.springframework.amqp.core.AmqpTemplate;
@@ -212,6 +213,38 @@ public class OrderService {
 
         orderRepository.save(optionalOrder.get());
         return optionalOrder.get();
+    }
+
+
+    public int updateOrderForRpcController(Order criteria, Map<String, Object> conditions, String postalCode) {
+        String ordersTable = (postalCode == null) ? "orders" : (postalCode + "_orders");
+        List<String> fields = new ArrayList<>();
+        List<Object> values = new ArrayList<>();
+
+        // Use reflection to get fields and values
+        for (Field field : Order.class.getDeclaredFields()) {
+            field.setAccessible(true); // Ensure we can access private fields
+            try {
+                Object value = field.get(criteria);
+                if (value != null) {
+                    fields.add(ColumnNameMapper.mappingColumn(field.getName()));
+                    values.add(value);
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+
+        
+        List<String> conditionFields = new ArrayList<>();
+        List<Object> conditionValues = new ArrayList<>();
+
+        for (Entry<String, Object> entry : conditions.entrySet()) {
+            conditionFields.add(entry.getKey());
+            conditionValues.add(entry.getValue());
+        }
+
+        return dbUtils.updateOne(ordersTable, fields, values, conditionFields, conditionValues);
     }
 
     public List<Order> getOrders (Order criteria, String postalCode) {
