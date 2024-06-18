@@ -94,7 +94,7 @@ export class CustomerOperation {
 
     async updateInfo(params: UpdatingCustomerParams, payload: UpdatingCustomerPayload) {
         try {
-            const response = await axios.post(`${this.baseUrl}/update?customerId=${params.customerId}`, payload, {
+            const response = await axios.put(`${this.baseUrl}/update?customerId=${params.customerId}`, payload, {
                 withCredentials: true
             });
 
@@ -273,7 +273,6 @@ export class OrdersOperation {
             return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
         }
     }
-
 
     async checkExist(params: CheckingExistOrderCondition) {
         try {
