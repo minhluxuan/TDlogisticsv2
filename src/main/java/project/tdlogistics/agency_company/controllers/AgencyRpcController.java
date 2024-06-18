@@ -33,6 +33,8 @@ public class AgencyRpcController {
             switch (request.getOperation()) {
                 case "checkExistAgency":
                     return checkExistAgency(request.getPayload());
+                case "findOneAgency":
+                    return getOneAgency(request.getPayload());
                 default:
                     return objectMapper.writeValueAsString(new Response<>(400, true, "Yêu cầu không hợp lệ", null));
             }
@@ -49,6 +51,18 @@ public class AgencyRpcController {
                 return objectMapper.writeValueAsString(new Response<Agency>(false, String.format("Bưu cục %s đã tồn tại.", criteria.getAgencyId()), optionalAgency.get()));
             }
             return objectMapper.writeValueAsString(new Response<Agency>(false, String.format("Bưu cục %s không tồn tại.", criteria.getAgencyId()), null));
+        } catch (Exception e) {
+            return objectMapper.writeValueAsString(new Response<Agency>(true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
+        }
+    }
+
+    private String getOneAgency(Agency criteria) throws JsonProcessingException {
+        try {
+            final Optional<Agency> optionalAgency = agencyService.getOneAgency(criteria);
+            if (optionalAgency.isPresent()) {
+                return objectMapper.writeValueAsString(new Response<Agency>(false, String.format("Lấy thông tin bưu cục %s thành công.", criteria.getAgencyId()), optionalAgency.get()));
+            }
+            return objectMapper.writeValueAsString(new Response<Agency>(true, String.format("Bưu cục %s không tồn tại.", criteria.getAgencyId()), null));
         } catch (Exception e) {
             return objectMapper.writeValueAsString(new Response<Agency>(true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
         }
