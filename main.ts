@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 
 export interface SendingOtp {
     phoneNumber: String,
@@ -31,7 +31,9 @@ export class AuthOperation {
 
     async verifyOtp(payload: VerifyingOtp) {
         try {
-            const response = await axios.post(`${this.baseUrl}/verify`, payload);
+            const response = await axios.post(`${this.baseUrl}/verify`, payload, {
+                withCredentials: true
+            });
             return { error: response.data.error, message: response.data.message, data: response.data.data };
         } catch (error) {
             console.log("Error verifying otp: ", error?.response?.data);
@@ -78,7 +80,9 @@ export class CustomerOperation {
 
     async getAuthenticatedCustomerInfo() {
         try {
-            const response = await axios.get(`${this.baseUrl}/`);
+            const response = await axios.get(`${this.baseUrl}/`, {
+                withCredentials: true
+            });
             return { error: response.data.error, message: response.data.message, data: response.data.data };
         } catch (error) {
             console.log("Error getting authenticated customer info: ", error?.response?.data);
@@ -117,7 +121,7 @@ export class CustomerOperation {
 
     async updateAvatar(payload: UpdatingAvatarPayload) {
         try {
-            const response = await axios.post(`${this.baseUrl}/avatar/update`, payload, {
+            const response = await axios.put(`${this.baseUrl}/avatar/update`, payload, {
                 withCredentials: true
             });
 
@@ -243,8 +247,7 @@ export class OrdersOperation {
                 withCredentials: true,
             });
 
-            const data = response.data;
-            return { error: data.error, data: data.data, message: data.message };
+            return { error: response.data.error, data: response.data.data, message: response.data.message };
         } catch (error: any) {
             console.log("Error updating order: ", error?.response?.data);
             console.error("Request that caused the error: ", error?.request);
@@ -312,5 +315,31 @@ export class OrdersOperation {
             return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
         }
     }
+}
 
+export interface AdministrativePayload {
+    province?: string,
+    district?: string,
+    ward?: string
+}
+
+export class AdministrativeOperation {
+    private baseUrl: string;
+    constructor() {
+        this.baseUrl = "https://api2.tdlogistics.net.vn/v2/administrative";
+    }
+
+    async get(conditions: AdministrativePayload) {
+        try {
+            const response: AxiosResponse = await axios.post(`${this.baseUrl}/search`, conditions, {
+                withCredentials: true
+            });
+
+            return { error: response.data.error, data: response.data.data, message: response.data.message }
+        } catch (error: any) {
+            console.error("Error getting administrative: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+        }
+    }
 }
