@@ -102,7 +102,7 @@ public class Order {
 
     @Column(name = "journey")
     @Convert(converter = ListToStringConverter.class)
-    private List<Map<String, String>> journey;
+    private List<String> journey;
 
     @Column(name = "COD")
     private Float cod;
@@ -159,7 +159,7 @@ public class Order {
             Float width, Float length, String provinceSource, String districtSource, String wardSource,
             String detailSource, Double longSource, Double latSource, String provinceDest, String districtDest,
             String wardDest, String detailDest, Double longDestination, Double latDestination, Float fee, String parent,
-            List<Map<String, String>> journey, Float cod, String shipper, Integer statusCode, byte miss, String sendImages,
+            List<String> journey, Float cod, String shipper, Integer statusCode, byte miss, String sendImages,
             String receiveImages, String sendSignature, String receiveSignature, String qrcode, String signature,
             Boolean paid, Date createdAt, Date lastUpdate, Long orderCode) {
         this.orderId = orderId;
@@ -415,11 +415,11 @@ public class Order {
         this.parent = parent;
     }
 
-    public List<Map<String, String>> getJourney() {
+    public List<String> getJourney() {
         return journey;
     }
 
-    public void setJourney(List<Map<String, String>> journey) {
+    public void setJourney(List<String> journey) {
         this.journey = journey;
     }
 

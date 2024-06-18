@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+
+import org.apache.commons.text.RandomStringGenerator;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import project.tdlogistics.orders.entities.Customer;
 import project.tdlogistics.orders.entities.Order;
 import project.tdlogistics.orders.entities.Request;
 import project.tdlogistics.orders.entities.Response;
@@ -38,7 +41,7 @@ public class OrderService {
 
     @Autowired
     private OrderRepositoryImplement orderRepositoryImplement;
-
+   
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -55,7 +58,7 @@ public class OrderService {
         return Optional.ofNullable(matchingOrder.get());
     }
 
-    public Order createNewOrder(Order info) {
+    public Order createNewOrder(Order info, String userId) throws JsonProcessingException {
         Date createdTime = new Date();
         SimpleDateFormat setDateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         String formattedTime = setDateFormat.format(createdTime);
@@ -71,13 +74,17 @@ public class OrderService {
         String provinceSource = info.getProvinceSource().replaceAll("^(Thành phố\\s*|Tỉnh\\s*)", "").trim();
         String provinceDest = info.getProvinceDest().replaceAll("^(Thành phố\\s*|Tỉnh\\s*)", "").trim();
         
-        // info.setFee(serviceFeeCalculator.calculateFee(info.getServiceType(), provinceSource, provinceDest, info.getMass(), 0.15, false));
-        info.setFee(30000F);
+        final double serviceFee = FeeService.calculateFee(info.getServiceType(), provinceSource, provinceDest, info.getMass(), 0.15, false);
+        info.setFee((float) serviceFee);
         info.setPaid(false);
 
-        // String orderCodeRandom = randomStringGenerator.generate(15, RandomStringGenerator.Numeric);
-        Long orderCodeRandom = (Long) 123456789L;
+        RandomStringGenerator generator = new RandomStringGenerator.Builder()
+                .withinRange('0', '9')
+                .build();
+        String randomNumericString = generator.generate(15);
+        Long orderCodeRandom = Long.parseLong(randomNumericString);
         info.setOrderCode(orderCodeRandom);
+
         // PaymentServiceResult paymentResult = paymentService.createPaymentService(Long.parseLong(orderCodeRandom), info.getFee(), "THANH TOAN DON HANG");
         
         // if (paymentResult == null || paymentResult.getQrCode() == null) {
@@ -85,33 +92,38 @@ public class OrderService {
         // }
 
         // info.setQrCode(paymentResult.getQrCode());
+
         info.setQrcode("123456");
         info.setCreatedAt(createdTime);
 
-        final Map<String, String> elm0 = new HashMap<String, String>();
-        elm0.put("message", "Đơn hàng được tạo thành công");
-        info.setJourney(List.of(elm0, elm0));
+        
         System.out.println("HERE");
         orderRepository.save(info);
 
-        // final boolean resultCreatingOrderInAgency = createNewOrderInAgency(info, postalCode);
-        // if(!resultCreatingOrderInAgency) {
-        //     return false;
-        // }
+        final boolean resultCreatingOrderInAgency = createNewOrderInAgency(info, postalCode);
+        if(!resultCreatingOrderInAgency) {
+            return null;
+        }
 
-        // if (info.getStatusCode() == OrderStatus.PROCESSING.getCode()) {
-        //     String orderMessage = formattedTime + ": Đơn hàng đang được bưu tá đến nhận";
-        //     OrderStatus orderStatusCode = OrderStatus.TAKING;
-        //     setJourney(info.getOrderId(), orderMessage, orderStatusCode, null);
-        //     setJourney(info.getOrderId(), orderMessage, orderStatusCode, postalCode);
-        // } else if (info.getStatusCode() == OrderStatus.RECEIVED.getCode()) {
-        //     String orderMessage = formattedTime + ": Đơn hàng đã được bưu cục tiếp nhận";
-        //     OrderStatus orderStatusCode = OrderStatus.ENTER_AGENCY;
-        //     setJourney(info.getOrderId(), orderMessage, orderStatusCode, null);
-        //     setJourney(info.getOrderId(), orderMessage, orderStatusCode, postalCode);
-        // }
+        if (info.getStatusCode() == OrderStatus.PROCESSING.getCode()) {
+            String orderMessage = formattedTime + ": Đơn hàng đang được bưu tá đến nhận";
+            OrderStatus orderStatusCode = OrderStatus.TAKING;
+            setJourney(info.getOrderId(), orderMessage, orderStatusCode, null);
+            setJourney(info.getOrderId(), orderMessage, orderStatusCode, postalCode);
+        } else if (info.getStatusCode() == OrderStatus.RECEIVED.getCode()) {
+            String orderMessage = formattedTime + ": Đơn hàng đã được bưu cục tiếp nhận";
+            OrderStatus orderStatusCode = OrderStatus.ENTER_AGENCY;
+            setJourney(info.getOrderId(), orderMessage, orderStatusCode, null);
+            setJourney(info.getOrderId(), orderMessage, orderStatusCode, postalCode);
+        }
 
-        // userService.updateUserInfo(new UserUpdateInfo(orderRequest.getProvinceSource(), orderRequest.getDistrictSource(), orderRequest.getWardSource(), orderRequest.getDetailSource()), user.getPhoneNumber());
+        Customer customer = new Customer();
+        customer.setProvince(info.getProvinceSource());
+        customer.setDistrict(info.getDistrictSource());
+        customer.setWard(info.getWardSource());
+        customer.setDetailAddress(info.getDetailSource());
+        updateUserInfo(userId, customer);
+
         final Optional<Order> optionalCreatedOrder = orderRepository.findByOrderId(info.getOrderId());
         return optionalCreatedOrder.isPresent() ? optionalCreatedOrder.get() : null;
     }
@@ -122,9 +134,9 @@ public class OrderService {
         List<String> fields = new ArrayList<>();
         List<Object> values = new ArrayList<>();
 
-        // Use reflection to get fields and values
+        
         for (Field field : Order.class.getDeclaredFields()) {
-            field.setAccessible(true); // Ensure we can access private fields
+            field.setAccessible(true); 
             try {
                 Object value = field.get(info);
                 if (value != null) {
@@ -155,7 +167,17 @@ public class OrderService {
             return null;
         }
         
-        // Bổ sung cập nhật trong csdl của agency
+        
+        Map<String, Object> conditions = new HashMap<>();
+        conditions.put("orderId", orderId);
+        conditions.put("agencyId", agencyId);
+        final String postalCode = getPostalCodeFromAgencyId(agencyId);
+        if(!postalCode.equals("00000")) {
+            final int resultUpdatingInAgency = updateOrderInAgency(info, conditions, postalCode);
+            if(resultUpdatingInAgency == 0) {
+                return null;
+            }
+        }
 
         MyBeanUtils.copyNonNullProperties(info, optionalOrder.get());
 
@@ -163,18 +185,28 @@ public class OrderService {
         return optionalOrder.get();
     }
 
+    @SuppressWarnings("unchecked")
+    public int updateOrderInAgency(Order criteria, Map<String, Object> conditions, String postalCode) {
+        if(postalCode == null) {
+            return 0;
+        }
 
-    public int updateOrderForRpcController(Order criteria, Map<String, Object> conditions, String postalCode) {
         String ordersTable = (postalCode == null) ? "orders" : (postalCode + "_orders");
         List<String> fields = new ArrayList<>();
         List<Object> values = new ArrayList<>();
 
-        // Use reflection to get fields and values
+        
         for (Field field : Order.class.getDeclaredFields()) {
-            field.setAccessible(true); // Ensure we can access private fields
+            field.setAccessible(true); 
             try {
                 Object value = field.get(criteria);
                 if (value != null) {
+                    if (field.getName().equals("journey")) {
+                        fields.add(ColumnNameMapper.mappingColumn(field.getName()));
+                        values.add(JsonUtils.convertListToJson((List<String>) value));
+                        continue;
+                    }
+                    
                     fields.add(ColumnNameMapper.mappingColumn(field.getName()));
                     values.add(value);
                 }
@@ -195,17 +227,61 @@ public class OrderService {
         return dbUtils.updateOne(ordersTable, fields, values, conditionFields, conditionValues);
     }
 
+    @SuppressWarnings("unchecked")
+    public int updateOrderForRpcController(Order criteria, Map<String, Object> conditions, String postalCode) {
+        String ordersTable = (postalCode == null) ? "orders" : (postalCode + "_orders");
+        List<String> fields = new ArrayList<>();
+        List<Object> values = new ArrayList<>();
+
+        
+        for (Field field : Order.class.getDeclaredFields()) {
+            field.setAccessible(true); 
+            try {
+                Object value = field.get(criteria);
+                if (value != null) {
+                    if (field.getName().equals("journey")) {
+                        fields.add(ColumnNameMapper.mappingColumn(field.getName()));
+                        values.add(JsonUtils.convertListToJson((List<String>) value));
+                        continue;
+                    } 
+                    fields.add(ColumnNameMapper.mappingColumn(field.getName()));
+                    values.add(value);
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+
+        
+        List<String> conditionFields = new ArrayList<>();
+        List<Object> conditionValues = new ArrayList<>();
+
+        for (Entry<String, Object> entry : conditions.entrySet()) {
+            conditionFields.add(entry.getKey());
+            conditionValues.add(entry.getValue());
+        }
+
+        return dbUtils.updateOne(ordersTable, fields, values, conditionFields, conditionValues);
+    }
+
+    @SuppressWarnings("unchecked")
     public List<Order> getOrders (Order criteria, String postalCode) {
         String ordersTable = (postalCode == null) ? "orders" : (postalCode + "_orders");
         List<String> fields = new ArrayList<>();
         List<Object> values = new ArrayList<>();
 
-        // Use reflection to get fields and values
+       
         for (Field field : Order.class.getDeclaredFields()) {
-            field.setAccessible(true); // Ensure we can access private fields
+            field.setAccessible(true); 
             try {
                 Object value = field.get(criteria);
                 if (value != null) {
+                    if (field.getName().equals("journey")) {
+                        fields.add(ColumnNameMapper.mappingColumn(field.getName()));
+                        values.add(JsonUtils.convertListToJson((List<String>) value));
+                        continue;
+                    }
+
                     fields.add(ColumnNameMapper.mappingColumn(field.getName()));
                     values.add(value);
                 }
@@ -291,18 +367,18 @@ public class OrderService {
             return false;
         }
 
-        List<Map<String, String>> journey = order.getJourney();
+        List<String> journey = order.getJourney();
         if(journey == null) {
             journey = new ArrayList<>();
         }
 
-        journey.add(new HashMap<>());
+        journey.add(orderMessage);
     
         String journeyAsString = null;
         try {
             journeyAsString = objectMapper.writeValueAsString(journey);
         } catch (JsonProcessingException e) {
-            e.printStackTrace(); // Handle the exception appropriately
+            e.printStackTrace(); 
             return false;
         }
 
@@ -331,4 +407,22 @@ public class OrderService {
 
     }
 
+    public boolean updateUserInfo(String id, Customer info) throws JsonProcessingException {
+        if(id == null) {
+            throw new IllegalArgumentException(String.format("Thiếu thông tin khách hàng"));
+        }
+        
+        HashMap<String, Object> conditions = new HashMap<>();
+        conditions.put("id", id);
+
+        final String jsonRequestUpdatingUserInfo = objectMapper.writeValueAsString(new Request<Customer>("updateCustomer", conditions, info));
+        final String jsonResponseUpdatingUserInfo = (String) amqpTemplate.convertSendAndReceive(exchange, "rpc.users", jsonRequestUpdatingUserInfo);
+
+        final Response<Customer> response = objectMapper.readValue(jsonResponseUpdatingUserInfo, new TypeReference<Response<Customer>>() {});
+        if (response != null && response.getData() != null) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 }

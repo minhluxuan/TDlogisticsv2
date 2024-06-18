@@ -23,25 +23,25 @@ public class OrderRowMapper implements RowMapper<Order> {
         Order order = new Order();
         order.setOrderId(rs.getString("order_id"));
         order.setAgencyId(rs.getString("agency_id"));
-        order.setCod(rs.getString("cod"));
-        order.setCreatedAt(rs.getString(""));
+        order.setCod(rs.getFloat("cod"));
+        order.setCreatedAt(rs.getDate("created_at"));
         order.setDetailDest(rs.getString("detail_dest"));
         order.setDetailSource(rs.getString("detail_source"));
         order.setDistrictDest(rs.getString("district_dest"));
-        order.setFee(rs.getString("fee"));
-        order.setHeight(rs.getString("height"));
-        order.setLastUpdate(rs.getString("last_update"));
-        order.setLatDestination(rs.getString("lat_destination"));
-        order.setLatSource(rs.getString("lat_source"));
-        order.setLength(rs.getString("length"));
-        order.setLongDestination(rs.getString("long_destination"));
-        order.setLongSource(rs.getString("long_source"));
-        order.setMass(rs.getString("mass"));
-        order.setMiss(rs.getString("miss"));
+        order.setFee(rs.getFloat("fee"));
+        order.setHeight(rs.getFloat("height"));
+        order.setLastUpdate(rs.getDate("last_update"));
+        order.setLatDestination(rs.getDouble("lat_destination"));
+        order.setLatSource(rs.getDouble("lat_source"));
+        order.setLength(rs.getFloat("length"));
+        order.setLongDestination(rs.getDouble("long_destination"));
+        order.setLongSource(rs.getDouble("long_source"));
+        order.setMass(rs.getFloat("mass"));
+        order.setMiss(rs.getByte("miss"));
         order.setNameReceiver(rs.getString("name_receiver"));
         order.setNameSender(rs.getString("name_sender"));
-        order.setOrderCode(rs.getString("order_code"));
-        order.setPaid(rs.getString("paid"));
+        order.setOrderCode(rs.getLong("order_code"));
+        order.setPaid(rs.getBoolean("paid"));
         order.setParent(rs.getString("parent"));
         order.setPhoneNumberReceiver(rs.getString("phone_number_receiver"));
         order.setPhoneNumberSender(rs.getString("phone_number_sender"));
@@ -55,17 +55,17 @@ public class OrderRowMapper implements RowMapper<Order> {
         order.setServiceType(rs.getString("service_type"));
         order.setShipper(rs.getString("shipper"));
         order.setSignature(rs.getString("signature"));
-        order.setStatusCode(rs.getString("statusCode"));
+        order.setStatusCode(rs.getInt("statusCode"));
         order.setUserId(rs.getString("user_id"));
         order.setWardDest(rs.getString("ward_dest"));
         order.setWardSource(rs.getString("ward_source"));
-        order.setWidth(rs.getString("width"));
+        order.setWidth(rs.getFloat("width"));
         
         String journeyString = rs.getString("journey");
         System.out.println(journeyString);
         if (journeyString != null && !journeyString.isEmpty()) {
             try {
-                List<Map<String, String>> journey = objectMapper.readValue(journeyString, new TypeReference<List<Map<String, String>>>() {});
+                List<String> journey = objectMapper.readValue(journeyString, new TypeReference<List<String>>() {});
                 order.setJourney(journey);
             } catch (IOException e) {
                 throw new SQLException("Failed to convert JSON to List<String>: " + journeyString, e);

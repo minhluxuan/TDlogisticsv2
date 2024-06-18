@@ -49,3 +49,14 @@ userId: 0dd743e8-d876-4804-be5d-9c5905e1622b
 
 ###
 DELETE http://localhost:8080/v2/orders/cancel?orderId=TD_71000_20240609153935094
+
+###
+POST http://localhost:8080/v2/orders/calculate_fee
+content-type: application/json
+
+{
+    "serviceType": "CPN",
+    "provinceSource": "Tỉnh An Giang",
+    "provinceDest": "Thành phố Hồ Chí Minh",
+    "mass": 3333.5
+}

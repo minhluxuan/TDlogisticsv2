@@ -22,6 +22,7 @@ import org.springframework.web.client.HttpClientErrorException.BadRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import project.tdlogistics.orders.services.FeeService;
 import project.tdlogistics.orders.services.OrderService;
 import project.tdlogistics.orders.services.OrderService.OrderStatus;
 import project.tdlogistics.orders.entities.Order;
@@ -117,7 +118,26 @@ public class OrderRestController {
         try {
 
             // Check exist agency and shipper serving here\
-            String agencyIdWillServer = "BC_71000_077165007713";
+            Ward resultFindingManageAgency = orderService.findManagedAgency(payload.getWardSource(), payload.getDistrictSource(), payload.getProvinceSource());
+            if(resultFindingManageAgency == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Order>(
+                    true,
+                    String.format("Xin lỗi quý khách. Dịch vụ chúng tôi chưa có mặt ở %s, %s, %s.", payload.getWardSource(), payload.getDistrictSource(), payload.getProvinceSource()),
+                    null
+                ));
+            }
+
+            if(resultFindingManageAgency.getShipper() == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Order>(
+                    true,
+                    "Xin lỗi quý khách. Khu vực của quý khách hiện chưa có shipper nào phục vụ.",
+                    null
+                ));
+            }
+
+
+
+            String agencyIdWillServer = resultFindingManageAgency.getAgencyId();
             payload.setAgencyId(agencyIdWillServer);
 
             if (Set.of(Role.CUSTOMER).contains(role)) {
@@ -138,7 +158,7 @@ public class OrderRestController {
                 ));
             }
             
-            final Order createdOrder = orderService.createNewOrder(payload);
+            final Order createdOrder = orderService.createNewOrder(payload, userId);
             if (createdOrder == null) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<Order>(
                     true,
@@ -283,4 +303,25 @@ public class OrderRestController {
         } 
     }
 
+    @PostMapping("/calculate_fee")
+    public ResponseEntity<Response<Double>> postMethodName(@RequestBody Map<String, Object> criteria) throws Exception {
+        try {
+            String provinceSource = ((String) criteria.get("provinceSource")).replaceAll("^(Thành phố\\s*|Tỉnh\\s*)", "").trim();
+            String provinceDest = ((String) criteria.get("provinceDest")).replaceAll("^(Thành phố\\s*|Tỉnh\\s*)", "").trim();
+
+            double resultCalculatingFee = FeeService.calculateFee((String) criteria.get("serviceType"), provinceSource, provinceDest, (double) criteria.get("mass") , 0.15, false);
+            return ResponseEntity.status(HttpStatus.OK).body(new Response<>(
+                false,
+                "Tính phí thành công",
+                resultCalculatingFee
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(
+                true,
+                e.getMessage(),
+                null
+            ));
+        }
+    }
 }
