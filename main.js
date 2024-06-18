@@ -202,7 +202,7 @@ var CustomerOperation = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         _c.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, axios_1.default.get("".concat(this.baseUrl, "/avatar/update?customerId=").concat(params.customerId), {
+                        return [4 /*yield*/, axios_1.default.get("".concat(this.baseUrl, "/avatar/get?customerId=").concat(params.customerId), {
                                 withCredentials: true
                             })];
                     case 1:

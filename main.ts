@@ -139,7 +139,7 @@ export class CustomerOperation {
 
     async getAvatar(params: GettingAvatarParams) {
         try {
-            const response = await axios.get(`${this.baseUrl}/avatar/update?customerId=${params.customerId}`, {
+            const response = await axios.get(`${this.baseUrl}/avatar/get?customerId=${params.customerId}`, {
                 withCredentials: true
             });
 
