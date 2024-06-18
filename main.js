@@ -36,16 +36,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OrdersOperation = exports.CustomerOperation = exports.AuthOperation = void 0;
+exports.AdministrativeOperation = exports.OrdersOperation = exports.CustomerOperation = exports.AuthOperation = void 0;
+var FormData = require("form-data");
 var axios_1 = require("axios");
 var AuthOperation = /** @class */ (function () {
     function AuthOperation() {
-        this.baseUrl = "http://localhost:8081/v2/auth/otp";
+        this.baseUrl = "https://api2.tdlogistics.net.vn/v2/auth/otp";
     }
     AuthOperation.prototype.sendOtp = function (payload) {
-        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_1;
+            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -65,14 +66,16 @@ var AuthOperation = /** @class */ (function () {
         });
     };
     AuthOperation.prototype.verifyOtp = function (payload) {
-        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_2;
+            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         _c.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, axios_1.default.post("".concat(this.baseUrl, "/verify"), payload)];
+                        return [4 /*yield*/, axios_1.default.post("".concat(this.baseUrl, "/verify"), payload, {
+                                withCredentials: true
+                            })];
                     case 1:
                         response = _c.sent();
                         return [2 /*return*/, { error: response.data.error, message: response.data.message, data: response.data.data }];
@@ -91,17 +94,19 @@ var AuthOperation = /** @class */ (function () {
 exports.AuthOperation = AuthOperation;
 var CustomerOperation = /** @class */ (function () {
     function CustomerOperation() {
-        this.baseUrl = "http://localhost:8081/v2/customers";
+        this.baseUrl = "https://api2.tdlogistics.net.vn/v2/customers";
     }
     CustomerOperation.prototype.getAuthenticatedCustomerInfo = function () {
-        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_3;
+            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         _c.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, axios_1.default.get("".concat(this.baseUrl, "/"))];
+                        return [4 /*yield*/, axios_1.default.get("".concat(this.baseUrl, "/"), {
+                                withCredentials: true
+                            })];
                     case 1:
                         response = _c.sent();
                         return [2 /*return*/, { error: response.data.error, message: response.data.message, data: response.data.data }];
@@ -116,9 +121,9 @@ var CustomerOperation = /** @class */ (function () {
         });
     };
     CustomerOperation.prototype.updateInfo = function (params, payload) {
-        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_4;
+            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -140,9 +145,9 @@ var CustomerOperation = /** @class */ (function () {
         });
     };
     CustomerOperation.prototype.search = function (payload) {
-        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_5;
+            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -164,14 +169,16 @@ var CustomerOperation = /** @class */ (function () {
         });
     };
     CustomerOperation.prototype.updateAvatar = function (payload) {
-        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
-            var response, error_6;
+            var formData, response, error_6;
+            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         _c.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, axios_1.default.post("".concat(this.baseUrl, "/avatar/update"), payload, {
+                        formData = new FormData();
+                        formData.append('avatar', payload.avatar);
+                        return [4 /*yield*/, axios_1.default.put("".concat(this.baseUrl, "/avatar/update"), formData, {
                                 withCredentials: true
                             })];
                     case 1:
@@ -188,9 +195,9 @@ var CustomerOperation = /** @class */ (function () {
         });
     };
     CustomerOperation.prototype.getAvatar = function (params) {
-        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_7;
+            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -216,12 +223,12 @@ var CustomerOperation = /** @class */ (function () {
 exports.CustomerOperation = CustomerOperation;
 var OrdersOperation = /** @class */ (function () {
     function OrdersOperation() {
-        this.baseUrl = "http://localhost:8080/v2/orders";
+        this.baseUrl = "https://api2.tdlogistics.net.vn/v2/orders";
     }
     OrdersOperation.prototype.create = function (payload) {
-        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
-            var response, data, error_8;
+            var response, error_8;
+            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -231,8 +238,7 @@ var OrdersOperation = /** @class */ (function () {
                             })];
                     case 1:
                         response = _c.sent();
-                        data = response.data;
-                        return [2 /*return*/, { error: data.error, data: data.data, message: data.message }];
+                        return [2 /*return*/, { error: response.data.error, data: response.data.data, message: response.data.message }];
                     case 2:
                         error_8 = _c.sent();
                         console.log("Error updating order: ", (_a = error_8 === null || error_8 === void 0 ? void 0 : error_8.response) === null || _a === void 0 ? void 0 : _a.data);
@@ -244,9 +250,9 @@ var OrdersOperation = /** @class */ (function () {
         });
     };
     OrdersOperation.prototype.get = function (payload) {
-        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_9;
+            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -269,9 +275,9 @@ var OrdersOperation = /** @class */ (function () {
         });
     };
     OrdersOperation.prototype.checkExist = function (params) {
-        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_10;
+            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -294,9 +300,9 @@ var OrdersOperation = /** @class */ (function () {
         });
     };
     OrdersOperation.prototype.update = function (payload, params) {
-        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_11;
+            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -319,9 +325,9 @@ var OrdersOperation = /** @class */ (function () {
         });
     };
     OrdersOperation.prototype.cancel = function (params) {
-        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_12;
+            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -346,3 +352,34 @@ var OrdersOperation = /** @class */ (function () {
     return OrdersOperation;
 }());
 exports.OrdersOperation = OrdersOperation;
+var AdministrativeOperation = /** @class */ (function () {
+    function AdministrativeOperation() {
+        this.baseUrl = "https://api2.tdlogistics.net.vn/v2/administrative";
+    }
+    AdministrativeOperation.prototype.get = function (conditions) {
+        return __awaiter(this, void 0, void 0, function () {
+            var response, error_13;
+            var _a, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        _c.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, axios_1.default.post("".concat(this.baseUrl, "/search"), conditions, {
+                                withCredentials: true
+                            })];
+                    case 1:
+                        response = _c.sent();
+                        return [2 /*return*/, { error: response.data.error, data: response.data.data, message: response.data.message }];
+                    case 2:
+                        error_13 = _c.sent();
+                        console.error("Error getting administrative: ", (_a = error_13 === null || error_13 === void 0 ? void 0 : error_13.response) === null || _a === void 0 ? void 0 : _a.data);
+                        console.error("Request that caused the error: ", error_13 === null || error_13 === void 0 ? void 0 : error_13.request);
+                        return [2 /*return*/, { error: (_b = error_13 === null || error_13 === void 0 ? void 0 : error_13.response) === null || _b === void 0 ? void 0 : _b.data, request: error_13 === null || error_13 === void 0 ? void 0 : error_13.request, status: error_13.response ? error_13.response.status : null }];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    return AdministrativeOperation;
+}());
+exports.AdministrativeOperation = AdministrativeOperation;

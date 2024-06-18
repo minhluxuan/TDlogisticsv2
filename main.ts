@@ -1,3 +1,4 @@
+const FormData = require("form-data");
 import axios, { AxiosResponse } from "axios";
 
 export interface SendingOtp {
@@ -121,7 +122,10 @@ export class CustomerOperation {
 
     async updateAvatar(payload: UpdatingAvatarPayload) {
         try {
-            const response = await axios.put(`${this.baseUrl}/avatar/update`, payload, {
+            const formData = new FormData();
+			formData.append('avatar', payload.avatar);
+
+            const response = await axios.put(`${this.baseUrl}/avatar/update`, formData, {
                 withCredentials: true
             });
 
