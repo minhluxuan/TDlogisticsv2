@@ -26,7 +26,8 @@ public class DBUtils {
         if (fields == null || values == null || fields.isEmpty() || values.isEmpty()) {
             query = "SELECT * FROM " + table + " LIMIT 1";
             try {
-                List<T> results = namedParameterJdbcTemplate.query(query, new BeanPropertyRowMapper<>(type));
+                @SuppressWarnings("unchecked")
+                List<T> results = (List<T>) namedParameterJdbcTemplate.query(query, new ShipmentRowMapper());
                 return results.get(0);
             } catch (EmptyResultDataAccessException e) {
                 return null;
@@ -47,7 +48,8 @@ public class DBUtils {
             }
 
             try {
-                List<T> results = namedParameterJdbcTemplate.query(queryBuilder.toString(), params, new BeanPropertyRowMapper<>(type)); 
+                @SuppressWarnings("unchecked")
+                List<T> results = (List<T>) namedParameterJdbcTemplate.query(queryBuilder.toString(), params, new ShipmentRowMapper()); 
                 if(results.size() == 0) {
                     return null;
                 }
@@ -63,7 +65,8 @@ public class DBUtils {
         if (fields == null || values == null || fields.isEmpty() || values.isEmpty()) {
             query = "SELECT * FROM " + table + " LIMIT 1";
             try {
-                List<T> results = namedParameterJdbcTemplate.query(query, new BeanPropertyRowMapper<>(type));
+                @SuppressWarnings("unchecked")
+                List<T> results = (List<T>) namedParameterJdbcTemplate.query(query, new ShipmentRowMapper());
                 return results.get(0);
             } catch (EmptyResultDataAccessException e) {
                 return null;
@@ -84,7 +87,8 @@ public class DBUtils {
             }
 
             try {
-                List<T> results = namedParameterJdbcTemplate.query(queryBuilder.toString(), params, new BeanPropertyRowMapper<>(type)); 
+                @SuppressWarnings("unchecked")
+                List<T> results = (List<T>) namedParameterJdbcTemplate.query(queryBuilder.toString(), params, new ShipmentRowMapper()); 
                 if(results.size() == 0) {
                     return null;
                 }

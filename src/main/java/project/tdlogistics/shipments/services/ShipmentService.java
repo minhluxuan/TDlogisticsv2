@@ -10,6 +10,9 @@ import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import project.tdlogistics.shipments.entities.Role;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -33,6 +36,7 @@ import project.tdlogistics.shipments.entities.Order;
 import project.tdlogistics.shipments.entities.Request;
 import project.tdlogistics.shipments.entities.Response;
 import project.tdlogistics.shipments.entities.Shipment;
+import project.tdlogistics.shipments.entities.UnitRequest;
 import project.tdlogistics.shipments.repositories.ColumnNameMapper;
 import project.tdlogistics.shipments.repositories.DBUtils;
 import project.tdlogistics.shipments.repositories.ShipmentRepository;
@@ -60,7 +64,7 @@ public class ShipmentService {
     private String exchange = "rpc-direct-exchange";
 
 
-    public Shipment createNewShipment(Shipment shipment, String userRole) throws JsonProcessingException {
+    public Shipment createNewShipment(Shipment shipment, Role userRole) throws JsonProcessingException {
         
         Date createdTime = new Date();
         SimpleDateFormat setDateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
@@ -80,22 +84,27 @@ public class ShipmentService {
             shipment.setLongDestination(agency.getLongitude());
         }
 
-        List<String> journeyInfo = new ArrayList<>();
+        List<Map<String, String>> journeyInfo = new ArrayList<>();
+        Map<String, String> journeyNode = new HashMap<>();
         boolean resultCreatingShipment = false;
-        if(userRole.equals("AGENCY_MANAGER") || userRole.equals("AGENCY_TELLER")) {
+        if(Set.of(Role.AGENCY_MANAGER, Role.AGENCY_TELLER).contains(userRole)) {
             
             postalCode = getPostalCodeFromAgencyId(agencyIdSource);  
-            journeyInfo.add(String.format("%s: Lô hàng được tạo tại Bưu cục/Đại lý %s bởi nhân viên %s.", formattedTime, "TD_71000_089204006685", "TD_71000_0123456789"));
+            journeyNode.put("time", formattedTime);
+            journeyNode.put("message", String.format("%s: Lô hàng được tạo tại Bưu cục/Đại lý %s bởi nhân viên %s.", formattedTime, "TD_71000_089204006685", "TD_71000_0123456789"));
+            journeyInfo.add(journeyNode);
             shipment.setStatus(0);
             shipment.setJourney(journeyInfo);
             resultCreatingShipment = shipmentRepositoryImplement.createNewShipment(shipment, postalCode);
             shipment.setJourney(journeyInfo);
             setJourney(shipmentId, formattedTime, shipmentId, postalCode);
         } 
-        else if(userRole.equals("MANAGER") || userRole.equals("TELLER")) {
+        else if(Set.of(Role.MANAGER, Role.TELLER).contains(userRole)) {
            
             postalCode = getPostalCodeFromAgencyId(agencyIdSource);
-            journeyInfo.add(String.format("%s: Lô hàng được tạo tại trung tâm chia chọn %s bởi nhân viên %s.", formattedTime, "TD_00001_089204006685", "TD_00001_0123456789"));
+            journeyNode.put("time", formattedTime);
+            journeyNode.put("message", String.format("%s: Lô hàng được tạo tại trung tâm chia chọn %s bởi nhân viên %s.", formattedTime, "TD_00001_089204006685", "TD_00001_0123456789"));
+            journeyInfo.add(journeyNode);
             shipment.setStatus(2);
             shipment.setJourney(journeyInfo);
             shipmentRepositoryImplement.createNewShipment(shipment, postalCode);
@@ -104,8 +113,10 @@ public class ShipmentService {
             setJourney(shipmentId, formattedTime, shipmentId, postalCode);
             setJourney(shipmentId, formattedTime, shipmentId, null);
         } 
-        else if(userRole.equals("ADMIN")) {
-            journeyInfo.add(String.format("%s: Lô hàng được tạo tại Tổng cục %s bởi nhân viên %s.", formattedTime, "TD_00001_089204006685", "TD_00001_0123456789"));      
+        else if(Set.of(Role.ADMIN).contains(userRole)) {
+            journeyNode.put("time", formattedTime);
+            journeyNode.put("message", String.format("%s: Lô hàng được tạo tại Tổng cục %s bởi nhân viên %s.", formattedTime, "TD_00001_089204006685", "TD_00001_0123456789"));
+            journeyInfo.add(journeyNode);      
             shipment.setStatus(2);
             shipment.setJourney(journeyInfo);
             resultCreatingShipment = shipmentRepositoryImplement.createNewShipment(shipment, null);
@@ -315,11 +326,16 @@ public class ShipmentService {
         message = updatedTime + ": " + message;
 
         // With coverter
-        List<String> journey = shipment.getJourney();
+        List<Map<String, String>> journey = shipment.getJourney();
         if(journey == null) {
             journey = new ArrayList<>();
         }
-        journey.add(message);
+
+        Map<String, String> journeyNode = new HashMap<>();
+        journeyNode.put("time", updatedTime);
+        journeyNode.put("message", message);
+
+        journey.add(journeyNode);
         String stringifyJourney;
         try {
             stringifyJourney = objectMapper.writeValueAsString(journey);
@@ -350,7 +366,7 @@ public class ShipmentService {
 
     }
 
-    public List<String> getJourney(String shipmentId) {
+    public List<Map<String,String>> getJourney(String shipmentId) {
         Shipment shipment = shipmentRepositoryImplement.getOneShipment(shipmentId, null);
     
         if (shipment == null) {
@@ -570,5 +586,52 @@ public class ShipmentService {
         }
 
     } 
+
+    public ListResponse assignTaskToShipper (List<String> orderIds, String staffId, String postalCode) throws JsonProcessingException {
+        
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("orderIds", orderIds);
+        params.put("staffId", staffId);
+        params.put("postalCode", postalCode);
+
+        final String jsonRequestAssigningTask = objectMapper.writeValueAsString(new Request<>("assignTask", params, null));
+        final String jsonResponseAssigningTask = (String) amqpTemplate.convertSendAndReceive(exchange, "rpc.tasks", jsonRequestAssigningTask);
+
+        final Response<ListResponse> response = objectMapper.readValue(jsonResponseAssigningTask, new TypeReference<Response<ListResponse>>() {});
+        if (response != null && response.getData() != null) {
+            return response.getData();
+        } else {
+            return null;
+        }
+    }
+
+    public Agency findOneAgency (Agency criteria) throws JsonProcessingException {
+
+        final String jsonRequestFindingOneAgency = objectMapper.writeValueAsString(new Request<Agency>("findOneAgency", null, criteria));
+        final String jsonResponseFindingOneAgency = (String) amqpTemplate.convertSendAndReceive(exchange, "rpc.agency", jsonRequestFindingOneAgency);
+
+        final Response<Agency> response = objectMapper.readValue(jsonResponseFindingOneAgency, new TypeReference<Response<Agency>>() {});
+        if (response != null && response.getData() != null) {
+            return response.getData();
+        } else {
+            return null;
+        }
+    }
+
+    public String getOneDistributionCenter (String province) throws JsonProcessingException {
+
+        HashMap<String, Object> conditions = new HashMap<>();
+        conditions.put("province", province);
+
+        final String jsonRequestFindingOneAgency = objectMapper.writeValueAsString(new Request<UnitRequest>("getOneDistributionCenter", conditions, null));
+        final String jsonResponseFindingOneAgency = (String) amqpTemplate.convertSendAndReceive(exchange, "rpc.administrative", jsonRequestFindingOneAgency);
+
+        final Response<String> response = objectMapper.readValue(jsonResponseFindingOneAgency, new TypeReference<Response<String>>() {});
+        if (response != null && response.getData() != null) {
+            return response.getData();
+        } else {
+            return null;
+        }
+    }
 
 }

@@ -6,6 +6,9 @@ import java.util.Date;
 import java.util.Map;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+
+import project.tdlogistics.shipments.entities.Role;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +21,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Null;
 import project.tdlogistics.shipments.entities.Shipment;
 import project.tdlogistics.shipments.entities.Response;
+import project.tdlogistics.shipments.entities.Agency;
 import project.tdlogistics.shipments.entities.ListResponse;
 import project.tdlogistics.shipments.entities.Request;
 import project.tdlogistics.shipments.services.ShipmentService;
@@ -28,7 +32,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
+
 import org.springframework.amqp.core.AmqpTemplate;
 
 
@@ -39,18 +45,15 @@ public class ShipmentRestController {
     private ShipmentService shipmentService;
     
     @PostMapping(value = "/create")
-    public ResponseEntity<Response<Shipment>> createShipment(@RequestBody Shipment info) throws Exception {
+    public ResponseEntity<Response<Shipment>> createShipment
+        (@RequestBody Shipment info,
+        @RequestHeader(value = "userId") String userId,
+        @RequestHeader(value = "agencyId") String agencyId,
+        @RequestHeader(value = "role") Role role) throws Exception {
         try {
 
-            // Validate request (assuming you have a validator method)
-            // String validationError = validateCreatingShipment(info);
-            // if (validationError != null) {
-            //     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            //             .body(new Response<>(true, validationError, null));
-            // }
-            info.setAgencyId("TD_71000_089204006685");
-            System.out.println(info);
-            final Shipment result = shipmentService.createNewShipment(info, "AGENCY_MANAGER");
+            info.setAgencyId(agencyId);
+            final Shipment result = shipmentService.createNewShipment(info, role);
             if(result == null) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
             }
@@ -81,18 +84,15 @@ public class ShipmentRestController {
     }
     
     @PostMapping("/add_orders")
-    public ResponseEntity<Response<ListResponse>> addOrdersToShipment(@RequestParam Map<String, String> queryParams,
-                                                @RequestBody Shipment info) {
+    public ResponseEntity<Response<ListResponse>> addOrdersToShipment
+        (@RequestParam Map<String, String> queryParams,
+        @RequestBody Shipment info,
+        @RequestHeader(value = "agencyId") String agencyId,
+        @RequestHeader(value = "userId") String userId,
+        @RequestHeader(value = "role") Role role) {
         try {
-            // Validate request
-            // Assuming validation methods throw exceptions if invalid
-            // shipmentRequestValidation.validateQueryUpdatingShipment(queryParams);
-            // shipmentRequestValidation.validateOperationWithOrder(requestBody);
 
-            String userRole = "AGENCY_MANAGER";
-            if (List.of("AGENCY_MANAGER", "AGENCY_TELLER").contains(userRole)) {
-                // String agencyId = user.getAgencyId();
-                String agencyId = "TD_71000_089204006685";
+            if (Set.of(Role.AGENCY_MANAGER, Role.AGENCY_TELLER).contains(role)) {     
                 String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
                 Shipment shipment = shipmentService.getOneShipment(queryParams.get("shipmentId"), postalCode);
                 if(shipment == null) {
@@ -111,9 +111,7 @@ public class ShipmentRestController {
                     "Thêm đơn hàng vào lô thành công", 
                     resultAddingOrders
                 ));
-            } else if (List.of("MANAGER", "TELLER").contains(userRole)) {
-                // String agencyId = user.getAgencyId();
-                String agencyId = "TD_00000_089204006685";
+            } else if (Set.of(Role.MANAGER, Role.TELLER).contains(role)) {
                 String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
                 Shipment shipment = shipmentService.getOneShipment(queryParams.get("shipment_id"), postalCode);
                 if(shipment == null) {
@@ -124,8 +122,6 @@ public class ShipmentRestController {
                     ));
                 }
                 
-
-                // Shipment result = shipmentService.addOrdersToShipment(shipment, requestBody.getOrderIds(), postalCode);
                 shipmentService.addOrders(shipment, info.getOrderIds(), postalCode);
                 ListResponse resultAddingOrders = shipmentService.addOrders(shipment, info.getOrderIds(), null);
                 return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response<>(
@@ -144,9 +140,6 @@ public class ShipmentRestController {
                     null
                 ));
             }
-            
-
-            // Shipment result = shipmentService.addOrdersToShipment(shipment, requestBody.getOrderIds(), postalCode);
             ListResponse resultAddingOrders = shipmentService.addOrders(shipment, info.getOrderIds(), postalCode);
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response<>(
                 false, 
@@ -161,18 +154,15 @@ public class ShipmentRestController {
     }
    
     @PostMapping("/remove_orders")
-    public ResponseEntity<Response<ListResponse>> removeOrdersFromShipment(@RequestParam Map<String, String> queryParams,
-                                                @RequestBody Shipment info) {
+    public ResponseEntity<Response<ListResponse>> removeOrdersFromShipment
+        (@RequestParam Map<String, String> queryParams,
+        @RequestBody Shipment info,
+        @RequestHeader(value = "agencyId") String agencyId,
+        @RequestHeader(value = "userId") String userId,
+        @RequestHeader(value = "role") Role role) {
         try {
-            // Validate request
-            // Assuming validation methods throw exceptions if invalid
-            // shipmentRequestValidation.validateQueryUpdatingShipment(queryParams);
-            // shipmentRequestValidation.validateOperationWithOrder(requestBody);
 
-            String userRole = "AGENCY_MANAGER";
-            if (List.of("AGENCY_MANAGER", "AGENCY_TELLER").contains(userRole)) {
-                // String agencyId = user.getAgencyId();
-                String agencyId = "TD_71000_089204006685";
+            if (Set.of(Role.AGENCY_MANAGER, Role.AGENCY_TELLER).contains(role)) {
                 String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
                 Shipment shipment = shipmentService.getOneShipment(queryParams.get("shipmentId"), postalCode);
                 if(shipment == null) {
@@ -192,9 +182,7 @@ public class ShipmentRestController {
                     "Xóa đơn hàng vào lô thành công", 
                     resultRemoveOrders
                 ));
-            } else if (List.of("MANAGER", "TELLER").contains(userRole)) {
-                // String agencyId = user.getAgencyId();
-                String agencyId = "TD_00000_089204006685";
+            } else if (Set.of(Role.MANAGER, Role.TELLER).contains(role)) {
                 String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
                 Shipment shipment = shipmentService.getOneShipment(queryParams.get("shipment_id"), postalCode);
                 if(shipment == null) {
@@ -204,8 +192,6 @@ public class ShipmentRestController {
                         null
                     ));
                 }
-
-                // Shipment result = shipmentService.removeOrdersFromShipment(shipment, requestBody.getOrderIds(), postalCode);
                 shipmentService.removeOrders(shipment, info.getOrderIds(), postalCode);
                 ListResponse resultRemoveOrders = shipmentService.removeOrders(shipment, info.getOrderIds(), null);
                 return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response<>(
@@ -224,9 +210,6 @@ public class ShipmentRestController {
                     null
                 ));
             }
-            
-
-            // Shipment result = shipmentService.removeOrdersToShipment(shipment, requestBody.getOrderIds(), postalCode);
             ListResponse resultRemoveOrders = shipmentService.removeOrders(shipment, info.getOrderIds(), postalCode);
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response<>(
                 false, 
@@ -241,7 +224,7 @@ public class ShipmentRestController {
     }
     
     @PostMapping("/undertake")
-    public ResponseEntity<Response<List<String>>> undertakeShipment(@RequestBody Shipment info) throws Exception {
+    public ResponseEntity<Response<List<Object>>> undertakeShipment(@RequestBody Shipment info) throws Exception {
         try {
             
             final String staffId = "TD_71000_089204006685";
@@ -265,14 +248,16 @@ public class ShipmentRestController {
             }
 
             ListResponse resultUpdatingOrders = shipmentService.updateOrders(info.getOrderIds(), staffId, postalCode);
-            // TODO
-            // Shipper service: assign task to shipper
+            ListResponse resultAssigningTask = shipmentService.assignTaskToShipper(info.getOrderIds(), staffId, postalCode);
 
-            List<String> acceptedArray = resultUpdatingOrders.getAcceptedArray();
+            List<Object> result = new ArrayList<>();
+            result.add(resultUpdatingOrders);
+            result.add(resultAssigningTask);
+
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response<>(
                 false, 
                 "Thêm đơn hàng vào lô thành công", 
-                acceptedArray
+                result
             ));
 
         } catch (Exception e) {
@@ -289,22 +274,23 @@ public class ShipmentRestController {
             String formattedTime = formatter.format(createdTime);
 
             String shipmentId = queryParams.get("shipment_id");
-            // if (shipmentId == null || shipmentId.isEmpty()) {
-            //     return ResponseEntity.badRequest().body(Map.of(
-            //         "error", true,
-            //         "message", "Shipment ID is required"
-            //     ));
-            // }
+            if (shipmentId == null || shipmentId.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(
+                    true,
+                    "Thiếu thông tin lô hàng.",
+                    null
+                ));
+            }
 
             String message = body.get("message");
-            // if (message == null || message.isEmpty()) {
-            //     return ResponseEntity.badRequest().body(Map.of(
-            //         "error", true,
-            //         "message", "Message is required"
-            //     ));
-            // }
+            if (message == null || message.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(
+                    true,
+                    "Thiếu thông hành trình.",
+                    null
+                ));
+            }
             
-
             final boolean resultUpdatingJourney = shipmentService.setJourney(shipmentId, formattedTime, message, null);
             if (!resultUpdatingJourney) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(
@@ -329,11 +315,11 @@ public class ShipmentRestController {
     }
 
     @PostMapping("/get_journey")
-    public ResponseEntity<Response<List<String>>> getJourney(@RequestParam Map<String, String> queryParams) {
+    public ResponseEntity<Response<List<Map<String, String>>>> getJourney(@RequestParam Map<String, String> queryParams) {
         try {
 
             String shipmentId = queryParams.get("shipment_id");
-            List<String> journey = shipmentService.getJourney(shipmentId);
+            List<Map<String, String>> journey = shipmentService.getJourney(shipmentId);
             return ResponseEntity.status(HttpStatus.OK).body(new Response<> (
                 false,
                 "Lấy thông tin hành trình thành công!",
@@ -351,18 +337,19 @@ public class ShipmentRestController {
     }
 
     @PostMapping("/decompose")
-    public ResponseEntity<Response<ListResponse>> decomposeShipment(@RequestParam Map<String, String> queryParams, @RequestBody Map<String, Object> body) {
+    public ResponseEntity<Response<ListResponse>> decomposeShipment
+        (@RequestParam Map<String, String> queryParams, 
+        @RequestBody Map<String, Object> body,
+        @RequestHeader(value = "agencyId") String agencyId,
+        @RequestHeader(value = "userId") String userId,
+        @RequestHeader(value = "role") Role role) {
         try {
             Date createdTime = new Date();
             SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
             String formattedTime = formatter.format(createdTime);
-
-            final String userRole = "AGENCY_MANAGER";
-            final String shipmentId = "TD_71000_2406223456";
-            final String agencyId = "BC_71000_089204006685";
-            // final String postalCode = shipmentService.getPostalCodeFromAgencyId(userId);
-            final String postalCode = "71000";
-            if(List.of("AGENCY_MANAGER", "AGENCY_TELLER").contains(userRole)) {
+            final String shipmentId = queryParams.get("shipmentId");
+            final String postalCode = shipmentService.getPostalCodeFromAgencyId(userId);
+            if(Set.of(Role.AGENCY_MANAGER, Role.AGENCY_TELLER).contains(role)) {
                 if(!shipmentService.checkExistShipment(shipmentId, postalCode)) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
                         true,
@@ -371,7 +358,7 @@ public class ShipmentRestController {
                     ));
                 }
             } 
-            else if(List.of("MANAGER", "TELLER").contains(userRole)) {
+            else if(Set.of(Role.MANAGER, Role.TELLER).contains(role)) {
                 if(!shipmentService.checkExistShipment(shipmentId, postalCode)) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
                         true,
@@ -416,7 +403,7 @@ public class ShipmentRestController {
                 )); 
             }
 
-            // Object to List<String> convert
+            
             Object requestOrderIdsObject = body.get("orderIds");
             List<String> requestOrderIds = new ArrayList<>();
             if(requestOrderIdsObject instanceof List<?>) {
@@ -430,8 +417,8 @@ public class ShipmentRestController {
             }
 
             final ListResponse resultComparingOrdersInRequestWithOrdersInShipment = shipmentService.compareOrdersInRequestWithOrdersInShipment(requestOrderIds, shipmentOrderIds);
-            if (List.of("MANAGER", "TELLER").contains(userRole)) {
-                final ListResponse resultDecomposingShipment = shipmentService.decomposeShipment(shipment.getOrderIds(), shipment.getShipmentId(), agencyId, null);
+            if (Set.of(Role.MANAGER, Role.TELLER).contains(role)) {
+                shipmentService.decomposeShipment(shipment.getOrderIds(), shipment.getShipmentId(), agencyId, null);
         
                 String sourcePostalCode = shipment.getShipmentId().split("_")[1];
                 if (!sourcePostalCode.substring(0, 4).equals("0000")) {
@@ -439,8 +426,8 @@ public class ShipmentRestController {
                 }
         
                 shipmentService.updateShipmentStatus(shipmentId, 6, postalCode);
-            } else if (List.of("AGENCY_MANAGER", "AGENCY_TELLER").contains(userRole)) {
-                final ListResponse resultDecomposingShipment = shipmentService.decomposeShipment(shipment.getOrderIds(), shipment.getShipmentId(), agencyId, null);
+            } else if (Set.of(Role.AGENCY_MANAGER, Role.AGENCY_TELLER).contains(role)) {
+                shipmentService.decomposeShipment(shipment.getOrderIds(), shipment.getShipmentId(), agencyId, null);
                 shipmentService.decomposeShipment(shipment.getOrderIds(), shipment.getShipmentId(), agencyId, postalCode);
             }
         
@@ -464,11 +451,13 @@ public class ShipmentRestController {
     }
 
     @PostMapping("/confirm_create")
-    public ResponseEntity<Response<ListResponse>> confirmCreateShipment(@RequestBody Shipment info) throws Exception {
+    public ResponseEntity<Response<ListResponse>> confirmCreateShipment
+        (@RequestBody Shipment info,
+        @RequestHeader(value = "agencyId") String agencyId,
+        @RequestHeader(value = "userId") String userId,
+        @RequestHeader(value = "role") Role role) throws Exception {
         try {
-            //Validation
-
-            final String agencyId = "BC_71000_089204006685";
+            
             final String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
 
             final Shipment shipment = shipmentService.getOneShipment(info.getShipmentId(), postalCode);
@@ -496,41 +485,40 @@ public class ShipmentRestController {
                 ));
             }
 
-            // Agency service
-            // const resultGettingOneAgency = await agencyService.getOneAgency({ agency_id: req.user.agency_id });
-            // if (!resultGettingOneAgency || resultGettingOneAgency.length === 0) {
-            //     return res.status(409).json({
-            //         error: true,
-            //         message: "Xác nhận tạo lô hàng không thành công. Vui lòng thử lại.",
-            //     });
-            // }
+            Agency resultFindingAgency = shipmentService.getOneAgency(agencyId);
+            if(resultFindingAgency == null) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<>(
+                    true,
+                    "Xác nhận tạo lô hàng không thành công. Vui lòng thử lại.",
+                    null
+                ));
+            }
 
-            // if (!resultGettingOneAgency[0].province) {
-            //     return res.status(409).json({
-            //         error: true,
-            //         message: "Xác nhận tạo lô hàng không thành công. Vui lòng cập nhật thông tin Tỉnh của bưu cục để có thể tiếp tục.",
-            //     });
-            // }
+            if(resultFindingAgency.getProvince() == null) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<>(
+                    true,
+                    "Xác nhận tạo lô hàng không thành công. Vui lòng cập nhật thông tin Tỉnh của bưu cục để có thể tiếp tục.",
+                    null
+                ));
+            }
+                  
+            final String distributionCenterId = shipmentService.getOneDistributionCenter(resultFindingAgency.getProvince());
+            if(distributionCenterId == null) {
+                return ResponseEntity.status(404).body(new Response<>(
+                    true,
+                    "Xác nhận tạo lô hàng không thành công. Bưu cục chưa thuộc quyền quản lý của trung tâm điều phối nào.",
+                    null
+                ));
+            }
 
-            // Administrative service
-            // const distributionCenterId = await administrativeService.getOneDistributionCenter(resultGettingOneAgency[0].province);
-            // if (!distributionCenterId) {
-            //     return res.status(404).json({
-            //         error: true,
-            //         message: `Xác nhận tạo lô hàng không thành công.
-            //         Bưu cục ${req.user.agency_id} chưa thuộc quyền quản lý của trung tâm điều phối nào.`,
-            //     });
-            // }
-            
-            // Agency service
-            // if (!(await agencyService.getOneAgency({ agency_id: distributionCenterId }))) {
-            //     return res.status(404).json({
-            //         error: true,
-            //         message: `Trung tâm điều phối ${distributionCenterId} quản lý bưu cục của bạn không tồn tại.`
-            //     });
-            // }
+            if(shipmentService.getOneAgency(distributionCenterId) == null) {
+                return ResponseEntity.status(404).body(new Response<>(
+                    true,
+                    "Trung tâm điều phối quản lý bưu cục của bạn không tồn tại.",
+                    null
+                ));
+            }
 
-            final String distributionCenterId = "TD_00001_089204006684";
             final String postalCodeOfDistributionCenter = shipmentService.getPostalCodeFromAgencyId(distributionCenterId);
             final boolean resultConfirmingCreateShipment = shipmentService.confirmCreateShipment(shipment, postalCodeOfDistributionCenter);
             if(!resultConfirmingCreateShipment) {
@@ -626,8 +614,6 @@ public class ShipmentRestController {
                 ));
             }
 
-            // Convert the info map to an Shipment object
-            // Shipment criteria = objectMapper.convertValue(info, Shipment.class);
             System.out.println(criteria);
             List<Shipment> result = new ArrayList<>();
             
