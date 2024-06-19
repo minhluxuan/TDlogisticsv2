@@ -1,6 +1,22 @@
 const FormData = require("form-data");
 import axios, { AxiosResponse } from "axios";
 
+export enum Role {
+    CUSTOMER,
+    ADMIN,
+    MANAGER,
+    HUMAN_RESOURCE_MANAGER,
+    TELLER,
+    COMPLAINTS_SOLVER,
+    AGENCY_MANAGER,
+    AGENCY_HUMAN_RESOURCE_MANAGER,
+    AGENCY_TELLER,
+    AGENCY_COMPLAINTS_SOLVER,
+    SHIPPER,
+    DRIVER,
+    TRANSPORT_PARTNER_REPRESENTOR
+};
+
 export interface SendingOtp {
     phoneNumber: String,
     email: String,
@@ -114,7 +130,7 @@ export class CustomerOperation {
 
             return { error: response.data.error, message: response.data.message, data: response.data.data };
         } catch (error) {
-            console.log("Error updating customer information: ", error?.response?.data);
+            console.log("Error searching customer information: ", error?.response?.data);
             console.error("Request that caused the error: ", error?.request);
             return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
         }
@@ -152,11 +168,11 @@ export class CustomerOperation {
     }
 }
 
-export interface CheckingExistOrderCondition {
+export interface CheckingExistOrderCriteria {
     orderId: string,
 }
 
-export interface GettingOrdersConditions {
+export interface GettingOrdersCriteria {
     orderId: string,
     nameReceiver?: string,
     phoneReceiver?: string,
@@ -220,11 +236,11 @@ export interface CreatingOrderByAdminAndAgencyInformation {
 }
 
 
-export interface UpdatingOrderCondition {
+export interface UpdatingOrderCriteria {
     orderId: string,
 }
 
-export interface UpdatingOrderInfo {
+export interface UpdatingOrderPayload {
     mass?: number,
     height?: number,
     width?: number,
@@ -233,7 +249,7 @@ export interface UpdatingOrderInfo {
     statusCode?: number, 
 }
 
-export interface CancelingOrderCondition {
+export interface CancelingOrderCriteria {
     orderId: string,
 }
 
@@ -245,7 +261,7 @@ export class OrdersOperation {
         this.baseUrl = "https://api2.tdlogistics.net.vn/v2/orders";
     }
 
-    async create(payload: UpdatingOrderInfo) {
+    async create(payload: UpdatingOrderPayload) {
         try {
             const response = await axios.put(`${this.baseUrl}/create`, payload, {
                 withCredentials: true,
@@ -259,7 +275,7 @@ export class OrdersOperation {
         }
     }
 
-    async get(payload: GettingOrdersConditions) {
+    async get(payload: GettingOrdersCriteria) {
         try {
             const response = await axios.post(`${this.baseUrl}/search`, payload, {
                 withCredentials: true,
@@ -274,7 +290,7 @@ export class OrdersOperation {
         }
     }
 
-    async checkExist(params: CheckingExistOrderCondition) {
+    async checkExist(params: CheckingExistOrderCriteria) {
         try {
             const response = await axios.get(`${this.baseUrl}/check?orderId=${params.orderId}`, {
                 withCredentials: true,
@@ -289,7 +305,7 @@ export class OrdersOperation {
         }
     }
 
-    async update(payload: UpdatingOrderInfo, params: UpdatingOrderCondition) {
+    async update(payload: UpdatingOrderPayload, params: UpdatingOrderCriteria) {
         try {
             const response = await axios.put(`${this.baseUrl}/update?orderId=${params.orderId}`, payload, {
                 withCredentials: true,
@@ -304,7 +320,7 @@ export class OrdersOperation {
         }
     }
 
-    async cancel(params: CancelingOrderCondition) {
+    async cancel(params: CancelingOrderCriteria) {
         try {
             const response = await axios.delete(`${this.baseUrl}/cancel?orderId=${params.orderId}`, {
                 withCredentials: true,
@@ -345,4 +361,220 @@ export class AdministrativeOperation {
             return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
         }
     }
+}
+
+export interface CreatingStaffByAgencyPayload {
+	fullname: string,
+    dateOfBirth: string,
+    cccd: string,
+    role: Role,
+    position: string,
+    salary: number,
+    paid_salary: number,
+    province: string,
+    district: string,
+    town: string,
+    detailAddress: string,
+    managedWards?: Array<String>
+}
+
+export interface CreatingStaffByAdminPayload {
+    agencyId: string,
+    fullname: string,
+    dateOfBirth: string,
+    cccd: string,
+    role: Role,
+    position: string,
+    salary: number, 
+    paidSalary: number,
+    province: string,
+    district: string,
+    town: string,
+    detailAddress: string,
+    managedWards?: Array<String>
+}
+  
+export interface FindingStaffByStaffCriteria {
+    staffId: string,
+}
+  
+export interface FindingStaffByAdminCriteria {
+    staffId?: string,
+    fullname?: string,
+    dateOfBirth?: string, 
+    cccd?: string, 
+    role?: Role,
+    province?: string,
+    district?: string,
+    town?: string,
+}
+  
+export interface UpdatingStaffPayload {
+    fullname?: string,
+    username?: string,
+    dateOfBirth?: string,
+    role?: Role,
+    salary?: number, 
+    paidSalary?: string, 
+    province?: string,
+    district?: string,
+    town?: string,
+    detailAddress?: string,
+    managedWards?: Array<String>
+}
+  
+export interface UpdatingStaffCriteria {
+    staffId: string,
+}
+  
+export interface DeletingStaffCriteria {
+    staffId: string,
+};
+  
+export interface UpdatingAvatarStaffPayload {
+    avatar: File,
+};
+  
+export interface FindingAvatarCriteria {
+    staffId: string,
+}
+  
+export class StaffOperation {
+	private baseUrl: string;
+
+	constructor() {
+		this.baseUrl = "https://api2.tdlogistics.net.vn/v2/staffs";
+	}
+
+	// ROLE: any
+	async getAuthenticatedStaffInfo() {
+        try {
+            const response: AxiosResponse = await axios.get(`${this.baseUrl}/`, {
+                withCredentials: true,
+            });
+            
+            return { error: response.data.error, data: response.data.info, message: response.data.message };
+        } catch (error: any) {
+            console.log("Error get authenticated staff information: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+        }
+    }
+
+	// ROLE: ADMIN, TELLER, HUMAN_RESOURCE_MANAGER, COMPLAINTS_SOLVER, AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER
+	async findByAdmin(conditions: FindingStaffByAdminCriteria) {
+		try {
+			const response: AxiosResponse = await axios.post(`${this.baseUrl}/search`, conditions, {
+				withCredentials: true,
+			});
+			
+			return { error: response.data.error, data: response.data.data, message: response.data.message };
+		}     
+		catch (error: any) {
+			console.log("Error getting staffs: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+	}
+
+	// ROLE: ADMIN, MANAGER, HUMAN_RESOURCE_MANAGER
+	async createByAdmin(info: CreatingStaffByAdminPayload) {
+		try {
+			const response: AxiosResponse = await axios.post(`${this.baseUrl}/create`, info, {
+				withCredentials: true,
+			});
+			
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		} 
+		catch (error: any) {
+			console.log("Error create new staff: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+	}
+
+	// ROLE: AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER
+	async createByAgency(info: CreatingStaffByAgencyPayload) {
+		try {
+			const response: AxiosResponse = await axios.post(`${this.baseUrl}/create`, info, {
+				withCredentials: true,
+			});
+			
+			const data = response.data;
+			return { error: data.error, message: data.message, data: response.data.data };
+		} 
+		catch (error: any) {
+			console.log("Error create new staff: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+	}
+
+	// ROLE: ADMIN, MANAGER, HUMAN_RESOURCE_MANAGER, AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER
+	async update(info: UpdatingStaffPayload, condition: UpdatingStaffCriteria) {
+		try {
+			const response: AxiosResponse = await axios.put(`${this.baseUrl}/update?staffId=${condition.staffId}`, info, {
+				withCredentials: true,
+			});
+			
+			const data = response.data;
+			return { error: data.error, message: data.message, data: response.data.data };
+		} 
+		catch (error: any) {
+			console.log("Error create new staff: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+	}
+
+	// ROLE: ADMIN, MANAGER, HUMAN_RESOURCE_MANAGER, AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER
+	async deleteStaff(condition: DeletingStaffCriteria) {
+		try {
+			const response = await axios.delete(`${this.baseUrl}/delete?staffId=${condition.staffId}`, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		} 
+		catch (error: any) {
+			console.log("Error deleting staff: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+	}
+
+	// ROLE: ADMIN, MANAGER, HUMAN_RESOURCE_MANAGER, AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER
+	async updateAvatar(info: UpdatingAvatarStaffPayload, condition: UpdatingStaffCriteria) {
+		try {       
+			// Tạo FormData object và thêm hình ảnh vào đó
+			const formData = new FormData();
+			formData.append('avatar', info.avatar);
+	
+			// Gửi yêu cầu POST để tải lên hình ảnh
+			const response: AxiosResponse = await axios.patch(`${this.baseUrl}/avatar/update?staffId=${condition.staffId}`, formData , {
+				withCredentials: true,
+			});
+
+            return { error: response.data.error, message: response.data.message, data: response.data.data };
+		} catch (error: any) {
+			console.error('Error uploading image:', error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null }; // Ném lỗi để xử lý bên ngoài
+		}   
+	}
+
+	// ROLE: any
+	async getAvatar (condition: FindingAvatarCriteria) {
+		try {
+            const response = await axios.get(`${this.baseUrl}/avatar/get?staffId=${condition.staffId}`, {
+                withCredentials: true,
+                responseType: 'arraybuffer',
+            });
+    
+            return response.data;
+        } catch (error: any) {
+            console.error("Error getting avatar: ", error);
+            return error.response.data;
+        }
+	}
 }
