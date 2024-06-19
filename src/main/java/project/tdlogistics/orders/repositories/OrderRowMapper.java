@@ -55,7 +55,7 @@ public class OrderRowMapper implements RowMapper<Order> {
         order.setServiceType(rs.getString("service_type"));
         order.setShipper(rs.getString("shipper"));
         order.setSignature(rs.getString("signature"));
-        order.setStatusCode(rs.getInt("statusCode"));
+        order.setStatusCode(rs.getInt("status_code"));
         order.setUserId(rs.getString("user_id"));
         order.setWardDest(rs.getString("ward_dest"));
         order.setWardSource(rs.getString("ward_source"));

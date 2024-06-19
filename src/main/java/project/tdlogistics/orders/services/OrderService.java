@@ -104,7 +104,7 @@ public class OrderService {
         if(!resultCreatingOrderInAgency) {
             return null;
         }
-
+        System.out.println(info.toString());
         if (info.getStatusCode() == OrderStatus.PROCESSING.getCode()) {
             String orderMessage = formattedTime + ": Đơn hàng đang được bưu tá đến nhận";
             OrderStatus orderStatusCode = OrderStatus.TAKING;
@@ -117,12 +117,12 @@ public class OrderService {
             setJourney(info.getOrderId(), orderMessage, orderStatusCode, postalCode);
         }
 
-        Customer customer = new Customer();
-        customer.setProvince(info.getProvinceSource());
-        customer.setDistrict(info.getDistrictSource());
-        customer.setWard(info.getWardSource());
-        customer.setDetailAddress(info.getDetailSource());
-        updateUserInfo(userId, customer);
+        // Customer customer = new Customer();
+        // customer.setProvince(info.getProvinceSource());
+        // customer.setDistrict(info.getDistrictSource());
+        // customer.setWard(info.getWardSource());
+        // customer.setDetailAddress(info.getDetailSource());
+        // updateUserInfo(userId, customer);
 
         final Optional<Order> optionalCreatedOrder = orderRepository.findByOrderId(info.getOrderId());
         return optionalCreatedOrder.isPresent() ? optionalCreatedOrder.get() : null;

@@ -117,27 +117,28 @@ public class OrderRestController {
     ) throws Exception {
         try {
 
-            // Check exist agency and shipper serving here\
-            Ward resultFindingManageAgency = orderService.findManagedAgency(payload.getWardSource(), payload.getDistrictSource(), payload.getProvinceSource());
-            if(resultFindingManageAgency == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Order>(
-                    true,
-                    String.format("Xin lỗi quý khách. Dịch vụ chúng tôi chưa có mặt ở %s, %s, %s.", payload.getWardSource(), payload.getDistrictSource(), payload.getProvinceSource()),
-                    null
-                ));
-            }
+            
+            // Ward resultFindingManageAgency = orderService.findManagedAgency(payload.getWardSource(), payload.getDistrictSource(), payload.getProvinceSource());
+            // if(resultFindingManageAgency == null) {
+            //     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Order>(
+            //         true,
+            //         String.format("Xin lỗi quý khách. Dịch vụ chúng tôi chưa có mặt ở %s, %s, %s.", payload.getWardSource(), payload.getDistrictSource(), payload.getProvinceSource()),
+            //         null
+            //     ));
+            // }
 
-            if(resultFindingManageAgency.getShipper() == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Order>(
-                    true,
-                    "Xin lỗi quý khách. Khu vực của quý khách hiện chưa có shipper nào phục vụ.",
-                    null
-                ));
-            }
+            // if(resultFindingManageAgency.getShipper() == null) {
+            //     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Order>(
+            //         true,
+            //         "Xin lỗi quý khách. Khu vực của quý khách hiện chưa có shipper nào phục vụ.",
+            //         null
+            //     ));
+            // }
 
 
 
-            String agencyIdWillServer = resultFindingManageAgency.getAgencyId();
+            // String agencyIdWillServer = resultFindingManageAgency.getAgencyId();
+            String agencyIdWillServer = "TD_71000_089204006685";
             payload.setAgencyId(agencyIdWillServer);
 
             if (Set.of(Role.CUSTOMER).contains(role)) {
