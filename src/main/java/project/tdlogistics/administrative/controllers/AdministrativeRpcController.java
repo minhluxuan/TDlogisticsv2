@@ -44,6 +44,8 @@ public class AdministrativeRpcController {
                     return findWards(request.getPayload());
                 case "updateAdministrativeUnit":
                     return updateAdministrativeUnit(request.getParams(), request.getPayload());
+                case "getOneDistributionCenter":
+                    return getOneDistributionCenter(request.getParams());
                 default:
                     return (new ObjectMapper().registerModule(new JavaTimeModule())).writeValueAsString(new Response<>(400, true, "Yêu cầu không hợp lệ", null));
             }
@@ -127,4 +129,14 @@ public class AdministrativeRpcController {
         }
     }
 
+    private String getOneDistributionCenter(Map<String, Object> conditions) throws JsonProcessingException {
+        try {
+            final String province = (String) conditions.get("province");
+            String agencyId = administrativeService.getOneDistributionCenter(province);
+            return (new ObjectMapper()).writeValueAsString(new Response<String>(200, false, "Lấy thông tin thành công", agencyId));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return (new ObjectMapper()).writeValueAsString(new Response<>(500, true, "Đã xảy ra lỗi. Vui lòng thử lại.", null)); 
+        }
+    }
 }
