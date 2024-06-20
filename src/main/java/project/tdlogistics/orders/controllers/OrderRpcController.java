@@ -33,6 +33,8 @@ public class OrderRpcController {
                     return updateOneOrder(request.getPayload(), request.getParams());
                 case "findOneOrder":
                     return findOneOrder(request.getPayload());
+                case "createOrderInAgency":
+                    return createOrderInAgency(request.getPayload(), request.getParams());
                 default:
                     return (new ObjectMapper().registerModule(new JavaTimeModule())).writeValueAsString(new Response<Order>(400, true, "Yêu cầu không hợp lệ", null));
             }           
@@ -69,6 +71,23 @@ public class OrderRpcController {
             }
 
             return (new ObjectMapper()).writeValueAsString(new Response<Order>(200, false, "Lấy đơn hàng thành công", resultFindingOrder));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return (new ObjectMapper()).writeValueAsString(new Response<>(500, true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
+        }
+    }
+
+    private String createOrderInAgency(Order criteria, Map<String, Object> conditions) throws JsonProcessingException{
+        try {
+            String postalCode = (String) conditions.get("postalCode");
+            if(postalCode == null) {
+                throw new IllegalArgumentException("Thiếu thông tin bưu cục.");
+            }
+            final boolean result = orderService.createNewOrderInAgency(criteria, postalCode);
+            if(!result) {
+                return (new ObjectMapper()).writeValueAsString(new Response<>(500, true, "Đã xảy ra lỗi. Vui lòng thử lại.", false));
+            }
+            return (new ObjectMapper()).writeValueAsString(new Response<>(201, false, "Tạo đơn hàng thành công.", true));
         } catch (Exception e) {
             e.printStackTrace();
             return (new ObjectMapper()).writeValueAsString(new Response<>(500, true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
