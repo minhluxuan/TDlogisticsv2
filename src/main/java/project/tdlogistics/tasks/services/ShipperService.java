@@ -81,7 +81,7 @@ public class ShipperService {
     // }
 
     public Shipment findShipment(Shipment criteria) throws JsonProcessingException {
-        final String jsonRequestFindingShipment = objectMapper.writeValueAsString(new Request<Shipment>("findShipment", null, criteria));
+        final String jsonRequestFindingShipment = objectMapper.writeValueAsString(new Request<Shipment>("findOneShipment", null, criteria));
         final String jsonResponseFindingShipment = (String) amqpTemplate.convertSendAndReceive(exchange, "rpc.shipments", jsonRequestFindingShipment);
     
         final Response<Shipment> response = objectMapper.readValue(jsonResponseFindingShipment, new TypeReference<Response<Shipment>>() {});

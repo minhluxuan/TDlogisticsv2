@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import project.tdlogistics.tasks.entities.DriverTask;
 import project.tdlogistics.tasks.entities.ListResponse;
 import project.tdlogistics.tasks.entities.Response;
+import project.tdlogistics.tasks.entities.Role;
 import project.tdlogistics.tasks.entities.Shipment;
 import project.tdlogistics.tasks.entities.ShipperTask;
 import project.tdlogistics.tasks.services.DriverService;
@@ -43,10 +45,10 @@ public class DriverRestController {
 
     @GetMapping("/get_objects")
     public ResponseEntity<Response<List<Map<String, Object>>>> getObjectHandleTask(@RequestHeader(name = "agencyId") String agencyId,
-                                                                                   @RequestHeader(name = "role") String role) throws Exception{
+                                                                                   @RequestHeader(name = "role") Role role) throws Exception{
         try {
             List<Map<String, Object>> resultGettingObject =  null;
-            if(List.of("ADMIN", "MANAGER", "HUMAN_RESOURCE_MANAGER").contains(role)) {
+            if(Set.of(Role.ADMIN, Role.MANAGER, Role.HUMAN_RESOURCE_MANAGER).contains(role)) {
                 resultGettingObject = driverService.getObjectCanHandleTaskForAdmin();
             }
             else {
@@ -80,7 +82,7 @@ public class DriverRestController {
     @PostMapping("/create_tasks")
     public ResponseEntity<Response<ListResponse>> createNewTask(@RequestBody Map<String, Object> criteria, 
                                                                 @RequestHeader(name = "agencyId") String agencyId,
-                                                                @RequestHeader(name = "role") String role) throws Exception {
+                                                                @RequestHeader(name = "role") Role role) throws Exception {
         try {
             
             Date createdtime = new Date();
@@ -138,7 +140,7 @@ public class DriverRestController {
 
             ListResponse resultAddingShipmentsToVehicle = driverService.addShipmentsToVehicle(shipmentIds, vehicleId, agencyId);
             ListResponse resultAssigningNewTask;
-            if (List.of("ADMIN", "MANAGER", "HUMAN_RESOURCE_MANAGER").contains(role)) {
+            if (Set.of(Role.ADMIN, Role.MANAGER, Role.HUMAN_RESOURCE_MANAGER).contains(role)) {
                 resultAssigningNewTask = driverService.assignNewTasks(resultAddingShipmentsToVehicle.getAcceptedArray(), driverId, vehicleId, null);
             } else {
                 resultAssigningNewTask = driverService.assignNewTasks(resultAddingShipmentsToVehicle.getAcceptedArray(), driverId, vehicleId, driverService.getPostalCodeFromAgencyId(agencyId));
@@ -194,11 +196,11 @@ public class DriverRestController {
     @PostMapping("/get_tasks")
     public ResponseEntity<Response<List<DriverTask>>> getTasks(@RequestBody Map<String, Object> criteria,
                                                                 @RequestHeader(name = "staffId") String staffId,
-                                                                @RequestHeader(name = "role") String userRole) throws Exception {
+                                                                @RequestHeader(name = "role") Role userRole) throws Exception {
         try {
             
             final String postalCode = driverService.getPostalCodeFromAgencyId(staffId);
-            if(!List.of("ADMIN", "MANAGER", "HUMAN_RESOURCE_MANAGER").contains(userRole)) {
+            if(!Set.of(Role.ADMIN, Role.MANAGER, Role.HUMAN_RESOURCE_MANAGER).contains(userRole)) {
                 criteria.put("staffId", staffId);
             }
 
@@ -267,7 +269,7 @@ public class DriverRestController {
     @DeleteMapping("/delete")
     public ResponseEntity<Response<ShipperTask>> deleteTask(@RequestParam Map<String, String> params,
                                                             @RequestHeader(name = "userId") String userId,
-                                                            @RequestHeader(name = "role") String role) throws Exception {               
+                                                            @RequestHeader(name = "role") Role role) throws Exception {               
         try {
             int idValue = -1;
             try {
@@ -277,7 +279,7 @@ public class DriverRestController {
             }
 
             boolean resultDeletingTask = false;
-            if(List.of("ADMIN", "MANAGER", "HUMAN_RESOURCE_MANAGER").contains(role)) {
+            if(Set.of(Role.ADMIN, Role.MANAGER, Role.HUMAN_RESOURCE_MANAGER).contains(role)) {
                 resultDeletingTask = driverService.deleteTask(idValue, null);
             }
             else {

@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import project.tdlogistics.tasks.entities.ListResponse;
 import project.tdlogistics.tasks.entities.Order;
 import project.tdlogistics.tasks.entities.Response;
+import project.tdlogistics.tasks.entities.Role;
 import project.tdlogistics.tasks.entities.Shipment;
 import project.tdlogistics.tasks.entities.ShipperTask;
 import project.tdlogistics.tasks.services.ShipperService;
@@ -164,7 +166,7 @@ public class ShipperRestController {
     @PostMapping("/get_tasks")
     public ResponseEntity<Response<List<ShipperTask>>> getTasks(@RequestBody Map<String, Object> criteria,
                                                                 @RequestHeader(name = "staffId") String staffId,
-                                                                @RequestHeader(name = "role") String userRole) throws Exception {
+                                                                @RequestHeader(name = "role") Role userRole) throws Exception {
         try {
             if(criteria.containsKey("staffId")) {
                 String[] shipperIdSubPart = ((String) criteria.get("staffId")).split("_");
@@ -179,8 +181,8 @@ public class ShipperRestController {
             }
 
             final String postalCode = shipperService.getPostalCodeFromAgencyId(staffId);
-            if(List.of("AGENCY_SHIPPER", "SHIPPER").contains(userRole)) {
-                criteria.put("staffId", staffId);
+            if(Set.of(Role.SHIPPER).contains(userRole)) {
+                criteria.put("staff_id", staffId);
             }
 
             final List<ShipperTask> resultGettingTasks = shipperService.getTask(criteria, postalCode);
@@ -199,9 +201,9 @@ public class ShipperRestController {
         }
     }
     
-    @PatchMapping("/confirm_complete")
+    @PatchMapping("/confirm_completed")
     public ResponseEntity<Response<ShipperTask>> confirmCompleteTask(@RequestParam Map<String, String> params,
-                                                                     @RequestHeader(name = "userId") String userId) throws Exception {               
+                                                                     @RequestHeader(name = "staffId") String staffId) throws Exception {               
         try {
             int idValue = -1;
             try {
@@ -214,8 +216,8 @@ public class ShipperRestController {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String completedTime = currentTime.format(formatter);
 
-            String postalCode = shipperService.getPostalCodeFromAgencyId(userId);
-            final boolean resultConfirmingCompleteTask = shipperService.confirmCompleteTask(idValue, userId, completedTime, postalCode);
+            String postalCode = shipperService.getPostalCodeFromAgencyId(staffId);
+            final boolean resultConfirmingCompleteTask = shipperService.confirmCompleteTask(idValue, staffId, completedTime, postalCode);
 
             if(!resultConfirmingCompleteTask) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<>(
@@ -244,7 +246,7 @@ public class ShipperRestController {
     @PostMapping("/get_history")
     public ResponseEntity<Response<List<ShipperTask>>> getHistory(@RequestBody Map<String, Object> criteria,
                                                                 @RequestHeader(name = "staffId") String staffId,
-                                                                @RequestHeader(name = "role") String userRole) throws Exception {
+                                                                @RequestHeader(name = "role") Role userRole) throws Exception {
         try {
             if(criteria.containsKey("staffId")) {
                 String[] shipperIdSubPart = ((String) criteria.get("staffId")).split("_");
@@ -259,8 +261,8 @@ public class ShipperRestController {
             }
 
             final String postalCode = shipperService.getPostalCodeFromAgencyId(staffId);
-            if(List.of("AGENCY_SHIPPER", "SHIPPER").contains(userRole)) {
-                criteria.put("staffId", staffId);
+            if(Set.of(Role.SHIPPER).contains(userRole)) {
+                criteria.put("staff_id", staffId);
             }
 
             final List<ShipperTask> resultGettingHistory = shipperService.getHistory(criteria, postalCode);
@@ -281,7 +283,7 @@ public class ShipperRestController {
 
     @DeleteMapping("/delete")
     public ResponseEntity<Response<ShipperTask>> deleteTask(@RequestParam Map<String, String> params,
-                                                            @RequestHeader(name = "userId") String userId) throws Exception {               
+                                                            @RequestHeader(name = "staffId") String staffId) throws Exception {               
         try {
             int idValue = -1;
             try {
@@ -290,7 +292,7 @@ public class ShipperRestController {
                 System.out.println("Invalid number format: " + params.get("id"));
             }
 
-            String postalCode = shipperService.getPostalCodeFromAgencyId(userId);
+            String postalCode = shipperService.getPostalCodeFromAgencyId(staffId);
             final boolean resultDeletingTask = shipperService.deleteTask(idValue, postalCode);
 
             if(!resultDeletingTask) {

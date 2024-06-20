@@ -11,12 +11,11 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-
-import com.mysql.cj.jdbc.Driver;
+import org.springframework.stereotype.Repository;
 
 import project.tdlogistics.tasks.entities.DriverTask;
-import project.tdlogistics.tasks.entities.ShipperTask;
 
+@Repository
 public class DriverRepositoryImplement implements DriverRepositoryInterface {
     
     @Autowired

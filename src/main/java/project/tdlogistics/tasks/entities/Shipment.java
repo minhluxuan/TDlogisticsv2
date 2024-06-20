@@ -9,6 +9,7 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import project.tdlogistics.tasks.configurations.ListToStringConverter;
 
+
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -83,7 +84,7 @@ public class Shipment {
 
     @Column(name = "journey",  columnDefinition = "LONGTEXT")
     @Convert(converter = ListToStringConverter.class)
-    private List<String> journey;
+    private List<Map<String, String>> journey;
 
     
 
@@ -92,7 +93,7 @@ public class Shipment {
     public Shipment(String shipmentId, String agencyId, String agencyIdDest, Float longSource, Float latSource,
             String currentAgencyId, Float currentLat, Float currentLong, Float longDestination, Float latDestination,
             String transportPartnerId, String staffId, String vehicleId, Float mass, List<String> orderIds,
-            String parent, Integer status, Date createdAt, Date lastUpdate, List<String> journey) {
+            String parent, Integer status, Date createdAt, Date lastUpdate, List<Map<String, String>> journey) {
         this.shipmentId = shipmentId;
         this.agencyId = agencyId;
         this.agencyIdDest = agencyIdDest;
@@ -270,11 +271,11 @@ public class Shipment {
         this.lastUpdate = lastUpdate;
     }
 
-    public List<String> getJourney() {
+    public List<Map<String, String>> getJourney() {
         return journey;
     }
 
-    public void setJourney(List<String> journey) {
+    public void setJourney(List<Map<String, String>> journey) {
         this.journey = journey;
     }
 

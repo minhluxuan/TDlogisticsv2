@@ -1,0 +1,56 @@
+
+POST http://localhost:5000/api/v1/staffs/login
+Content-Type: application/json
+
+{
+    "username": "minhluxuan2k15",
+    "password": "minhluxuan@TDlogistics2k24"
+}
+
+###
+
+PATCH http://localhost:5000/api/v1/staffs/update_password
+Content-Type: application/json
+
+{
+    "new_password": "minhluxuan@TDlogistics2k24",
+    "confirm_password": "minhluxuan@TDlogistics2k24"
+}
+
+###
+
+POST http://localhost:8087/v2/shippers/create_tasks
+Content-Type: application/json
+staffId: BC_71000_077204005689
+
+{
+    "shipmentId": "TD_71000_20240611171105545",
+    "vehicleId": "BC_71000_72H124768"
+}
+
+###
+
+POST http://localhost:8087/v2/shippers/get_tasks
+Content-Type: application/json
+staffId: BC_71000_077204005689
+role: SHIPPER
+
+{
+    "option": 0
+}
+
+###
+
+PATCH http://localhost:8087/v2/shippers/confirm_completed?id=30
+Content-Type: application/json
+staffId: BC_71000_077204005689
+###
+
+POST http://localhost:8087/v2/shippers/get_history
+Content-Type: application/json
+staffId: BC_71000_077204005689
+role: SHIPPER
+
+{
+    "option": 3
+}

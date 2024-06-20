@@ -56,7 +56,7 @@ public class ShipperRepositoryImplement implements ShipperRepositoryInterface {
         MapSqlParameterSource parameters = new MapSqlParameterSource();
 
         Integer option = (Integer) criteria.remove("option");
-
+        
         if (!criteria.isEmpty()) {
             query.append(" WHERE ");
             String whereClause = criteria.entrySet().stream()
