@@ -23,6 +23,7 @@ import project.tdlogistics.shipments.entities.Shipment;
 import project.tdlogistics.shipments.entities.Response;
 import project.tdlogistics.shipments.entities.Agency;
 import project.tdlogistics.shipments.entities.ListResponse;
+import project.tdlogistics.shipments.entities.Order;
 import project.tdlogistics.shipments.entities.Request;
 import project.tdlogistics.shipments.services.ShipmentService;
 
@@ -547,65 +548,79 @@ public class ShipmentRestController {
     }
 
     @PutMapping("/accept")
-    public ResponseEntity<Response<Shipment>> approveNewShipment(@RequestParam Map<String, String> queryParams) throws Exception {
-        Date approveTime = new Date();
-        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-        String formattedTime = formatter.format(approveTime);
+    public ResponseEntity<Response<Shipment>> approveNewShipment
+        (@RequestParam Map<String, String> queryParams,
+        @RequestHeader(value = "agencyId") String agencyId,
+        @RequestHeader(value = "userId") String userId,
+        @RequestHeader(value = "role") Role role) throws Exception {
+        try {
+            Date approveTime = new Date();
+            SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+            String formattedTime = formatter.format(approveTime);
 
-        final String shipmentId = queryParams.get("shipmentId");
-        Shipment shipment = shipmentService.getOneShipment(shipmentId, null);
+            final String shipmentId = queryParams.get("shipmentId");
+            Shipment shipment = shipmentService.getOneShipment(shipmentId, null);
+            
+            final String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
+
+            if(shipment == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                    true,
+                    "Lô hàng không tồn tại",
+                    null 
+                ));
+            }
+
+            if(shipment.getStatus() >= 2) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<>(
+                    true,
+                    "Lô hàng đã được phê duyệt từ trước",
+                    null 
+                ));
+            }
+
+            shipmentService.updateShipmentStatus(shipmentId, 2, null);
+            shipmentService.updateShipmentStatus(shipmentId, 2, postalCode);
         
-        // req.user
-        final String agencyId = "BC_71000_089204006685";
-        final String staffId = "TD_71000_089204006685";
-        final String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
+            String[] agencyIdSubParts = shipment.getAgencyId().split("_");
 
-        if(shipment == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
-                true,
-                "Lô hàng không tồn tại",
-                null 
-            ));
-        }
+            String journeyMessage = formattedTime + ": Lô hàng được phê duyệt tại Trung tâm điều phối " + agencyId + " bởi nhân viên " + userId;
+            shipmentService.setJourney(shipmentId, formattedTime, journeyMessage, null);
+            shipmentService.setJourney(shipmentId, formattedTime, journeyMessage, postalCode);
 
-        if(shipment.getStatus() >= 2) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<>(
-                true,
-                "Lô hàng đã được phê duyệt từ trước",
-                null 
-            ));
-        }
-
-        shipmentService.updateShipmentStatus(shipmentId, 2, null);
-        shipmentService.updateShipmentStatus(shipmentId, 2, postalCode);
+            // Check the first part of the agency_id
+            if (agencyIdSubParts.length > 0 && ("DL".equals(agencyIdSubParts[0]) || "BC".equals(agencyIdSubParts[0]))) {
+                // Update the shipment status
+                String agencySourcePostalCode = shipmentService.getPostalCodeFromAgencyId(shipment.getAgencyId());
+                shipmentService.updateShipmentStatus(shipmentId, 2, agencySourcePostalCode);
+                shipmentService.setJourney(shipmentId, formattedTime, journeyMessage, agencySourcePostalCode);
+            }
     
-        String[] agencyIdSubParts = shipment.getAgencyId().split("_");
-
-        String journeyMessage = formattedTime + ": Lô hàng được phê duyệt tại Trung tâm điều phối " + agencyId + " bởi nhân viên " + staffId;
-        shipmentService.setJourney(shipmentId, formattedTime, journeyMessage, null);
-        shipmentService.setJourney(shipmentId, formattedTime, journeyMessage, postalCode);
-
-        // Check the first part of the agency_id
-        if (agencyIdSubParts.length > 0 && ("DL".equals(agencyIdSubParts[0]) || "BC".equals(agencyIdSubParts[0]))) {
-            // Update the shipment status
-            String agencySourcePostalCode = shipmentService.getPostalCodeFromAgencyId(shipment.getAgencyId());
-            shipmentService.updateShipmentStatus(shipmentId, 2, agencySourcePostalCode);
-            shipmentService.setJourney(shipmentId, formattedTime, journeyMessage, agencySourcePostalCode);
+            return ResponseEntity.status(HttpStatus.OK).body(new Response<>(
+                false,
+                "Tiếp nhận lô hàng thành công",
+                null
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(
+                true,
+                e.getMessage(),
+                null
+            ));
         }
-   
-        return ResponseEntity.status(HttpStatus.OK).body(new Response<>(
-            false,
-            "Tiếp nhận lô hàng thành công",
-            null
-        ));
     }
 
     @PostMapping("/search")
-    public ResponseEntity<Response<List<Shipment>>> getShipments(@RequestBody Shipment criteria,
-                                       @RequestParam(required = false, defaultValue = "0") int rows,
-                                       @RequestParam(required = false, defaultValue = "0") int page) {
+    public ResponseEntity<Response<List<Shipment>>> getShipments
+        (@RequestBody Shipment criteria,
+        @RequestParam(required = false, defaultValue = "0") int rows,
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestHeader(value = "agencyId") String agencyId,
+        @RequestHeader(value = "userId") String userId,
+        @RequestHeader(value = "role") Role role) {
         try {
-            // Validate pagination conditions
+            
             if (rows < 0 || page < 0) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<List<Shipment>>(
                     true,
@@ -616,12 +631,10 @@ public class ShipmentRestController {
 
             System.out.println(criteria);
             List<Shipment> result = new ArrayList<>();
-            
-            final String userRole = "ADMIN";
-            if (List.of("USER", "BUSINESS").contains(userRole)) {
+
+            if (Set.of(Role.CUSTOMER, Role.BUSINESS).contains(role)) {
                 result = shipmentService.getShipments(criteria, null);
-            } else if (List.of("AGENCY_MANAGER", "AGENCY_TELLER", "AGENCY_HUMAN_RESOURCE_MANAGER", "AGENCY_COMPLAINTS_SOLVER", "AGENCY_SHIPPER").contains(userRole)) {
-                final String userId = "TD_71000_089204006685";
+            } else if (Set.of(Role.AGENCY_MANAGER, Role.AGENCY_TELLER, Role.AGENCY_HUMAN_RESOURCE_MANAGER, Role.AGENCY_COMPLAINTS_SOLVER, Role.SHIPPER).contains(role)) {
                 final String postalCode = shipmentService.getPostalCodeFromAgencyId(userId);
                 result = shipmentService.getShipments(criteria, postalCode);
             } else {
@@ -634,6 +647,7 @@ public class ShipmentRestController {
                 result
             ));
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<List<Shipment>>(
                 true,
                 e.getMessage(),
@@ -646,50 +660,91 @@ public class ShipmentRestController {
     // @PostMapping("/get_orders")
 
     @DeleteMapping("/delete")
-    public ResponseEntity<Response<Shipment>> deleteShipment(@RequestParam Map<String, String> queryParams) throws Exception {
-        
-        final String shipmentId = queryParams.get("shipmentId");
-        final String agencyId = "BC_71000_089204006685";
-        final String userRole = "MANAGER";
+    public ResponseEntity<Response<Shipment>> deleteShipment
+        (@RequestParam Map<String, String> queryParams,
+        @RequestHeader(value = "agencyId") String agencyId,
+        @RequestHeader(value = "userId") String userId,
+        @RequestHeader(value = "role") Role role) throws Exception {
+        try {
+            final String shipmentId = queryParams.get("shipmentId");
 
-        if(List.of("AGENCY_MANAGER", "AGENCY_TELLER").contains(userRole)) {
+            if(Set.of(Role.AGENCY_MANAGER, Role.AGENCY_TELLER).contains(role)) {
+                final String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
+                final Shipment shipment = shipmentService.getOneShipment(shipmentId, postalCode);
+                if(shipment == null) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                        true,
+                        "Lô hàng không tồn tại",
+                        null
+                    ));
+                }
+
+                if(shipment.getStatus() > 0) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<>(
+                        true,
+                        "Lô hàng không còn khả năng để xóa. Vui lòng liên hệ lên tổng cục để được hỗ trợ.",
+                        null
+                    ));
+                }
+
+                final boolean resultDeletingShipment = shipmentService.deleteShipment(shipmentId, postalCode);
+                if(!resultDeletingShipment) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                        true,
+                        "Lô hàng không tồn tại trong cơ sở dữ liệu bưu cục",
+                        null
+                    ));
+                }
+
+                return ResponseEntity.status(HttpStatus.OK).body(new Response<>(
+                    true,
+                    "Xóa lô hàng thành công",
+                    null
+                ));
+
+            }
+            else if(Set.of(Role.MANAGER, Role.TELLER).contains(role)) {
+                final String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
+                final Shipment shipment = shipmentService.getOneShipment(shipmentId, postalCode);
+                if(shipment == null) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                        true,
+                        "Lô hàng không tồn tại",
+                        null
+                    ));
+                }
+
+                if(shipment.getStatus() > 3) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<>(
+                        true,
+                        "Lô hàng không còn khả năng để xóa. Vui lòng liên hệ lên tổng cục để được hỗ trợ.",
+                        null
+                    ));
+                }
+
+                final boolean resultDeletingShipment = shipmentService.deleteShipment(shipmentId, postalCode);
+                if(!resultDeletingShipment) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                        true,
+                        "Lô hàng không tồn tại trong cơ sở dữ liệu bưu cục",
+                        null
+                    ));
+                }
+
+                final String[] shipmentIdSubPart = shipmentId.split("_");
+                if(shipmentIdSubPart[0] == "BC" || shipmentIdSubPart[0] == "DL") {
+                    shipmentService.updateShipmentStatus(shipmentId, 0, shipmentIdSubPart[1]);
+                }
+
+                return ResponseEntity.status(HttpStatus.OK).body(new Response<>(
+                    true,
+                    "Xóa lô hàng thành công",
+                    null
+                ));
+            }
+
             final String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
-            final Shipment shipment = shipmentService.getOneShipment(shipmentId, postalCode);
-            if(shipment == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
-                    true,
-                    "Lô hàng không tồn tại",
-                    null
-                ));
-            }
-
-            if(shipment.getStatus() > 0) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<>(
-                    true,
-                    "Lô hàng không còn khả năng để xóa. Vui lòng liên hệ lên tổng cục để được hỗ trợ.",
-                    null
-                ));
-            }
-
-            final boolean resultDeletingShipment = shipmentService.deleteShipment(shipmentId, postalCode);
-            if(!resultDeletingShipment) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
-                    true,
-                    "Lô hàng không tồn tại trong cơ sở dữ liệu bưu cục",
-                    null
-                ));
-            }
-
-            return ResponseEntity.status(HttpStatus.OK).body(new Response<>(
-                true,
-                "Xóa lô hàng thành công",
-                null
-            ));
-
-        }
-        else if(List.of("MANAGER", "TELLER").contains(userRole)) {
-            final String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
-            final Shipment shipment = shipmentService.getOneShipment(shipmentId, postalCode);
+            final Shipment shipment = shipmentService.getOneShipment(shipmentId, null);
             if(shipment == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
                     true,
@@ -706,7 +761,7 @@ public class ShipmentRestController {
                 ));
             }
 
-            final boolean resultDeletingShipment = shipmentService.deleteShipment(shipmentId, postalCode);
+            final boolean resultDeletingShipment = shipmentService.deleteShipment(shipmentId, null);
             if(!resultDeletingShipment) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
                     true,
@@ -725,47 +780,69 @@ public class ShipmentRestController {
                 "Xóa lô hàng thành công",
                 null
             ));
-        }
-
-        final String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
-        final Shipment shipment = shipmentService.getOneShipment(shipmentId, null);
-        if(shipment == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(
                 true,
-                "Lô hàng không tồn tại",
+                e.getMessage(),
                 null
             ));
         }
-
-        if(shipment.getStatus() > 3) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<>(
-                true,
-                "Lô hàng không còn khả năng để xóa. Vui lòng liên hệ lên tổng cục để được hỗ trợ.",
-                null
-            ));
-        }
-
-        final boolean resultDeletingShipment = shipmentService.deleteShipment(shipmentId, null);
-        if(!resultDeletingShipment) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
-                true,
-                "Lô hàng không tồn tại trong cơ sở dữ liệu bưu cục",
-                null
-            ));
-        }
-
-        final String[] shipmentIdSubPart = shipmentId.split("_");
-        if(shipmentIdSubPart[0] == "BC" || shipmentIdSubPart[0] == "DL") {
-            shipmentService.updateShipmentStatus(shipmentId, 0, shipmentIdSubPart[1]);
-        }
-
-        return ResponseEntity.status(HttpStatus.OK).body(new Response<>(
-            true,
-            "Xóa lô hàng thành công",
-            null
-        ));
     }
 
+    @GetMapping("/get_orders")
+    public ResponseEntity<Response<List<Order>>> getOrdersInShipment
+        (@RequestParam Map<String, Object> requestParams,
+        @RequestHeader(value = "agencyId") String agencyId,
+        @RequestHeader(value = "userId") String userId,
+        @RequestHeader(value = "role") Role role) throws Exception {
+        try {
 
+            final String shipmentId = (String) requestParams.get("shipmentId");
+            if(Set.of(Role.AGENCY_MANAGER, Role.AGENCY_TELLER, Role.MANAGER, Role.TELLER).contains(role)) {
+                final String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
+                Shipment shipment = shipmentService.getOneShipment(shipmentId, postalCode);
+                if(shipment == null) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                        true,
+                        "Lô hàng không tồn tại trong bưu cục của bạn!",
+                        null
+                    ));
+                }
+
+                List<String> orderIds = shipment.getOrderIds();
+                List<Order> resultGettingOrder = shipmentService.getOrdersFromShipment(orderIds);
+                return ResponseEntity.status(HttpStatus.OK).body(new Response<>(
+                    true,
+                    "Lấy thông tin đơn hàng trong lô thành công",
+                    resultGettingOrder
+                ));
+            } else {
+                Shipment shipment = shipmentService.getOneShipment(shipmentId, null);
+                if(shipment == null) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                        true,
+                        "Lô hàng không tồn tại trong bưu cục của bạn!",
+                        null
+                    ));
+                }
+
+                List<String> orderIds = shipment.getOrderIds();
+                List<Order> resultGettingOrder = shipmentService.getOrdersFromShipment(orderIds);
+                return ResponseEntity.status(HttpStatus.OK).body(new Response<>(
+                    true,
+                    "Lấy thông tin đơn hàng trong lô thành công",
+                    resultGettingOrder
+                ));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(
+                true,
+                e.getMessage(),
+                null
+            ));
+        }
+    }
     
 }

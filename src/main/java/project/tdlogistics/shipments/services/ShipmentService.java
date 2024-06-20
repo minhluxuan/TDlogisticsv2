@@ -634,4 +634,15 @@ public class ShipmentService {
         }
     }
 
+    public List<Order> getOrdersFromShipment(List<String> orderIds) throws JsonProcessingException {
+        List<Order> orders = new ArrayList<>();
+        for(String orderId: orderIds) {
+            Order order = getOneOrder(orderId);
+            if(order != null) {
+                orders.add(order);
+            }
+        }
+        return orders;
+    }
+
 }
