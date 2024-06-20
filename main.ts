@@ -253,7 +253,12 @@ export interface CancelingOrderCriteria {
     orderId: string,
 }
 
-
+export interface CalculateFeePayload {
+    serviceType: string,
+    provinceSource: string,
+    provinceDest: string,
+    mass: number
+}
 
 export class OrdersOperation {
     private baseUrl: string;
@@ -281,8 +286,7 @@ export class OrdersOperation {
                 withCredentials: true,
             });
 
-            const data = response.data;
-            return { error: data.error, data: data.data, message: data.message };
+            return { error: response.data.error, data: response.data.data, message: response.data.message };
         } catch (error: any) {
             console.log("Error getting orders: ", error?.response?.data);
             console.error("Request that caused the error: ", error?.request);
@@ -296,8 +300,7 @@ export class OrdersOperation {
                 withCredentials: true,
             });
 
-            const data = response.data;
-            return { error: data.error, exist: data.existed, message: data.message };
+            return { error: response.data.error, exist: response.data.existed, message: response.data.message };
         } catch (error: any) {
             console.log("Error checking exist order: ", error?.response?.data);
             console.error("Request that caused the error: ", error?.request);
@@ -311,8 +314,7 @@ export class OrdersOperation {
                 withCredentials: true,
             });
 
-            const data = response.data;
-            return { error: data.error, data: data.data, message: data.message };
+            return { error: response.data.error, data: response.data.data, message: response.data.message };
         } catch (error: any) {
             console.log("Error updating order: ", error?.response?.data);
             console.error("Request that caused the error: ", error?.request);
@@ -326,10 +328,23 @@ export class OrdersOperation {
                 withCredentials: true,
             });
 
-            const data = response.data;
-            return { error: data.error, message: data.message };
+            return { error: response.data.error, message: response.data.message };
         } catch (error: any) {
             console.log("Error canceling order: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+        }
+    }
+
+    async calculateFee(payload: CalculateFeePayload) {
+        try {
+            const response = await axios.post(`${this.baseUrl}/calculate_fee`, payload, {
+                withCredentials: true,
+            });
+
+            return { error: response.data.error, message: response.data.message, data: response.data.data };
+        } catch (error: any) {
+            console.log("Error calculating fee: ", error?.response?.data);
             console.error("Request that caused the error: ", error?.request);
             return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
         }
