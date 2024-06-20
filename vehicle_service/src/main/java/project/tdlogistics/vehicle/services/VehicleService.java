@@ -35,9 +35,9 @@ public class VehicleService {
     private final StaffService staffService;
 
     private final VehicleRepository vehicleRepository;
+
     private final MyBeanUtils myBeanUtils;
 
-    @Autowired
     public VehicleService(VehicleRepository vehicleRepository, MyBeanUtils myBeanUtils,
             ShipmentService shipmentService, AgencyService agencyService,
             TransportPartnerService transportPartnerService, StaffService staffService) {
@@ -49,16 +49,15 @@ public class VehicleService {
         this.staffService = staffService;
     }
 
-    public Optional<Vehicle> checkExitVehicleById(String vehicleId) {
+    public Optional<Vehicle> checkExistVehicleById(String vehicleId) {
         return vehicleRepository.findById(vehicleId);
     }
 
-    public Optional<Vehicle> checkExitVehicleByLicense(String license) {
+    public Optional<Vehicle> checkExistVehicleByLicense(String license) {
         return vehicleRepository.findByLicensePlate(license);
-
     }
 
-    public Optional<Vehicle> checkExitVehicle(Vehicle criteria) {
+    public Optional<Vehicle> checkExistVehicle(Vehicle criteria) {
 
         ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreNullValues();
         Example<Vehicle> example = Example.of(criteria, matcher);
@@ -77,40 +76,9 @@ public class VehicleService {
     }
 
     public List<Vehicle> getManyVehicles(Vehicle criteria) throws Exception {
-
         ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreNullValues();
         Example<Vehicle> example = Example.of(criteria, matcher);
-        List<Vehicle> resultGetVehicles = vehicleRepository.findAll(example);
-
-        for (Vehicle vehicle : resultGetVehicles) {
-            // agency
-            Agency resultGetOneAgency = agencyService.getOneAgencyById(vehicle.getAgencyId());
-            if (resultGetOneAgency == null) {
-                throw new EntityNotFoundException("Agency with id " + vehicle.getAgencyId() + " not found");
-            }
-            final String agencyName = resultGetOneAgency.getName();
-            vehicle.setAgencyName(agencyName);
-
-            // staff
-            Optional<Staff> resultGetOneStaffOpt = staffService.getOneStaffById(vehicle.getStaffId());
-            if (resultGetOneStaffOpt.isEmpty()) {
-                throw new EntityNotFoundException("Staff with id " + vehicle.getStaffId() + " not found");
-            }
-            Staff resultGetOneStaff = resultGetOneStaffOpt.get();
-            final String staffName = resultGetOneStaff.getName();
-            vehicle.setStaffName(staffName);
-
-            // transportPartner - ko throw exception do transportPartner co the null
-            TransportPartner resultGetOneTransportPartner = transportPartnerService
-                    .getOneTransportPartnerById(vehicle.getTransportPartnerId());
-            if (resultGetOneTransportPartner != null) {
-                final String transportPartnerName = resultGetOneTransportPartner.getName();
-                vehicle.setTransportPartnerName(transportPartnerName);
-
-            }
-        }
-        return null;
-
+        return vehicleRepository.findAll(example);
     }
 
     public Vehicle createNewVehicle(Vehicle newVehicle) {

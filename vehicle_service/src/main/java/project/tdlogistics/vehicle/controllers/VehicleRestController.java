@@ -7,21 +7,25 @@ import project.tdlogistics.vehicle.entities.Shipment;
 import project.tdlogistics.vehicle.entities.Staff;
 import project.tdlogistics.vehicle.entities.Task;
 import project.tdlogistics.vehicle.entities.TransportPartner;
+import project.tdlogistics.vehicle.entities.TransportPartnerStaff;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.persistence.EntityNotFoundException;
 import project.tdlogistics.vehicle.entities.Vehicle;
 import project.tdlogistics.vehicle.services.AgencyService;
 import project.tdlogistics.vehicle.services.DriverService;
 import project.tdlogistics.vehicle.services.ShipmentService;
 import project.tdlogistics.vehicle.services.StaffService;
 import project.tdlogistics.vehicle.services.TransportPartnerService;
+import project.tdlogistics.vehicle.services.TransportPartnerStaffService;
 import project.tdlogistics.vehicle.services.VehicleService;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/vehicles")
@@ -33,55 +37,38 @@ public class VehicleRestController {
 
     private final TransportPartnerService transportPartnerService;
 
+    private final TransportPartnerStaffService transportPartnerStaffService;
+
     private final StaffService staffService;
 
     private final ShipmentService shipmentService;
 
     private final DriverService driverService;
 
-    @Autowired
     public VehicleRestController(VehicleService vehicleService, AgencyService agencyService,
-            ShipmentService shipmentService, TransportPartnerService transportPartnerService, StaffService staffService,
+            ShipmentService shipmentService, TransportPartnerService transportPartnerService,
+            TransportPartnerStaffService transportPartnerStaffService, StaffService staffService,
             DriverService driverService) {
         this.vehicleService = vehicleService;
         this.agencyService = agencyService;
         this.transportPartnerService = transportPartnerService;
+        this.transportPartnerStaffService = transportPartnerStaffService;
         this.staffService = staffService;
         this.driverService = driverService;
         this.shipmentService = shipmentService;
     }
 
-    @GetMapping("/test")
-    public ResponseEntity<Response<String>> test() {
-        // print out all vehicle service method output, give example test case
-        try {
-            System.out.println(vehicleService.checkExitVehicleById("TD_00001_42H124768 "));
-            // vehicleService.checkExitVehicleByLicense("42-H1 24768");
-            // vehicleService.getManyVehicles(new Vehicle());
-            // vehicleService.updateVehicle(new Vehicle());
-            // vehicleService.deleteVehicle("TD_00001_42H124768");
-            // vehicleService.addShipmentToVehicle("TD_00001_42H124768 ", List.of("1"));
-            // vehicleService.deleteShipmentFromVehicle("TD_00001_42H124768", List.of("1"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(new Response<String>(false, "Test successful", "Test successful"));
-
-    }
-
     @PostMapping("/check")
     public ResponseEntity<Response<Vehicle>> checkExistVehicle(@RequestParam String vehicleId) {
         try {
-            final Optional<Vehicle> optionalVehicle = vehicleService.checkExitVehicleById(vehicleId);
+            final Optional<Vehicle> optionalVehicle = vehicleService.checkExistVehicleById(vehicleId);
             if (optionalVehicle.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.OK)
-                        .body(new Response<Vehicle>(false, "Xe không tồn tại", null));
+                        .body(new Response<Vehicle>(false, "Phương tiện không tồn tại", null));
             }
 
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(new Response<Vehicle>(false, "Xe đã tồn tại", optionalVehicle.get()));
+                    .body(new Response<Vehicle>(false, "Phương tiện đã tồn tại", optionalVehicle.get()));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -89,50 +76,62 @@ public class VehicleRestController {
         }
     }
 
-    public ResponseEntity<?> createNewVehicle(@RequestHeader(value = "role", required = false) Role role,
-            @RequestHeader(value = "agencyId", required = false) String agencyId,
-            @RequestHeader(value = "transportPartnerId", required = false) String transportPartnerId,
-            @RequestHeader(value = "staffId", required = false) String staffId, @RequestBody Vehicle requestBody) {
+    public ResponseEntity<?> createNewVehicle(@RequestHeader(value = "role") Role role,
+            @RequestHeader(value = "agencyId") String agencyId,
+            @RequestHeader(value = "transportPartnerId") String transportPartnerId,
+            @RequestHeader(value = "staffId") String staffId,
+            @RequestBody Vehicle requestBody
+        ) {
         try {
-            if (List.of(Role.ADMIN, Role.MANAGER, Role.HUMAN_RESOURCE_MANAGER).contains(role)) {
+            if (Set.of(Role.ADMIN, Role.MANAGER, Role.HUMAN_RESOURCE_MANAGER).contains(role)) {
                 // validate
-                // checkExitsAgency
-
-            } else if (List.of(Role.AGENCY_MANAGER, Role.AGENCY_HUMAN_RESOURCE_MANAGER).contains(role)) {
-                // validate create vehicle by agency(requestbody)
+                Agency tempAgency = new Agency();
+                tempAgency.setAgencyId(agencyId);
+                final Agency agency = agencyService.checkExistAgency(tempAgency);
+                if (agency == null) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<TransportPartner>(true, String.format("Bưu cục/Đại lý %s không tồn tại trong hệ thống", requestBody.getAgencyId()), null));
+                }
+            } else if (Set.of(Role.AGENCY_MANAGER, Role.AGENCY_HUMAN_RESOURCE_MANAGER).contains(role)) {
+                Agency tempAgency = new Agency();
+                tempAgency.setAgencyId(agencyId);
+                final Agency agency = agencyService.checkExistAgency(tempAgency);
+                if (agency == null) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<TransportPartner>(true, "Bưu cục/Đại lý của bạn không tồn tại trong hệ thống. Vui lòng kiểm tra lại", null));
+                }
                 requestBody.setAgencyId(agencyId);
             }
 
-            // const resultCheckingExistAgencyAndStaff = await
-            // staffsService.checkExistStaffIntersect({ agency_id: req.body.agency_id,
-            // staff_id: req.body.staff_id });
-
             Optional<Vehicle> resultCheckVehicle = vehicleService
-                    .checkExitVehicleByLicense(requestBody.getLicensePlate());
-            if (resultCheckVehicle.isEmpty()) {
+                    .checkExistVehicleByLicense(requestBody.getLicensePlate());
+            if (resultCheckVehicle.isPresent()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new Response<Vehicle>(true, "Vehicle dont exit", null));
+                        .body(new Response<Vehicle>(true, String.format("Phương tiện có biển số %s đã tồn tại", requestBody.getLicensePlate()), null));
             }
+
             String[] agencyIdSubParts = agencyId.split("_");
             String modifiedLicensePlate = requestBody.getLicensePlate().replaceAll("[-\\s]", "");
             requestBody.setVehicleId(agencyIdSubParts[0] + "_" + agencyIdSubParts[1] + "_" + modifiedLicensePlate);
-            if (requestBody.getTransportPartnerId() != null) {
-                // PartnerStaffIntersection resultCheckingExistTransportPartnerAndStaff =
-                // partnerStaffService
-                // .checkExistPartnerStaffIntersect(requestBody.getTransportPartnerId(),
-                // requestBody.getStaffId());
 
-                // final String resultCheckingExistTransportPartnerAndStaff = "";
-                // if (resultCheckingExistTransportPartnerAndStaff == null) {
-                // return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                // .body(new Response<>(true,
-                // "Nhân viên có mã " + requestBody.getStaffId()
-                // + " không tồn tại hoặc không thuộc đối tác vận tải có mã "
-                // + requestBody.getTransportPartnerId(),
-                // null));
-                // }
+            if (requestBody.getTransportPartnerId() == null) {
+                Staff tempStaff = new Staff();
+                tempStaff.setAgencyId(requestBody.getAgencyId());
+                tempStaff.setStaffId(requestBody.getStaffId());
 
+                Optional<Staff> optionalStaff = staffService.checkExistStaff(tempStaff);
+                if (optionalStaff.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Staff>(true, String.format("Nhân viên %s thuộc bưu cục %s không tồn tại", requestBody.getStaffId(), requestBody.getAgencyId()), null));
+                }
             }
+            else {
+                TransportPartnerStaff tempPartnerStaff = new TransportPartnerStaff();
+                tempPartnerStaff.setStaffId(requestBody.getStaffId());
+                tempPartnerStaff.setPartnerId(requestBody.getTransportPartnerId());
+                TransportPartnerStaff partnerStaff = transportPartnerStaffService.checkExistTransportPartnerStaff(tempPartnerStaff);
+                if (partnerStaff == null) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Staff>(true, String.format("Nhân viên %s thuộc đối tác vận tải %s không tồn tại", requestBody.getStaffId(), requestBody.getTransportPartnerId()), null));
+                }
+            }
+
             final Vehicle resultCreateNewVehicle = vehicleService.createNewVehicle(requestBody);
             if (resultCreateNewVehicle == null) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -153,30 +152,34 @@ public class VehicleRestController {
         }
     }
 
-    public ResponseEntity<?> getVehicles(@RequestHeader(value = "role", required = false) Role role,
-            @RequestHeader(value = "agencyId", required = false) String agencyId,
-            @RequestHeader(value = "transportPartnerId", required = false) String transportPartnerId,
-            @RequestBody Vehicle requestBody) {
+    @PostMapping("/search")
+    public ResponseEntity<Response<List<Vehicle>>> getVehicles(
+        @RequestHeader(name = "role") Role role,
+        @RequestHeader(name = "agencyId") String agencyId,
+        @RequestHeader(name = "userId") String userId,
+        @RequestHeader(name = "transportPartnerId", required = false) String transportPartnerId,
+        @RequestBody Vehicle requestBody
+    ) {
         try {
-
             /* pagination related content */
 
-            if (List.of(Role.DRIVER, Role.SHIPPER, Role.AGENCY_DRIVER, Role.AGENCY_SHIPPER, Role.PARTNER_DRIVER,
+            if (Set.of(Role.DRIVER, Role.SHIPPER, Role.AGENCY_DRIVER, Role.AGENCY_SHIPPER, Role.PARTNER_DRIVER,
                     Role.PARTNER_SHIPPER).contains(role)) {
 
                 /* missing validation here */
 
-                Optional<Vehicle> resultCheckVehicle = vehicleService.checkExitVehicle(requestBody);
+                Optional<Vehicle> resultCheckVehicle = vehicleService.checkExistVehicle(requestBody);
                 if (resultCheckVehicle.isEmpty()) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                            .body(new Response<>(true, "Không tìm thấy phương tiện vận tải", null));
+                            .body(new Response<List<Vehicle>>(true, "Không tìm thấy phương tiện vận tải", null));
                 }
-                return ResponseEntity.status(HttpStatus.OK)
-                        .body(new Response<>(false, "Lấy danh sách phương tiện vận tải thành công",
-                                resultCheckVehicle.get()));
 
+                return ResponseEntity.status(HttpStatus.OK)
+                        .body(new Response<List<Vehicle>>(false, "Lấy danh sách phương tiện vận tải thành công",
+                                List.of(resultCheckVehicle.get())));
             }
-            if (List.of(Role.TRANSPORT_PARTNER_REPRESENTOR).contains(role)) {
+
+            if (Set.of(Role.TRANSPORT_PARTNER_REPRESENTOR).contains(role)) {
 
                 /* missing validation here */
 
@@ -188,27 +191,27 @@ public class VehicleRestController {
                 requestBody.setTransportPartnerId(transportPartnerId);
                 List<Vehicle> resultGetVehicles = vehicleService.getManyVehicles(requestBody);
                 return ResponseEntity.status(HttpStatus.OK)
-                        .body(new Response<>(false, "Lấy danh sách phương tiện vận tải thành công", resultGetVehicles));
-
+                        .body(new Response<List<Vehicle>>(false, "Lấy danh sách phương tiện vận tải thành công", resultGetVehicles));
             }
-            if (List.of(Role.AGENCY_MANAGER, Role.AGENCY_HUMAN_RESOURCE_MANAGER, Role.AGENCY_TELLER,
+
+            if (Set.of(Role.AGENCY_MANAGER, Role.AGENCY_HUMAN_RESOURCE_MANAGER, Role.AGENCY_TELLER,
                     Role.AGENCY_COMPLAINTS_SOLVER).contains(role)) {
 
                 /* missing validation here */
 
                 if (agencyId == null) {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body(new Response<>(true, "Thiếu thông tin đại lý", null));
+                            .body(new Response<List<Vehicle>>(true, "Thiếu thông tin đại lý", null));
                 }
 
                 requestBody.setAgencyId(agencyId);
                 List<Vehicle> resultGetVehicle = vehicleService.getManyVehicles(requestBody);
 
                 return ResponseEntity.status(HttpStatus.OK)
-                        .body(new Response<>(false, "Lấy danh sách phương tiện vận tải thành công", resultGetVehicle));
-
+                        .body(new Response<List<Vehicle>>(false, "Lấy danh sách phương tiện vận tải thành công", resultGetVehicle));
             }
-            if (List.of(Role.ADMIN, Role.MANAGER, Role.HUMAN_RESOURCE_MANAGER, Role.TELLER, Role.COMPLAINTS_SOLVER)
+
+            if (Set.of(Role.ADMIN, Role.MANAGER, Role.HUMAN_RESOURCE_MANAGER, Role.TELLER, Role.COMPLAINTS_SOLVER)
                     .contains(role)) {
 
                 /* missing validation here */
@@ -217,43 +220,43 @@ public class VehicleRestController {
 
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(new Response<>(false, "Lấy danh sách phương tiện vận tải thành công", resultGetVehicle));
-
             }
+
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Response<List<Vehicle>>(true, "Người dùng không được phép truy cập tài nguyên này", null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new Response<>(true, e.getMessage(), null));
+                    .body(new Response<List<Vehicle>>(true, e.getMessage(), null));
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new Response<>(true, "Lỗi hệ thống. Vui lòng thử lại", null));
-
     }
 
-    @GetMapping("/getVehicleShipmentIds")
-    public ResponseEntity<?> getVehicleShipmentIds(@RequestParam String vehicleId) {
+    @GetMapping("/shipments/get")
+    public ResponseEntity<Response<List<String>>> getVehicleShipmentIds(@RequestParam String vehicleId) {
         try {
-
-            Optional<Vehicle> resultGettingOneVehicle = vehicleService.checkExitVehicleById(vehicleId);
+            Optional<Vehicle> resultGettingOneVehicle = vehicleService.checkExistVehicleById(vehicleId);
             if (resultGettingOneVehicle.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new Response<>(true, "Xe với id " + vehicleId + " không tồn tại.", null));
+                        .body(new Response<>(true, "Phương tiện " + vehicleId + " không tồn tại.", null));
             }
 
             return ResponseEntity.ok().body(new Response<>(false, "Lấy thông tin thành công.",
                     resultGettingOneVehicle.get().getShipmentIds()));
-
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new Response<>(true, ex.getMessage(), null));
+                    .body(new Response<>(true, "Đã xảy ra lỗi. Vui lòng thử lại", null));
         }
     }
 
-    public ResponseEntity<?> updateVehicle(@RequestHeader(value = "staffId", required = true) String staffId,
-            @RequestHeader(value = "role", required = false) Role role,
-            @RequestParam(value = "vehicle_id", required = true) String vehicleId, @RequestBody Vehicle requestBody) {
+    @PutMapping("/update")
+    public ResponseEntity<Response<Vehicle>> updateVehicle(
+        @RequestHeader(name = "agencyId") String agencyId,
+        @RequestHeader(value = "staffId", required = true) String staffId,
+        @RequestHeader(value = "role", required = false) Role role,
+        @RequestParam(value = "vehicle_id", required = true) String vehicleId,
+        @RequestBody Vehicle requestBody
+    ) {
         /* validation here */
 
         try {
-
             String[] updatorIdSubParts = staffId.split("_");
             String[] vehicleIdSubParts = vehicleId.split("_");
 
@@ -261,31 +264,37 @@ public class VehicleRestController {
                     && (!updatorIdSubParts[0].equals(vehicleIdSubParts[0])
                             || !updatorIdSubParts[1].equals(vehicleIdSubParts[1]))) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new Response<>(true,
-                                "Vehicle with id " + vehicleId + " does not exist or is not under your control.",
+                        .body(new Response<Vehicle>(true,
+                                "Phương tiện " + vehicleId + " không thuộc quyền kiểm soát của bưu cục " + agencyId,
                                 null));
             }
+
             requestBody.setVehicleId(vehicleId);
 
             Vehicle resultUpdateVehicle = vehicleService.updateVehicle(requestBody);
             if (resultUpdateVehicle == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new Response<>(true, "Xe với id " + vehicleId + " không tồn tại.", null));
+                        .body(new Response<>(true, "Phương tiện " + vehicleId + " không tồn tại.", null));
             }
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(new Response<>(false, "Cập nhật xe với id " + vehicleId + " thành công.",
+                    .body(new Response<Vehicle>(false, "Cập nhật phương tiện " + vehicleId + " thành công.",
                             resultUpdateVehicle));
-
+        } catch (EntityNotFoundException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Vehicle>(true, e.getMessage(), null));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new Response<>(true, ex.getMessage(), null));
+                    .body(new Response<Vehicle>(true, "Đã xảy ra lỗi. Vui lòng thử lại", null));
         }
     }
 
-    @DeleteMapping(value = "/deleteVehicle")
-    public ResponseEntity<?> deleteVehicle(@RequestHeader(value = "staffId", required = true) String staffId,
-            @RequestHeader(value = "role", required = false) Role role,
-            @RequestParam(value = "vehicle_id", required = true) String vehicleId) {
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteVehicle(
+        @RequestHeader(name = "agencyId") String agencyId,
+        @RequestHeader(value = "staffId") String staffId,
+        @RequestHeader(value = "role") Role role,
+        @RequestParam(value = "vehicleId") String vehicleId
+    ) {
         try {
 
             String[] deletorIdSubParts = staffId.split("_");
@@ -296,14 +305,14 @@ public class VehicleRestController {
                             || !deletorIdSubParts[1].equals(vehicleIdSubParts[1]))) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(new Response<>(true,
-                                "Xe với id " + vehicleId + " không tồn tại hoặc không thuộc quyền điểu khiển của bạn.",
+                                "Phương tiện " + vehicleId + " không thuộc quyền quản lý của bưu cục " + agencyId,
                                 null));
             }
 
             vehicleService.deleteVehicle(vehicleId);
 
             return ResponseEntity.ok()
-                    .body(new Response<>(false, "Xóa xe với id " + vehicleId + " thành công.", null));
+                    .body(new Response<>(false, "Xóa phương tiện với id " + vehicleId + " thành công.", null));
 
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -311,21 +320,21 @@ public class VehicleRestController {
         }
     }
 
-    @PostMapping("/addShipmentToVehicle")
+    @PostMapping("/shipments/add")
     public ResponseEntity<?> addShipmentToVehicle(@RequestParam String vehicleId,
             @RequestBody List<String> shipmentIds) {
         try {
 
-            Optional<Vehicle> resultGettingOneVehicle = vehicleService.checkExitVehicleById(vehicleId);
+            Optional<Vehicle> resultGettingOneVehicle = vehicleService.checkExistVehicleById(vehicleId);
             if (resultGettingOneVehicle.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new Response<>(true, "Vehicle with id " + vehicleId + " does not exist.", null));
+                        .body(new Response<>(true, "Phương tiện " + vehicleId + " không tồn tại.", null));
             }
 
             vehicleService.addShipmentToVehicle(vehicleId, shipmentIds);
 
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(new Response<>(false, "Thêm shipment ids thành công", shipmentIds));
+                    .body(new Response<>(false, "Thêm lô hàng vào phương tiện thành công", shipmentIds));
 
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -333,15 +342,15 @@ public class VehicleRestController {
         }
     }
 
-    @PostMapping("/deleteShipmentFromVehicle")
+    @PostMapping("/shipments/delete")
     public ResponseEntity<?> deleteShipmentFromVehicle(@RequestParam String vehicleId,
             @RequestBody List<String> shipmentIds) {
         try {
 
-            Optional<Vehicle> resultGettingOneVehicle = vehicleService.checkExitVehicleById(vehicleId);
+            Optional<Vehicle> resultGettingOneVehicle = vehicleService.checkExistVehicleById(vehicleId);
             if (resultGettingOneVehicle.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new Response<>(true, "Xe với id " + vehicleId + " không tồn tại.", null));
+                        .body(new Response<>(true, "Phương tiện với id " + vehicleId + " không tồn tại.", null));
             }
 
             vehicleService.deleteShipmentFromVehicle(vehicleId, shipmentIds);

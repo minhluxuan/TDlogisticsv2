@@ -25,13 +25,13 @@ public class StaffService {
     private final String exchange = "rpc-direct-exchange";
     private final String routingKey = "rpc.staff";
 
-    public Optional<Staff> getOneStaffById(String staffId) throws JsonProcessingException {
+    public Optional<Staff> checkExistStaff(Staff criteria) throws JsonProcessingException {
         String jsonRequestGettingStaff = objectMapper
-                .writeValueAsString(new Request<Staff>("getOneStaffById", null, new Staff(staffId)));
+                .writeValueAsString(new Request<Staff>("checkExistStaff", null, criteria));
         String jsonResponseGettingStaff = (String) amqpTemplate.convertSendAndReceive(exchange, routingKey,
                 jsonRequestGettingStaff);
         if (jsonResponseGettingStaff == null) {
-            throw new InternalError("An error occurred. Please try again");
+            throw new InternalError("Đã xảy ra lỗi. Vui lòng kiểm tra lại");
         }
 
         Response<Staff> responseGettingStaff = objectMapper.readValue(jsonResponseGettingStaff,
@@ -39,7 +39,7 @@ public class StaffService {
                 });
 
         if (responseGettingStaff.getError()) {
-            throw new InternalError("An error occurred. Please try again");
+            throw new InternalError("Đã xảy ra lỗi. Vui lòng kiểm tra lại");
         }
 
         return Optional.ofNullable(responseGettingStaff.getData());
