@@ -1,0 +1,27 @@
+GET http://localhost:8080/api/routes/test
+
+Content-Type: application/json
+
+{}
+
+
+###
+
+POST http://localhost:8080/api/routes/create
+Content-Type: application/json
+
+{
+    "vehicleId": "BC_71000_72H124768",
+    "source": "Thành phố Hồ Chí Minh",
+    "destination": "Tỉnh Bà Rịa - Vũng Tàu",
+    "departureTime": "15:00:00"
+}
+
+
+###
+
+GET http://localhost:8080/api/routes/search?startDepartureTime=16:00:00&endDepartureTime=17:00:00
+Content-Type: application/json
+
+{"source": "Thành phố Hồ Chí Minh"}
+
