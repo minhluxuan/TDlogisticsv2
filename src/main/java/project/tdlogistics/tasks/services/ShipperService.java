@@ -39,8 +39,6 @@ import project.tdlogistics.tasks.repositories.DBUtils;
 import project.tdlogistics.tasks.repositories.ShipperRepository;
 import project.tdlogistics.tasks.repositories.ShipperRepositoryImplement;
 
-
-
 @Service
 public class ShipperService {
 
@@ -123,7 +121,7 @@ public class ShipperService {
         for(String orderId : orderIds) {
             List<Object> values = Arrays.asList(orderId, staffId, false);
             int resultCreateNewTaks = dbUtils.insert(tasksTable, fields, values);
-            if(resultCreateNewTaks > 0) {
+            if (resultCreateNewTaks > 0) {
                 acceptedNumber++;
                 acceptedArray.add(orderId);
             } 

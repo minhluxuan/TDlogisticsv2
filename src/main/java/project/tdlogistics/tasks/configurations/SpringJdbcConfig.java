@@ -18,9 +18,9 @@ public class SpringJdbcConfig {
 		dataSource.setDriverClassName(
 			"com.mysql.jdbc.Driver");
 		dataSource.setUrl(
-			"jdbc:mysql://127.0.0.1:3308/tdlogisticsv2?useSSL=false");
+			"jdbc:mysql://localhost:3306/tdlogistics_task?useSSL=false");
 		dataSource.setUsername("root");
-		dataSource.setPassword("Mysql@3306");
+		dataSource.setPassword("new_password");
 
 		return dataSource;
 	}

@@ -34,10 +34,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-
-
 @RestController
-@RequestMapping("/v2/drivers")
+@RequestMapping("/v2/tasks/drivers")
 public class DriverRestController {
     
     @Autowired 
@@ -45,7 +43,7 @@ public class DriverRestController {
 
     @GetMapping("/get_objects")
     public ResponseEntity<Response<List<Map<String, Object>>>> getObjectHandleTask(@RequestHeader(name = "agencyId") String agencyId,
-                                                                                   @RequestHeader(name = "role") Role role) throws Exception{
+                                                                                   @RequestHeader(name = "role") Role role) {
         try {
             List<Map<String, Object>> resultGettingObject =  null;
             if(Set.of(Role.ADMIN, Role.MANAGER, Role.HUMAN_RESOURCE_MANAGER).contains(role)) {

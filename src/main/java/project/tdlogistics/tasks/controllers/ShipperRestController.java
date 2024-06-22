@@ -30,7 +30,12 @@ import project.tdlogistics.tasks.entities.Response;
 import project.tdlogistics.tasks.entities.Role;
 import project.tdlogistics.tasks.entities.Shipment;
 import project.tdlogistics.tasks.entities.ShipperTask;
+import project.tdlogistics.tasks.entities.Vehicle;
 import project.tdlogistics.tasks.services.ShipperService;
+import project.tdlogistics.tasks.services.VehicleService;
+import project.tdlogistics.tasks.dto.CreateShipperTaskDto;
+import project.tdlogistics.tasks.dto.GetHistoryDto;
+import project.tdlogistics.tasks.dto.GetShipperTaskDto;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,11 +47,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
-@RequestMapping("/v2/shippers")
+@RequestMapping("/v2/tasks/shippers")
 public class ShipperRestController {
     
     @Autowired
     private ShipperService shipperService;
+
+    @Autowired
+    private VehicleService vehicleService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -71,41 +79,58 @@ public class ShipperRestController {
         }     
     }
     
-    @PostMapping("/create_tasks")
-    public ResponseEntity<Response<ListResponse>> createNewTask(@RequestBody Map<String, String> criteria, 
-                                                                @RequestHeader(name = "staffId") String staffId) throws Exception {
-        try {
-            
-            String shipmentId = criteria.get("shipmentId");
-            String vehicleId = criteria.get("vehicleId");
-            String[] staffIdSubPart = staffId.split("_");
-            String[] vehicleIdSubPart = vehicleId.split("_");
+    @PostMapping("/create")
+    public ResponseEntity<Response<ListResponse>> createNewTask (
+        @RequestBody CreateShipperTaskDto payload,
+        @RequestHeader(name = "userId") String staffId,
+        @RequestHeader(name = "agencyId") String agencyId,
+        @RequestHeader(name = "role") Role role
+    ) {
+        if (!Set.of(Role.AGENCY_MANAGER, Role.AGENCY_HUMAN_RESOURCE_MANAGER).contains(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Response<ListResponse>(true, "Người dùng không được phép truy cập tài nguyên này", null));
+        }
 
-            if(!staffIdSubPart[0].equals(vehicleIdSubPart[0]) || !staffIdSubPart[1].equals(vehicleIdSubPart[1])) {
+        try {
+            String[] staffIdSubPart = staffId.split("_");
+            String[] vehicleIdSubPart = payload.vehicleId.split("_");
+
+            if (!staffIdSubPart[0].equals(vehicleIdSubPart[0]) || !staffIdSubPart[1].equals(vehicleIdSubPart[1])) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
                     true,
-                    "Phương tiện không tồn tại trong bưu cục",
+                    String.format("Phương tiện %s không thuộc quyền quản lý của bưu cục/đại lý %s", payload.vehicleId, staffId),
                     null
                 ));
             }
 
-            // const resultGettingOneVehicle = await vehicleService.getOneVehicle({ vehicle_id: req.body.vehicle_id, agency_id: req.user.agency_id });
+            Vehicle tempVehicle = new Vehicle();
+            tempVehicle.setVehicleId(vehicleId);
+            final Vehicle vehicle = vehicleService.findOneVehicle(tempVehicle);
+
+            if (vehicle == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<ListResponse>(true, String.format("Phương tiện %s không tồn tại", payload.vehicleId), null));
+            }
 
             Shipment shipmentCriteria = new Shipment();
-            shipmentCriteria.setShipmentId(shipmentId);
-            shipmentCriteria.setAgencyId(criteria.get("agencyId"));
+            shipmentCriteria.setShipmentId(payload.shipmentId);
+            shipmentCriteria.setAgencyId(agencyId);
             final Shipment shipment = shipperService.findShipment(shipmentCriteria);
-            if(shipment == null) {
+            if (shipment == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
                     true,
-                    "Lô hàng không tồn tại",
+                    String.format("Lô hàng %s không tồn tại trong bưu cục/đại lý %s", payload.shipmentId, agencyId),
                     null
                 ));
             }
 
-            // const resultAddingShipmentsToVehicle = await vehicleService.addShipmentToVehicle(resultGettingOneVehicle[0], [req.body.shipment_id]);
-           
-            // await shipmentService.updateShipment({ status: 3 }, { shipment_id: req.body.shipment_id });
+            final List<String> orderIds = shipment.getOrderIds();
+            if (orderIds.size() == 0) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                    true,
+                    "Lô hàng không có đơn hàng nào để phân việc",
+                    null
+                ));
+            }
+
             shipmentCriteria.setStatus(3);
             final int resultUpdatingShipmentStatus = shipperService.setShipmentStatus(shipmentCriteria);
             if(resultUpdatingShipmentStatus == 0) {
@@ -116,42 +141,16 @@ public class ShipperRestController {
                 ));
             }
 
-            final List<String> orderIds = shipment.getOrderIds();
-            if(orderIds.size() == 0) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
-                    true,
-                    "Lô hàng không có đơn hàng nào để phân việc",
-                    null
-                ));
-            }
+
 
             final String postalCode = shipperService.getPostalCodeFromAgencyId(staffId);
             final ListResponse resultCreatingNewTask = shipperService.assignNewTasks(orderIds, staffId, postalCode);
-            
-            
-            // for (const order_id of resultCreatingNewTask.acceptedArray) {
-            //     let orderMessage;
-            //     let orderStatus;
-            //     const formattedTime = moment(new Date()).format("DD-MM-YYYY HH:mm:ss");
-            //     const order = (await ordersService.getOneOrder({ order_id }))[0];
-            //     if(order.status_code === servicesStatus.processing.code) {
-            //         orderMessage = `${formattedTime}: Đơn hàng đang được bưu tá đến nhận`;
-            //         orderStatus = servicesStatus.taking;
-            //         await ordersService.setJourney(order_id, orderMessage, orderStatus);
-            //     } 
-            //     else if (order.status_code === servicesStatus.enter_agency.code) {
-            //         orderMessage = `${formattedTime}: Đơn hàng đang được giao đến người nhận`;
-            //         orderStatus = servicesStatus.delivering;
-            //         await ordersService.setJourney(order_id, orderMessage, orderStatus);
-            //     } 
-            // }
 
             return ResponseEntity.status(HttpStatus.OK).body(new Response<ListResponse>(
                 false,
                 "Giao việc thành công",
                 resultCreatingNewTask
             ));
-
         } catch(Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(
@@ -162,31 +161,38 @@ public class ShipperRestController {
         }
     }
     
-
     @PostMapping("/get_tasks")
-    public ResponseEntity<Response<List<ShipperTask>>> getTasks(@RequestBody Map<String, Object> criteria,
-                                                                @RequestHeader(name = "staffId") String staffId,
-                                                                @RequestHeader(name = "role") Role userRole) throws Exception {
+    public ResponseEntity<Response<List<ShipperTask>>> getTasks(
+        @RequestBody GetShipperTaskDto criteria,
+        @RequestHeader(name = "userId") String userId,
+        @RequestHeader(name = "agencyId") String agencyId,
+        @RequestHeader(name = "role") Role userRole
+    ) {
+        if (!Set.of(Role.AGENCY_MANAGER, Role.AGENCY_HUMAN_RESOURCE_MANAGER).contains(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Response<ListResponse>(true, "Người dùng không được phép truy cập tài nguyên này", null));
+        }
+
         try {
-            if(criteria.containsKey("staffId")) {
-                String[] shipperIdSubPart = ((String) criteria.get("staffId")).split("_");
-                String[] staffIdSubPart = staffId.split("_");
+            if (criteria.staffId != null) {
+                String[] shipperIdSubPart = criteria.staffId.split("_");
+                String[] staffIdSubPart = userId.split("_");
                 if(!shipperIdSubPart[0].equals(staffIdSubPart[0]) || !shipperIdSubPart[1].equals(staffIdSubPart[1])) {
                     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(
                         true,
-                        "Nhân viên không thuộc quyền kiểm soát của bưu cục",
+                        String.format("Nhân viên %s không thuộc quyền kiểm soát của bưu cục/đại lý %s", staffId, agencyId),
                         null
                     ));
                 }
             }
 
-            final String postalCode = shipperService.getPostalCodeFromAgencyId(staffId);
-            if(Set.of(Role.SHIPPER).contains(userRole)) {
-                criteria.put("staff_id", staffId);
+            final String postalCode = shipperService.getPostalCodeFromAgencyId(userId);
+
+            if (Set.of(Role.SHIPPER).contains(userRole)) {
+                criteria.staff_id = userId;
             }
 
             final List<ShipperTask> resultGettingTasks = shipperService.getTask(criteria, postalCode);
-            return ResponseEntity.status(HttpStatus.OK).body(new Response<>(
+            return ResponseEntity.status(HttpStatus.OK).body(new Response<List<ShipperTask>>(
                 false,
                 "Lấy công việc thành công",
                 resultGettingTasks
@@ -202,24 +208,23 @@ public class ShipperRestController {
     }
     
     @PatchMapping("/confirm_completed")
-    public ResponseEntity<Response<ShipperTask>> confirmCompleteTask(@RequestParam Map<String, String> params,
-                                                                     @RequestHeader(name = "staffId") String staffId) throws Exception {               
+    public ResponseEntity<Response<ShipperTask>> confirmCompleteTask(
+        @RequestParam(name = "id") Integer taskId,
+        @RequestHeader(name = "userId") String staffId
+    ) {
+        if (!Set.of(Role.SHIPPER).contains(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Response<ListResponse>(true, "Người dùng không được phép truy cập tài nguyên này", null));
+        }
+        
         try {
-            int idValue = -1;
-            try {
-                idValue = Integer.parseInt(params.get("id"));
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid number format: " + params.get("id"));
-            }
-
             LocalDateTime currentTime = LocalDateTime.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String completedTime = currentTime.format(formatter);
 
             String postalCode = shipperService.getPostalCodeFromAgencyId(staffId);
-            final boolean resultConfirmingCompleteTask = shipperService.confirmCompleteTask(idValue, staffId, completedTime, postalCode);
+            final boolean resultConfirmingCompleteTask = shipperService.confirmCompleteTask(taskId, staffId, completedTime, postalCode);
 
-            if(!resultConfirmingCompleteTask) {
+            if (!resultConfirmingCompleteTask) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<>(
                     true,
                     "Cập nhật công việc thất bại",
@@ -243,29 +248,40 @@ public class ShipperRestController {
         }                                                   
     }
 
-    @PostMapping("/get_history")
-    public ResponseEntity<Response<List<ShipperTask>>> getHistory(@RequestBody Map<String, Object> criteria,
-                                                                @RequestHeader(name = "staffId") String staffId,
-                                                                @RequestHeader(name = "role") Role userRole) throws Exception {
+    @PostMapping("/history/get")
+    public ResponseEntity<Response<List<ShipperTask>>> getHistory(
+        @RequestBody GetHistoryDto criteria,
+        @RequestHeader(name = "userId") String userId,
+        @RequestHeader(name = "agencyId", required = false) String agencyId,
+        @RequestHeader(name = "role") Role userRole
+    ) {
+        if (!Set.of(Role.AGENCY_MANAGER, Role.AGENCY_HUMAN_RESOURCE_MANAGER, Role.SHIPPER).contains(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Response<ListResponse>(true, "Người dùng không được phép truy cập tài nguyên này", null));
+        }
+
         try {
-            if(criteria.containsKey("staffId")) {
-                String[] shipperIdSubPart = ((String) criteria.get("staffId")).split("_");
-                String[] staffIdSubPart = staffId.split("_");
+            Map<String, Object> mapCriteria = new HashMap<String, Object>();
+
+            if (criteria.staffId != null) {
+                String[] shipperIdSubPart = criteria.staffId.split("_");
+                String[] staffIdSubPart = userId.split("_");
                 if(!shipperIdSubPart[0].equals(staffIdSubPart[0]) || !shipperIdSubPart[1].equals(staffIdSubPart[1])) {
                     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(
                         true,
-                        "Nhân viên không thuộc quyền kiểm soát của bưu cục",
+                        String.format("Nhân viên %s không thuộc quyền kiểm soát của bưu cục/đại lý %s", staffId, agencyId),
                         null
                     ));
                 }
+
+                mapCriteria.put("staff_id", criteria.staffId);
             }
 
-            final String postalCode = shipperService.getPostalCodeFromAgencyId(staffId);
-            if(Set.of(Role.SHIPPER).contains(userRole)) {
-                criteria.put("staff_id", staffId);
+            final String postalCode = shipperService.getPostalCodeFromAgencyId(userId);
+            if (Set.of(Role.SHIPPER).contains(userRole)) {
+                mapCriteria.put("staff_id", userId);
             }
 
-            final List<ShipperTask> resultGettingHistory = shipperService.getHistory(criteria, postalCode);
+            final List<ShipperTask> resultGettingHistory = shipperService.getHistory(mapCriteria, postalCode);
             return ResponseEntity.status(HttpStatus.OK).body(new Response<>(
                 false,
                 "Lấy công việc thành công",
@@ -282,18 +298,17 @@ public class ShipperRestController {
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<Response<ShipperTask>> deleteTask(@RequestParam Map<String, String> params,
-                                                            @RequestHeader(name = "staffId") String staffId) throws Exception {               
+    public ResponseEntity<Response<ShipperTask>> deleteTask(
+        @RequestParam(name = "id") Integer id,
+        @RequestHeader(name = "userId") String userId
+    ) {
+        if (!Set.of(Role.AGENCY_MANAGER, Role.AGENCY_HUMAN_RESOURCE_MANAGER).contains(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Response<ListResponse>(true, "Người dùng không được phép truy cập tài nguyên này", null));
+        }
+        
         try {
-            int idValue = -1;
-            try {
-                idValue = Integer.parseInt(params.get("id"));
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid number format: " + params.get("id"));
-            }
-
-            String postalCode = shipperService.getPostalCodeFromAgencyId(staffId);
-            final boolean resultDeletingTask = shipperService.deleteTask(idValue, postalCode);
+            String postalCode = shipperService.getPostalCodeFromAgencyId(userId);
+            final boolean resultDeletingTask = shipperService.deleteTask(id, postalCode);
 
             if(!resultDeletingTask) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<>(
@@ -308,7 +323,6 @@ public class ShipperRestController {
                 "Xóa công việc thành công",
                 null
             ));
-
         } catch(Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(
@@ -318,5 +332,4 @@ public class ShipperRestController {
             ));
         }                                                   
     }
-
 }

@@ -8,44 +8,29 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-@Entity
-@Table(name = "vehicle")
 public class Vehicle {
-    @Id
-    @Column(name = "vehicle_id")
     private String vehicleId;
     
-    @Column(name = "transport_partner_id")
     private String transportPartnerId;
 
-    @Column(name = "agency_id")
     private String agencyId;
 
-    @Column(name = "staff_id")
     private String staffId;
 
-    @Column(name = "type")
     private String type;
 
-    @Column(name = "license_plate")
     private String licensePlate;
 
-    @Column(name = "mass")
     private Float mass;
 
-    @Column(name = "max_load")
     private Float maxLoad;
 
-    @Column(name = "shipment_ids")
     private List<String> shipmentIds;
 
-    @Column(name = "busy")
     private Boolean busy;
 
-    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "last_update")
     private LocalDateTime lastUpdate;
 
     public Vehicle() {
