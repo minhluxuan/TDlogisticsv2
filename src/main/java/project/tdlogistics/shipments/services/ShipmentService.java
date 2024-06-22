@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
@@ -525,6 +527,43 @@ public class ShipmentService {
         return dbUtils.deleteOne(shipmentTable, fields, values) > 0;
     }
 
+    @SuppressWarnings("unchecked")
+    public boolean pasteShipmentToAgency(Shipment shipment, String postalCode) {
+        if(postalCode == null) {
+            return false;
+        }
+
+        String shipmentTable = (postalCode + "_shipment");
+        List<String> fields = new ArrayList<>();
+        List<Object> values = new ArrayList<>();
+
+        for (Field field : Shipment.class.getDeclaredFields()) {
+            field.setAccessible(true); 
+            try {
+                Object value = field.get(shipment);
+                if (value != null) {
+                    if (field.getName().equals("journey")) {
+                        fields.add(ColumnNameMapper.mappingColumn(field.getName()));
+                        values.add(JsonUtils.convertListMapToJson((List<Map<String, String>>) value));
+                        continue;
+                    }
+                    else if (field.getName().equals("orderIds")) {
+                        fields.add(ColumnNameMapper.mappingColumn(field.getName()));
+                        values.add(JsonUtils.convertListToJson((List<String>) value));
+                        continue;
+                    }
+                    fields.add(ColumnNameMapper.mappingColumn(field.getName()));
+                    values.add(value);
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return dbUtils.insert(shipmentTable, fields, values) > 0;
+        
+    }
+
     public Agency getOneAgency(String agencyid) throws JsonProcessingException {
         if(agencyid == null) {
             throw new IllegalArgumentException(String.format("Thiếu thông tin bưu cục"));
@@ -586,6 +625,93 @@ public class ShipmentService {
         }
 
     } 
+
+    public ListResponse cloneOrdersFromGlobalToAgency(List<String> orderIds, String postalCode) throws JsonProcessingException {
+        int acceptedNumber = 0;
+        List<String> acceptedArray = new ArrayList<>();
+        int notAcceptedNumber = 0;
+        List<String> notAcceptedArray = new ArrayList<>();
+        
+        for(String orderId: orderIds) {
+            try {
+                Order order = getOneOrder(orderId);
+                if(order != null) {
+                    boolean resultCloningOrder = cloneOrderToAgency(order, postalCode);
+                    if(resultCloningOrder) {
+                        acceptedNumber++;
+                        acceptedArray.add(orderId);
+                    } else {
+                        notAcceptedNumber++;
+                        notAcceptedArray.add(orderId);
+                    }
+                } else {
+                    notAcceptedNumber++;
+                    notAcceptedArray.add(orderId);
+                }
+            } catch(Exception e) {
+                e.printStackTrace();
+                notAcceptedNumber++;
+                notAcceptedArray.add(orderId);
+            }
+            
+        }
+        return new ListResponse(acceptedNumber, acceptedArray, notAcceptedNumber, notAcceptedArray);
+    }
+
+    public boolean cloneOrderToAgency(Order order, String postalCode) throws JsonProcessingException {
+        if(postalCode == null) {
+            return false;
+        }
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("postalCode", postalCode);
+    
+        final String jsonRequestCloningOrder = objectMapper.writeValueAsString(new Request<>("cloneOrderToAgency", params, order));
+        final String jsonResponseCloningOrder = (String) amqpTemplate.convertSendAndReceive(exchange, "rpc.orders", jsonRequestCloningOrder);
+
+        final Response<Boolean> response = objectMapper.readValue(jsonResponseCloningOrder, new TypeReference<Response<Boolean>>() {});
+        if (response != null && response.getData() != null) {
+            return response.getData();
+        } else {
+            return false;
+        }
+
+    }
+
+    @SuppressWarnings("unchecked")
+    public boolean updateShipment(Shipment criteria, String shipmentId, String postalCode) {
+        final String shipmentTable = (postalCode == null) ? "shipment" : (postalCode + "_shipment");
+        List<String> fields = new ArrayList<>();
+        List<Object> values = new ArrayList<>();
+
+        for (Field field : Shipment.class.getDeclaredFields()) {
+            field.setAccessible(true); 
+            try {
+                Object value = field.get(criteria);
+                if (value != null) {
+                    if (field.getName().equals("journey")) {
+                        fields.add(ColumnNameMapper.mappingColumn(field.getName()));
+                        values.add(JsonUtils.convertListMapToJson((List<Map<String, String>>) value));
+                        continue;
+                    }
+                    else if (field.getName().equals("orderIds")) {
+                        fields.add(ColumnNameMapper.mappingColumn(field.getName()));
+                        values.add(JsonUtils.convertListToJson((List<String>) value));
+                        continue;
+                    }
+                    fields.add(ColumnNameMapper.mappingColumn(field.getName()));
+                    values.add(value);
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+
+        List<String> conditionFields = Arrays.asList("shipment_id");
+        List<Object> conditionValues = Arrays.asList(shipmentId);
+
+        return dbUtils.updateOne(shipmentTable, fields, values, conditionFields, conditionValues) > 0;
+    }
 
     public ListResponse assignTaskToShipper (List<String> orderIds, String staffId, String postalCode) throws JsonProcessingException {
         

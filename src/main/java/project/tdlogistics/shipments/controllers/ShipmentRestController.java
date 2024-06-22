@@ -845,4 +845,121 @@ public class ShipmentRestController {
         }
     }
     
+
+    @PostMapping("/receive")
+    public ResponseEntity<Response<ListResponse>> recieveShipment(
+        @RequestParam(name = "shipmentId") String shipmentId,
+        @RequestHeader(value = "agencyId") String agencyId,
+        @RequestHeader(value = "userId") String userId,
+        @RequestHeader(value = "role") Role role
+        ) throws Exception {
+        try {
+
+            Date createdTime = new Date();
+            SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+            String formattedTime = formatter.format(createdTime);
+
+            Shipment shipment = shipmentService.getOneShipment(shipmentId, null);
+            if(shipment == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                    true,
+                    "Lô hàng không tại.",
+                    null
+                ));
+            }
+
+            if(shipment.getStatus() > 5) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<>(
+                    true,
+                    "Lô hàng không còn khả thi để tiếp nhận.",
+                    null
+                ));
+            }
+
+            if(shipment.getOrderIds() == null || shipment.getOrderIds().size() == 0) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<>(
+                    true,
+                    "Lô hàng không chứa đơn hàng nào để có thể tiếp nhận.",
+                    null
+                ));
+            }
+
+            ListResponse resultCloningShipment = null;
+            if(Set.of(Role.AGENCY_MANAGER, Role.AGENCY_TELLER, Role.MANAGER, Role.TELLER).contains(role)) {
+                String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
+                if(shipmentService.getOneShipment(shipmentId, postalCode) != null) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<>(
+                        true,
+                        "Lô hàng đã tồn tại trong bưu cục.",
+                        null
+                    ));
+                }
+
+                boolean resultPastingShipment = shipmentService.pasteShipmentToAgency(shipment, postalCode);
+                if(!resultPastingShipment) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<>(
+                        true,
+                        "Sao chép lô hàng từ cơ sở dữ liệu tổng cục sang cơ sở dữ liệu bưu cục thất bại.",
+                        null
+                    ));
+                }
+
+                resultCloningShipment = shipmentService.cloneOrdersFromGlobalToAgency(shipment.getOrderIds(), postalCode);
+
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Response<>(
+                    true,
+                    "Người dung không được phép truy cập tài nguyên này.",
+                    null
+                ));
+            }
+
+            Agency agency = shipmentService.getOneAgency(agencyId);
+            if(agency == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<>(
+                    true,
+                    "Bưu cục không tồn tại.",
+                    null
+                ));
+            }
+
+
+            //update shipment
+            Shipment updatedShipment = new Shipment();
+            updatedShipment.setStatus(5);
+            updatedShipment.setParent(null);
+            updatedShipment.setCurrentAgencyId(agency.getAgencyId());
+            updatedShipment.setCurrentLat(agency.getLatitude());
+            updatedShipment.setCurrentLong(agency.getLongitude());
+
+            final String postalCode = shipmentService.getPostalCodeFromAgencyId(agencyId);
+            shipmentService.updateShipment(updatedShipment, shipmentId, null);
+            shipmentService.updateShipment(updatedShipment, shipmentId, postalCode);
+            if(shipment.getAgencyId() != null) {
+                shipmentService.updateShipment(updatedShipment, shipmentId, shipmentService.getPostalCodeFromAgencyId(shipment.getAgencyId()));
+            }
+
+            String journeyMessage = String.format("%s: Lô hàng được tiếp nhận tại Bưu cục/Đại lý %s bởi nhân viên %s.", formattedTime, agencyId, userId);
+            shipmentService.setJourney(shipmentId, formattedTime, journeyMessage, null);
+            shipmentService.setJourney(shipmentId, formattedTime, journeyMessage, postalCode);
+            if(shipment.getAgencyId() != null) {
+                shipmentService.setJourney(shipmentId, formattedTime, journeyMessage, shipmentService.getPostalCodeFromAgencyId(shipment.getAgencyId()));
+            }
+            
+            return ResponseEntity.status(HttpStatus.OK).body(new Response<>(
+                false,
+                "Tiếp nhận đơn hàng thành công.",
+                resultCloningShipment
+            ));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(
+                true,
+                e.getMessage(),
+                null
+            ));
+        }
+    }
+    
 }
