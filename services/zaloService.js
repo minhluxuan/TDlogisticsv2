@@ -143,9 +143,9 @@ const confirmOrder = async (phone, order_code, date, price, name, status) => {
 
 // confirmOrder("0976481171", "123213", "21/6/2024", "118k", "Ho Thanh Nhan", "success");
 
-// module.exports = {
-//     confirmPaymet,
-//     confirmCreateOrder,
-//     confirmOrder,
-//     refreshToken,
-// };
+module.exports = {
+    confirmPaymet,
+    confirmCreateOrder,
+    confirmOrder,
+    refreshToken,
+};
