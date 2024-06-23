@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import project.tdlogistics.routes.entities.Response;
 import project.tdlogistics.routes.entities.Route;
 import project.tdlogistics.routes.entities.Vehicle;
-import project.tdlogistics.routes.repositories.RouteRepository;
+
 import project.tdlogistics.routes.services.RouteService;
 import project.tdlogistics.routes.services.VehicleService;
 
@@ -15,11 +15,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
-
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/routes")
@@ -33,26 +28,26 @@ public class RouteRestController {
         this.vehicleService = vehicleService;
     }
 
-    @GetMapping("test")
-    public ResponseEntity<String> test() {
-        try {
-            String startTime = "10:15:30";
-            LocalTime timeStart = LocalTime.parse(startTime);
+    // @GetMapping("test")
+    // public ResponseEntity<String> test() {
+    //     try {
+    //         String startTime = "10:15:30";
+    //         LocalTime timeStart = LocalTime.parse(startTime);
 
-            String endTime = "15:15:15";
-            LocalTime timeEnd = LocalTime.parse(endTime);
+    //         String endTime = "15:15:15";
+    //         LocalTime timeEnd = LocalTime.parse(endTime);
 
-            List<Route> routes = routeService.getRoutes(new Route(), timeStart, timeEnd);
-            System.out.println(routes);
+    //         List<Route> routes = routeService.getRoutes(new Route(), timeStart, timeEnd);
+    //         System.out.println(routes);
 
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+    //     } catch (Exception e) {
+    //         return ResponseEntity.badRequest().body(e.getMessage());
 
-        }
-        // call route service
+    //     }
+    //     // call route service
 
-        return ResponseEntity.ok("Test");
-    }
+    //     return ResponseEntity.ok("Test");
+    // }
 
     @PostMapping("/create")
     public ResponseEntity<?> createNewRoute(@RequestBody Route body) {
@@ -71,15 +66,17 @@ public class RouteRestController {
 
             Optional<Route> route = routeService.checkExistRoute(body);
             if (route.isPresent()) {
-                return ResponseEntity.status(400).body(new Response(true, "Route already exist", null));
+                return ResponseEntity.status(400).body(new Response(true, String.format("Tuyến đường %s - %s khởi hành lúc %s của phương tiện có mã %s đã tồn tại.",body.getSource(),body.getDestination(),body.getDepartureTime(),body.getVehicleId()), null));
             }
 
             Route newRoute = routeService.createNewRoute(body);
             if (newRoute == null) {
-                return ResponseEntity.status(400).body(new Response(true, "Failed to create new route", null));
+                return ResponseEntity.status(400).body(new Response(true, String.format("Tạo tuyến đường %s - %s với thời gian khởi hành %s thất bại.",
+        body.getSource(),body.getDestination(),body.getDepartureTime()), null));
             }
 
-            return ResponseEntity.status(200).body(new Response(false, "oke", null));
+            return ResponseEntity.status(200).body(new Response(false, String.format("Tạo tuyến đường %s - %s với thời gian khởi hành %s thành công.",
+        body.getSource(), body.getDestination(), body.getDepartureTime()), null));
         } catch (Exception e) {
             return ResponseEntity.status(400).body(new Response(true, e.getMessage(), null));
         }
@@ -108,7 +105,7 @@ public class RouteRestController {
             }
 
             List<Route> routes = routeService.getRoutes(routeBody, timeStart, timeEnd);
-            return ResponseEntity.status(200).body(new Response(false, "oke", routes));
+            return ResponseEntity.status(200).body(new Response(false, "Lấy tuyến đường thành công.", routes));
         } catch (Exception e) {
             return ResponseEntity.status(400).body(new Response(true, e.getMessage(), null));
         }
@@ -123,25 +120,26 @@ public class RouteRestController {
             /* validate body */
 
             if (body.getVehicleId() != null && !vehicleService.checkExistVehicle(body.getVehicleId())) {
-                return ResponseEntity.status(500).body(new Response<>(true, "Vehicle not found", null));
+                return ResponseEntity.status(500).body(new Response<>(true,String.format("Phương tiện có mã %s không tồn tại.", body.getVehicleId()), null));
             }
 
             Optional<Route> resultGetRouteToUpdate = routeService.checkExistRoute(id);
             if (resultGetRouteToUpdate.isEmpty()) {
-                return ResponseEntity.status(500).body(new Response<>(true, "Route not found", null));
+                return ResponseEntity.status(500).body(new Response<>(true, String.format("Tuyến đường có id = %s không tồn tại.", id), null));
             }
 
             Optional<Route> resultCheckExitRoute = routeService.checkExistRoute(body);
             if (resultCheckExitRoute.isPresent()) {
-                return ResponseEntity.status(500).body(new Response<>(true, "Route already exist", null));
+                return ResponseEntity.status(500).body(new Response<>(true, String.format("Tuyến đường %s - %s khởi hành lúc %s của phương tiện có mã %s đã tồn tại.",
+        body.getSource(), body.getDestination(), body.getDepartureTime(), body.getVehicleId()), null));
             }
 
             Route updatedRoute = routeService.updateRoute(id, body);
             if (updatedRoute == null) {
-                return ResponseEntity.status(500).body(new Response<>(true, "Failed to update route", null));
+                return ResponseEntity.status(500).body(new Response<>(true, String.format("Cập nhật tuyến đường thất bại || Tuyến đường có id %s không tồn tại",id ), null));
             }
 
-            return ResponseEntity.status(200).body(new Response<>(false, "oke", updatedRoute));
+            return ResponseEntity.status(200).body(new Response<>(false, "Cập nhật thành công", updatedRoute));
 
         } catch (Exception e) {
             return ResponseEntity.status(400).body(new Response<>(true, e.getMessage(), null));
@@ -155,11 +153,11 @@ public class RouteRestController {
             /* validate id */
             Optional<Route> resultGetRouteToDelete = routeService.checkExistRoute(id);
             if (resultGetRouteToDelete.isEmpty()) {
-                return ResponseEntity.status(500).body(new Response<>(true, "Route not found", null));
+                return ResponseEntity.status(500).body(new Response<>(true, String.format("Tuyến đường có id = %s không tồn tại.", id), null));
             }
 
             routeService.deleteRoute(id);
-            return ResponseEntity.status(200).body(new Response<>(false, "oke", null));
+            return ResponseEntity.status(200).body(new Response<>(false, "Xóa thành công", null));
 
         } catch (Exception e) {
             return ResponseEntity.status(400).body(new Response<>(true, e.getMessage(), null));

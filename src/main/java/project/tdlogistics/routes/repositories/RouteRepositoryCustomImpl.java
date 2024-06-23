@@ -18,6 +18,7 @@ public class RouteRepositoryCustomImpl implements RouteRepositoryCustom {
     @PersistenceContext
     private EntityManager entityManager;
 
+    // @Query khong ho tro tim cac truong khong co dinh (null),ex: các trường vehicleId, destination, source có thể null.
     @Override
     public List<Route> findInDepartureTimeRangeAndOtherCriteria(Route criteria, LocalTime startDepartureTime,
             LocalTime endDepartureTime) {
@@ -44,7 +45,8 @@ public class RouteRepositoryCustomImpl implements RouteRepositoryCustom {
             if (criteria.getSource() != null) {
                 predicates.add(cb.equal(route.get("source"), criteria.getSource()));
             }
-            // Add more criteria as needed...
+            //thêm criteria
+        
         }
 
         cq.where(predicates.toArray(new Predicate[0]));
