@@ -1,0 +1,57 @@
+POST http://localhost:8083/v2/transport_partners/search
+Content-Type: application/json
+role: ADMIN
+agencyId: TD_00000_077165007713
+userId: TD_00000_077165007713
+
+{
+
+}
+
+###
+
+POST http://localhost:8083/v2/transport_partners/create
+Content-Type: application/json
+role: ADMIN
+agencyId: TD_00000_077165007713
+userId: TD_00000_077165007713
+
+{
+    "agencyId": "BC_70001_077204005691",
+    "transportPartnerName": "Phương Trang",
+    "province": "Thành phố Hồ Chí Minh",
+    "district": "Quận 1",
+    "town": "Phường Phạm Ngũ Lão",
+    "detailAddress": "15, đường Phạm Ngũ Lão",
+    "phoneNumber": "0981430417",
+    "email": "buucucquan1@tdlogistics.com",
+    "bin": "050138319579",
+    "bank": "Sacombank",
+    "representor": {
+        "cccd": "077204005693",
+        "dateOfBirth": "2004-03-03",
+        "province": "Tỉnh Bà Rịa - Vũng Tàu",
+        "district": "Huyện Đất Đỏ",
+        "town": "Thị trấn Đất Đỏ",
+        "detailAddress": "326, ĐT44A",
+        "position": "Quản lý bưu cục",
+        "bin": "050138319579",
+        "bank": "Sacombank",
+        "account": {
+            "phoneNumber": "0981430417",
+            "email": "minhfaptv@gmail.com"
+        }
+    }
+}
+
+###
+
+PUT http://localhost:8083/v2/transport_partners/update?transportPartnerId=TD_00000_077204005691
+Content-Type: application/json
+role: ADMIN
+agencyId: TD_00000_077165007713
+userId: TD_00000_077165007713
+
+{
+    "transportPartnerName": "Hoa Mai"
+}
