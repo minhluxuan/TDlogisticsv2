@@ -69,10 +69,10 @@ export class AuthOperation {
             const response = await axios.post(`${this.baseUrl}/basic/login`, payload, {
                 withCredentials: true
             });
-            
+
             return { error: response.data.error, message: response.data.message, data: response.data.data };
         } catch (error) {
-            console.log("Error verifying otp: ", error?.response?.data);
+            console.log("Error login: ", error?.response?.data);
             console.error("Request that caused the error: ", error?.request);
             return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
         }

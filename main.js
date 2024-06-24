@@ -122,7 +122,7 @@ var AuthOperation = /** @class */ (function () {
                         return [2 /*return*/, { error: response.data.error, message: response.data.message, data: response.data.data }];
                     case 2:
                         error_3 = _c.sent();
-                        console.log("Error verifying otp: ", (_a = error_3 === null || error_3 === void 0 ? void 0 : error_3.response) === null || _a === void 0 ? void 0 : _a.data);
+                        console.log("Error login: ", (_a = error_3 === null || error_3 === void 0 ? void 0 : error_3.response) === null || _a === void 0 ? void 0 : _a.data);
                         console.error("Request that caused the error: ", error_3 === null || error_3 === void 0 ? void 0 : error_3.request);
                         return [2 /*return*/, { error: (_b = error_3 === null || error_3 === void 0 ? void 0 : error_3.response) === null || _b === void 0 ? void 0 : _b.data, request: error_3 === null || error_3 === void 0 ? void 0 : error_3.request, status: error_3.response ? error_3.response.status : null }];
                     case 3: return [2 /*return*/];
