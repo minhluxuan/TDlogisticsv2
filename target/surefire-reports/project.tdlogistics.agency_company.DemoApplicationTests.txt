@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: project.tdlogistics.agency_company.DemoApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 8.660 s -- in project.tdlogistics.agency_company.DemoApplicationTests
