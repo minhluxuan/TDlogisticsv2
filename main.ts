@@ -1431,20 +1431,20 @@ export class ShipmentsOperation {
 		}
     }
 
-    async getAllAgencies() {
-        try {
-			const response = await axios.get(`${this.baseUrl}/get_agencies`, {
-				withCredentials: true,
-			});
+    // async getAllAgencies() {
+    //     try {
+	// 		const response = await axios.get(`${this.baseUrl}/get_agencies`, {
+	// 			withCredentials: true,
+	// 		});
 
-			const data = response.data;
-			return { error: data.error, data: data.data, message: data.message };
-		} catch (error: any) {
-			console.log("Error getting all agencies: ", error?.response?.data);
-            console.error("Request that caused the error: ", error?.request);
-            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
-		}
-    }
+	// 		const data = response.data;
+	// 		return { error: data.error, data: data.data, message: data.message };
+	// 	} catch (error: any) {
+	// 		console.log("Error getting all agencies: ", error?.response?.data);
+    //         console.error("Request that caused the error: ", error?.request);
+    //         return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+	// 	}
+    // }
 
     // ROLE: ADMIN, MANAGER, TELLER, AGENCY_MANAGER, AGENCY_TELLER
 	async create(info: CreatingShipmentInfo) {
