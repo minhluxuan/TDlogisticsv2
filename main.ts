@@ -505,7 +505,7 @@ export class StaffOperation {
                 withCredentials: true,
             });
             
-            return { error: response.data.error, data: response.data.DeletingStaffCriteria, message: response.data.message };
+            return { error: response.data.error, data: response.data.data, message: response.data.message };
         } catch (error: any) {
             console.log("Error get authenticated staff information: ", error?.response?.data);
             console.error("Request that caused the error: ", error?.request);
