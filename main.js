@@ -464,7 +464,7 @@ var StaffOperation = /** @class */ (function () {
                             })];
                     case 1:
                         response = _c.sent();
-                        return [2 /*return*/, { error: response.data.error, data: response.data.info, message: response.data.message }];
+                        return [2 /*return*/, { error: response.data.error, data: response.data.DeletingStaffCriteria, message: response.data.message }];
                     case 2:
                         error_16 = _c.sent();
                         console.log("Error get authenticated staff information: ", (_a = error_16 === null || error_16 === void 0 ? void 0 : error_16.response) === null || _a === void 0 ? void 0 : _a.data);
