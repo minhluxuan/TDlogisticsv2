@@ -28,16 +28,21 @@ export interface VerifyingOtp {
     otp: String,
 }
 
+export interface LoginPayload {
+    username: string,
+    password: string,
+}
+
 export class AuthOperation {
     private baseUrl: String;
     
     constructor() {
-        this.baseUrl = "https://api2.tdlogistics.net.vn/v2/auth/otp";
+        this.baseUrl = "https://api2.tdlogistics.net.vn/v2/auth";
     }
 
     async sendOtp(payload: SendingOtp) {
         try {
-            const response = await axios.post(`${this.baseUrl}/send`, payload);
+            const response = await axios.post(`${this.baseUrl}/otp/send`, payload);
             return { error: response.data.error, message: response.data.message, data: response.data.data };
         } catch (error) {
             console.log("Error sending otp: ", error?.response?.data);
@@ -48,9 +53,23 @@ export class AuthOperation {
 
     async verifyOtp(payload: VerifyingOtp) {
         try {
-            const response = await axios.post(`${this.baseUrl}/verify`, payload, {
+            const response = await axios.post(`${this.baseUrl}/otp/verify`, payload, {
                 withCredentials: true
             });
+            return { error: response.data.error, message: response.data.message, data: response.data.data };
+        } catch (error) {
+            console.log("Error verifying otp: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+        }
+    }
+
+    async login(payload: LoginPayload) {
+        try {
+            const response = await axios.post(`${this.baseUrl}/basic/login`, payload, {
+                withCredentials: true
+            });
+            
             return { error: response.data.error, message: response.data.message, data: response.data.data };
         } catch (error) {
             console.log("Error verifying otp: ", error?.response?.data);
@@ -268,7 +287,7 @@ export class OrdersOperation {
 
     async create(payload: UpdatingOrderPayload) {
         try {
-            const response = await axios.put(`${this.baseUrl}/create`, payload, {
+            const response = await axios.post(`${this.baseUrl}/create`, payload, {
                 withCredentials: true,
             });
 
@@ -379,6 +398,9 @@ export class AdministrativeOperation {
 }
 
 export interface CreatingStaffByAgencyPayload {
+    account: {
+        id: string
+    },
 	fullname: string,
     dateOfBirth: string,
     cccd: string,
@@ -394,6 +416,9 @@ export interface CreatingStaffByAgencyPayload {
 }
 
 export interface CreatingStaffByAdminPayload {
+    account: {
+        id: string
+    },
     agencyId: string,
     fullname: string,
     dateOfBirth: string,
@@ -414,6 +439,18 @@ export interface FindingStaffByStaffCriteria {
 }
   
 export interface FindingStaffByAdminCriteria {
+    agencyId?: string,
+    staffId?: string,
+    fullname?: string,
+    dateOfBirth?: string, 
+    cccd?: string, 
+    role?: Role,
+    province?: string,
+    district?: string,
+    town?: string,
+}
+
+export interface FindingStaffByAgencyCriteria {
     staffId?: string,
     fullname?: string,
     dateOfBirth?: string, 
@@ -476,8 +513,24 @@ export class StaffOperation {
         }
     }
 
-	// ROLE: ADMIN, TELLER, HUMAN_RESOURCE_MANAGER, COMPLAINTS_SOLVER, AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER
+	// ROLE: ADMIN, TELLER, HUMAN_RESOURCE_MANAGER, COMPLAINTS_SOLVER
 	async findByAdmin(conditions: FindingStaffByAdminCriteria) {
+		try {
+			const response: AxiosResponse = await axios.post(`${this.baseUrl}/search`, conditions, {
+				withCredentials: true,
+			});
+			
+			return { error: response.data.error, data: response.data.data, message: response.data.message };
+		}     
+		catch (error: any) {
+			console.log("Error getting staffs: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+	}
+
+    // ROLE: ADMIN, TELLER, HUMAN_RESOURCE_MANAGER, COMPLAINTS_SOLVER
+	async findByAgency(conditions: FindingStaffByAgencyCriteria) {
 		try {
 			const response: AxiosResponse = await axios.post(`${this.baseUrl}/search`, conditions, {
 				withCredentials: true,
@@ -561,12 +614,10 @@ export class StaffOperation {
 	// ROLE: ADMIN, MANAGER, HUMAN_RESOURCE_MANAGER, AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER
 	async updateAvatar(info: UpdatingAvatarStaffPayload, condition: UpdatingStaffCriteria) {
 		try {       
-			// Tạo FormData object và thêm hình ảnh vào đó
 			const formData = new FormData();
 			formData.append('avatar', info.avatar);
-	
-			// Gửi yêu cầu POST để tải lên hình ảnh
-			const response: AxiosResponse = await axios.patch(`${this.baseUrl}/avatar/update?staffId=${condition.staffId}`, formData , {
+
+			const response: AxiosResponse = await axios.put(`${this.baseUrl}/avatar/update?staffId=${condition.staffId}`, formData , {
 				withCredentials: true,
 			});
 
@@ -593,3 +644,741 @@ export class StaffOperation {
         }
 	}
 }
+
+export interface CreatingTransportPartnerStaffByAdminPayload {
+    account: {
+        id: string
+    },
+    partnerId: string,
+    agencyId: string,
+    fullname: string,
+    dateOfBirth?: string,
+    cccd: string,
+    province?: string,
+    district?: string,
+    town?: string,
+    detailAddress?: string,
+    position?: string,
+    bin?: string,
+    bank?: string
+}
+
+export interface CreatingTransportPartnerStaffByAgencyPayload {
+    account: {
+        id: string
+    },
+    partnerId: string,
+    fullname: string,
+    dateOfBirth?: string,
+    cccd: string,
+    province?: string,
+    district?: string,
+    town?: string,
+    detailAddress?: string,
+    position?: string,
+    bin?: string,
+    bank?: string
+}
+
+export interface SearchingTransportPartnerStaffByAdminCriteria {
+    agencyId: string,
+    partnerId: string,
+    staffId?: string,
+    fullname: string,
+    dateOfBirth?: string,
+    cccd: string,
+    province?: string,
+    district?: string,
+    town?: string,
+    detailAddress?: string,
+    position?: string,
+    bin?: string,
+    bank?: string
+}
+
+export interface SearchingTransportPartnerStaffByAgencyCriteria {
+    partnerId: string,
+    staffId?: string,
+    fullname: string,
+    dateOfBirth?: string,
+    cccd: string,
+    province?: string,
+    district?: string,
+    town?: string,
+    detailAddress?: string,
+    position?: string,
+    bin?: string,
+    bank?: string
+}
+
+export interface UpdatingTransportPartnerStaffParams {
+    staffId: string
+}
+
+export interface UpdatingTransportPartnerStaffPayload {
+    fullname: string,
+    dateOfBirth?: string,
+    province?: string,
+    district?: string,
+    town?: string,
+    detailAddress?: string,
+    position?: string,
+    bin?: string,
+    bank?: string
+}
+
+export interface DeletingTransportPartnerStaffParams {
+    staffId: string
+}
+
+export class TransportPartnerStaffOperation {
+    private baseUrl: string;
+
+    constructor() {
+        this.baseUrl = "https://api2.tdlogistics.net.vn/v2/partner_staffs";
+    }
+
+    async createByAdmin(payload: CreatingTransportPartnerStaffByAdminPayload) {
+        try {
+			const response = await axios.post(`${this.baseUrl}/create`, payload, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error creating partner staff: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
+    async createByAgency(payload: CreatingTransportPartnerStaffByAgencyPayload) {
+        try {
+			const response = await axios.post(`${this.baseUrl}/create`, payload, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error creating partner staff: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
+    async searchByAdmin(criteria: SearchingTransportPartnerStaffByAdminCriteria) {
+        try {
+			const response = await axios.post(`${this.baseUrl}/search`, criteria, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error searching partner staff: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
+    async searchByAgency(criteria: SearchingTransportPartnerStaffByAgencyCriteria) {
+        try {
+			const response = await axios.post(`${this.baseUrl}/search`, criteria, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error searching partner staff: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
+    async update(params: UpdatingTransportPartnerStaffParams, payload: UpdatingTransportPartnerStaffPayload) {
+        try {
+			const response = await axios.put(`${this.baseUrl}/update?staffId=${params.staffId}`, payload, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error updating partner staff: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
+    async deleteStaff(params: DeletingTransportPartnerStaffParams) {
+        try {
+			const response = await axios.delete(`${this.baseUrl}/delete?staffId=${params.staffId}`, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error deleting partner staff: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+}
+
+export interface CreatingTransportPartnerByAdminPayload {
+    agencyId: string,
+    transportPartnerName: string,
+    province?: string,
+    district?: string,
+    town?: string;
+    detailAddress?: string,
+    taxCode: string
+    phoneNumber: string,
+    email: string,
+    bin?: string,
+    bank?: string,
+    debit?: number,
+    representor: {
+        cccd: string,
+        dateOfBirth?: string,
+        province?: string,
+        district?: string,
+        town?: string,
+        detailAddress?: string,
+        position?: string,
+        bin?: string,
+        bank?: string,
+        account: {
+            phoneNumber: string,
+            email: string
+        }
+    }
+}
+
+export interface CreatingTransportPartnerByAgencyPayload {
+    transportPartnerName: string,
+    province?: string,
+    district?: string,
+    town?: string;
+    detailAddress?: string,
+    taxCode: string
+    phoneNumber: string,
+    email: string,
+    bin?: string,
+    bank?: string,
+    debit?: number,
+    representor: {
+        cccd: string,
+        dateOfBirth?: string,
+        province?: string,
+        district?: string,
+        town?: string,
+        detailAddress?: string,
+        position?: string,
+        bin?: string,
+        bank?: string,
+        account: {
+            phoneNumber: string,
+            email: string
+        }
+    }
+}
+
+export interface SearchingTransportPartnerByAdminCriteria {
+    agencyId?: string,
+    transportPartnerId?: string,
+    transportPartnerName?: string,
+    province?: string,
+    district?: string,
+    town?: string;
+    detailAddress?: string,
+    taxCode?: string
+    phoneNumber?: string,
+    email?: string,
+    bin?: string,
+    bank?: string,
+    debit?: number,
+}
+
+export interface SearchingTransportPartnerByAgencyCriteria {
+    transportPartnerId?: string,
+    transportPartnerName?: string,
+    province?: string,
+    district?: string,
+    town?: string;
+    detailAddress?: string,
+    taxCode?: string
+    phoneNumber?: string,
+    email?: string,
+    bin?: string,
+    bank?: string,
+    debit?: number,
+}
+
+export interface UpdatingTransportPartnerParams {
+    transportPartnerId: string
+}
+
+export interface UpdatingTransportPartnerPayload {
+    transportPartnerName?: string,
+    province?: string,
+    district?: string,
+    town?: string;
+    detailAddress?: string,
+    taxCode?: string
+    phoneNumber?: string,
+    email?: string,
+    bin?: string,
+    bank?: string,
+    debit?: number
+}
+
+export interface DeletingTransportPartnerParams {
+    transportPartnerId: string
+}
+
+export class TransportPartnerOperation {
+    private baseUrl: string;
+
+    constructor() {
+        this.baseUrl = "https://api2.tdlogistics.net.vn/v2/transport_partners";
+    }
+
+    async createByAdmin(payload: CreatingTransportPartnerByAdminPayload) {
+        try {
+			const response = await axios.post(`${this.baseUrl}/create`, payload, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error creating transport partner: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
+    async createByAgency(payload: CreatingTransportPartnerByAgencyPayload) {
+        try {
+			const response = await axios.post(`${this.baseUrl}/create`, payload, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error creating transport partner: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
+    async searchByAdmin(criteria: SearchingTransportPartnerByAdminCriteria) {
+        try {
+			const response = await axios.post(`${this.baseUrl}/search`, criteria, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error searching transport partner: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
+    async searchByAgency(criteria: SearchingTransportPartnerByAgencyCriteria) {
+        try {
+			const response = await axios.post(`${this.baseUrl}/search`, criteria, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error searching transport partner: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
+    async update(params: UpdatingTransportPartnerParams, payload: UpdatingTransportPartnerPayload) {
+        try {
+			const response = await axios.put(`${this.baseUrl}/update?transportPartnerId=${params.transportPartnerId}`, payload, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error updating transport partner: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
+    async deleteTransportPartner(params: DeletingTransportPartnerParams) {
+        try {
+			const response = await axios.delete(`${this.baseUrl}/delete?transportPartnerId=${params.transportPartnerId}`, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error deleting transport partner: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+}
+
+export interface CreatingVehicleByAdminPayload {
+    transportPartnerId?: string,
+    agencyId: string,
+    staffId: string,
+    type: string,
+    licensePlate: string,
+    maxLoad: number
+}
+
+export interface CreatingVehicleByAgencyPayload {
+    transportPartnerId?: string,
+    staffId: string,
+    type: string,
+    licensePlate: string,
+    maxLoad: number
+}
+
+export interface SearchingVehicleByAdminCriteria {
+    transportPartnerId?: string,
+    staffId?: string,
+    type?: string,
+    vehicleId?: string,
+    licensePlate?: string,
+    maxLoad?: number
+}
+
+export interface SearchingVehicleByAgencyCriteria {
+    transportPartnerId?: string,
+    agencyId?: string,
+    staffId?: string,
+    type?: string,
+    vehicleId?: string,
+    licensePlate?: string,
+    maxLoad?: number
+}
+
+export interface UpdatingVehicleParams {
+    vehicleId: string
+}
+
+export interface UpdatingVehiclePayload {
+    type?: string,
+    maxLoad?: number
+}
+
+export interface DeletingVehicleParams {
+    vehicleId: string
+}
+
+export interface ShipmentIds {
+    shipmentIds: string[];
+}
+
+export class VehicleOperation {
+    private baseUrl: string;
+
+    constructor() {
+        this.baseUrl = "https://api2.tdlogistics.net.vn/v2/vehicles";
+    }
+
+    async createByAdmin(payload: CreatingVehicleByAdminPayload) {
+        try {
+			const response = await axios.post(`${this.baseUrl}/create`, payload, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error creating vehicle: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
+    async createByAgency(payload: CreatingVehicleByAgencyPayload) {
+        try {
+			const response = await axios.post(`${this.baseUrl}/create`, payload, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error creating vehicle: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
+    async searchByAdmin(criteria: SearchingVehicleByAdminCriteria) {
+        try {
+			const response = await axios.post(`${this.baseUrl}/search`, criteria, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error searching vehicle: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
+    async searchByAgency(criteria: SearchingVehicleByAgencyCriteria) {
+        try {
+			const response = await axios.post(`${this.baseUrl}/search`, criteria, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error searching vehicle: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
+    async update(params: UpdatingVehicleParams, payload: UpdatingVehiclePayload) {
+        try {
+			const response = await axios.post(`${this.baseUrl}/update?vehicleId=${params.vehicleId}`, payload, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error updating vehicle: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
+    async deleteVehicle(params: DeletingVehicleParams) {
+        try {
+			const response = await axios.delete(`${this.baseUrl}/delete?vehicleId=${params.vehicleId}`, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error deleting vehicle: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
+    async addShipments(vehicleId: string, payload: ShipmentIds) {
+        try {
+			const response = await axios.post(`${this.baseUrl}/shipments/add?vehicleId=${vehicleId}`, payload, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error adding shipments to vehicle: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
+    async removeShipments(vehicleId: string, payload: ShipmentIds) {
+        try {
+			const response = await axios.post(`${this.baseUrl}/shipments/delete?vehicleId=${vehicleId}`, payload, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error removing shipments from vehicle: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
+    async undertakeShiment(shipmentId: string) {
+        try {
+			const response = await axios.get(`${this.baseUrl}/shipments/undertake?shipmentId=${shipmentId}`, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error undertaking shipment: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+}
+
+export enum AgencyType {
+    BC, DL, TD
+}
+
+export interface CreatingAgencyPayload {
+    agencyAdmin: {
+        fullname: string,
+        phoneNumber: string,
+        email: string,
+        dateOfBirth?: string,
+        cccd: string,
+        province?: string,
+        district?: string,
+        town?: string,
+        detailAddress?: string,
+        position?: string,
+        salary?: number,
+        bin?: string,
+        bank?: string
+    },
+    type: AgencyType,
+    level: number,
+    postalCode: string,
+    agencyName: string,
+    province: string,
+    district: string,
+    town: string,
+    detailAddress: string,
+    latitude?: number,
+    longitude?: number,
+    managedWards?: string[],
+    phoneNumber: string,
+    email: string,
+    commissionRate?: number,
+    bin?: string,
+    bank?: string,
+    individualCompany: boolean,
+    agencyCompany?: {
+        companyName: string,
+        taxNumber: string
+    }
+}
+
+export interface SearchingAgencyCriteria {
+    type?: AgencyType,
+    level?: number,
+    postalCode?: string,
+    agencyName?: string,
+    province?: string,
+    district?: string,
+    town?: string,
+    detailAddress?: string,
+    latitude?: number,
+    longitude?: number,
+    managedWards?: string[],
+    phoneNumber?: string,
+    email?: string,
+    commissionRate?: number,
+    bin?: string,
+    bank?: string,
+    individualCompany?: boolean,
+}
+
+export interface UpdatingAgencyPayload {
+    level: number,
+    agencyName: number,
+    province?: string,
+    district?: string,
+    town?: string,
+    detailAddress?: string,
+    latitude?: number,
+    longitude?: number,
+    phoneNumber?: string,
+    email?: string,
+    commissionRate?: number,
+    bin?: string,
+    bank?: string,
+}
+
+export class AgencyOperation {
+    private baseUrl: string;
+
+    constructor() {
+        this.baseUrl = "https://api2.tdlogistics.net.vn/v2/agencies";
+    }
+
+    async create(payload: CreatingAgencyPayload) {
+        try {
+			const response = await axios.post(`${this.baseUrl}/create`, payload, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error creating agency: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
+    async search(criteria: SearchingAgencyCriteria) {
+        try {
+			const response = await axios.post(`${this.baseUrl}/search`, criteria, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error searching agency: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
+    async update(agencyId: string, payload: UpdatingAgencyPayload) {
+        try {
+			const response = await axios.put(`${this.baseUrl}/update?agencyId=${agencyId}`, payload, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error updating agency: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
+    async deleteAgency(agencyId: string) {
+        try {
+			const response = await axios.delete(`${this.baseUrl}/delete?agencyId=${agencyId}`, {
+				withCredentials: true,
+			});
+
+			return { error: response.data.error, message: response.data.message, data: response.data.data };
+		}
+		catch (error: any) {
+			console.log("Error deleting agency: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+}
+
