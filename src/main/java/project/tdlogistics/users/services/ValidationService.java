@@ -1,16 +1,13 @@
 package project.tdlogistics.users.services;
 
 import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
 import jakarta.validation.Validator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
-import org.springframework.web.bind.MethodArgumentNotValidException;
+
+import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 
 @Component
@@ -18,21 +15,27 @@ public class ValidationService {
 
     private final Validator validator;
 
-    @Autowired
-    public ValidationService(Validator validator) {
-        this.validator = validator;
+    public ValidationService() {
+        this.validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
 
-    public <T> void validateRequest(T request, Class<?> group) throws MethodArgumentNotValidException {
+    public <T> void validateRequest(T request, Class<?> group) throws BindException {
+        // Validate using the javax.validation.Validator
         Set<ConstraintViolation<T>> constraintViolations = validator.validate(request, group);
-        List<ObjectError> errors = new ArrayList<>();
+
+        // Convert ConstraintViolation to Spring's BindingResult
+        BindingResult errors = new org.springframework.validation.BeanPropertyBindingResult(request, request.getClass().getName());
+
         for (ConstraintViolation<T> violation : constraintViolations) {
-            errors.add(new FieldError(violation.getRootBeanClass().getName(), violation.getPropertyPath().toString(), violation.getMessage()));
+            String field = violation.getPropertyPath().toString();
+            String message = violation.getMessage();
+            errors.rejectValue(field, null, message);
         }
 
-        System.out.println(errors);
-        if (!errors.isEmpty()) {
-            throw new MethodArgumentNotValidException(null, (BindingResult) errors);
+        // If there are validation errors, throw BindException (subclass of MethodArgumentNotValidException)
+        if (errors.hasErrors()) {
+            throw new org.springframework.validation.BindException(errors);
         }
     }
 }
+

@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-
+import project.tdlogistics.users.validations.NullOrEmpty;
 import project.tdlogistics.users.validations.staffs.*;
 
 @Entity
@@ -18,25 +18,31 @@ public class Staff {
 
     @OneToOne
     @JoinColumn(name = "account")
-    @NotNull(message = "Tài khoản không được để trống", groups = CreateByAdmin.class)
+    @NotNull(message = "Tài khoản không được để trống", groups = {CreateByAdmin.class, CreateByAgency.class})
+    @NullOrEmpty(message = "Tài khoản không được cho phép", groups = {SearchByAdmin.class, SearchByAgency.class, Update.class})
     private Account account;
 
     @Column(name = "agency_id")
-    @NotNull(message = "Mã bưu cục/đại lý không được để trống", groups = CreateByAdmin.class)
-    @NotBlank(message = "Mã bưu cục/đại lý không được để trống", groups = CreateByAdmin.class)
-    @Pattern(message = "Mã bưu cục/đại lý không đúng định dạng", groups = CreateByAdmin.class, regexp = "(TD|BC|DL)_\\d{5}_\\d{12}")
+    @NotNull(message = "Mã bưu cục/đại lý không được để trống", groups = {CreateByAdmin.class})
+    @NotBlank(message = "Mã bưu cục/đại lý không được để trống", groups = {CreateByAdmin.class})
+    @Pattern(message = "Mã bưu cục/đại lý không đúng định dạng", groups = {CreateByAdmin.class}, regexp = "(TD|BC|DL)_\\d{5}_\\d{12}")
+    @NullOrEmpty(message = "Mã bưu cục/đại lý không được cho phép", groups = {CreateByAgency.class, SearchByAgency.class, Update.class})
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String agencyId;
 
     @Id
     @Column(name = "staff_id")
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    @NullOrEmpty(message = "Mã nhân viên không được cho phép", groups = {CreateByAdmin.class, CreateByAgency.class, Update.class})
     private String staffId;
 
     @Column(name = "fullname")
-    @NotNull(message = "Họ và tên không được để null", groups = CreateByAdmin.class)
-    @NotBlank(message = "Họ và tên không được để trống", groups = CreateByAdmin.class)
-    @Pattern(message = "Họ và tên không đúng định dạng", groups = CreateByAdmin.class, regexp = "([a-vxyỳọáầảấờễàạằệếýộậốũứĩõúữịỗìềểẩớặòùồợãụủíỹắẫựỉỏừỷởóéửỵẳẹèẽổẵẻỡơôưăêâđA-VXYỲỌÁẦẢẤỜỄÀẠẰỆẾÝỘẬỐŨỨĨÕÚỮỊỖÌỀỂẨỚẶÒÙỒỢÃỤỦÍỸẮẪỰỈỎỪỶỞÓÉỬỴẲẸÈẼỔẴẺỠƠÔƯĂÊÂĐ]+)((\\s{1}[a-vxyỳọáầảấờễàạằệếýộậốũứĩõúữịỗìềểẩớặòùồợãụủíỹắẫựỉỏừỷởóéửỵẳẹèẽổẵẻỡơôưăêâđA-VXYỲỌÁẦẢẤỜỄÀẠẰỆẾÝỘẬỐŨỨĨÕÚỮỊỖÌỀỂẨỚẶÒÙỒỢÃỤỦÍỸẮẪỰỈỎỪỶỞÓÉỬỴẲẸÈẼỔẴẺỠƠÔƯĂÊÂĐ]+){1,})")
+    @NotNull(message = "Họ và tên không được để null", groups = {CreateByAdmin.class, CreateByAgency.class})
+    @NotBlank(message = "Họ và tên không được để trống", groups = {CreateByAdmin.class, CreateByAgency.class})
+    @Pattern(message = "Họ và tên không đúng định dạng",
+        groups = {CreateByAdmin.class, CreateByAgency.class, SearchByAdmin.class, SearchByAgency.class, Update.class},
+        regexp = "([a-vxyỳọáầảấờễàạằệếýộậốũứĩõúữịỗìềểẩớặòùồợãụủíỹắẫựỉỏừỷởóéửỵẳẹèẽổẵẻỡơôưăêâđA-VXYỲỌÁẦẢẤỜỄÀẠẰỆẾÝỘẬỐŨỨĨÕÚỮỊỖÌỀỂẨỚẶÒÙỒỢÃỤỦÍỸẮẪỰỈỎỪỶỞÓÉỬỴẲẸÈẼỔẴẺỠƠÔƯĂÊÂĐ]+)((\\s{1}[a-vxyỳọáầảấờễàạằệếýộậốũứĩõúữịỗìềểẩớặòùồợãụủíỹắẫựỉỏừỷởóéửỵẳẹèẽổẵẻỡơôưăêâđA-VXYỲỌÁẦẢẤỜỄÀẠẰỆẾÝỘẬỐŨỨĨÕÚỮỊỖÌỀỂẨỚẶÒÙỒỢÃỤỦÍỸẮẪỰỈỎỪỶỞÓÉỬỴẲẸÈẼỔẴẺỠƠÔƯĂÊÂĐ]+){1,})"
+    )
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String fullname;
 
@@ -46,9 +52,10 @@ public class Staff {
     private Date dateOfBirth;
 
     @Column(name = "cccd")
-    @NotNull(message = "Căn cước công dân không được để trống", groups = CreateByAdmin.class)
-    @NotBlank(message = "Căn cước công dân không được để trống", groups = CreateByAdmin.class)
-    @Pattern(message = "Căn cước công dân không đúng định dạng", groups = CreateByAdmin.class, regexp = "[0-9]{12}")
+    @NotNull(message = "Căn cước công dân không được để trống", groups = {CreateByAdmin.class, CreateByAgency.class})
+    @NotBlank(message = "Căn cước công dân không được để trống", groups = {CreateByAdmin.class, CreateByAgency.class})
+    @Pattern(message = "Căn cước công dân không đúng định dạng", groups = {CreateByAdmin.class, CreateByAgency.class, SearchByAdmin.class, SearchByAgency.class, Update.class}, regexp = "[0-9]{12}")
+    @NullOrEmpty(message = "Căn cước công dân không được cho phép", groups = {Update.class})
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String cccd;
 
@@ -102,29 +109,32 @@ public class Staff {
 
     @Column(name = "active", columnDefinition = "TINYINT UNSIGNED")
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    @NullOrEmpty(message = "Trạng thái tài khoản không được cho phép", groups = {CreateByAdmin.class, CreateByAgency.class, SearchByAdmin.class, SearchByAgency.class, Update.class})
     private Boolean active;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    @NullOrEmpty(message = "Thời gian tạo không được cho phép", groups = {CreateByAdmin.class, CreateByAgency.class, SearchByAdmin.class, SearchByAgency.class, Update.class})
     private LocalDateTime dateCreated;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "last_update")
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    @NullOrEmpty(message = "Thời gian cập nhật không được cho phép", groups = {CreateByAdmin.class, CreateByAgency.class, SearchByAdmin.class, SearchByAgency.class, Update.class})
     private LocalDateTime dateModified;
 
     public Staff() {
     }
 
     public Staff(Long id,
-            @NotNull(message = "Mã tài khoản không được để trống") @NotBlank(message = "Mã tài khoản không được để trống") String accountId,
+            String accountId,
             Account account,
-            @NotNull(message = "Mã bưu cục/đại lý không được để trống", groups = CreateByAdmin.class) @NotBlank(message = "Mã bưu cục/đại lý không được để trống", groups = CreateByAdmin.class) @Pattern(message = "Mã bưu cục/đại lý không đúng định dạng", groups = CreateByAdmin.class, regexp = "(TD|BC|DL)_\\d{5}_\\d{12}") String agencyId,
+            String agencyId,
             String staffId,
-            @NotNull(message = "Họ và tên không được để trống", groups = CreateByAdmin.class) @NotBlank(message = "Họ và tên không được để trống", groups = CreateByAdmin.class) @Pattern(message = "Họ và tên không đúng định dạng", groups = CreateByAdmin.class, regexp = "([a-vxyỳọáầảấờễàạằệếýộậốũứĩõúữịỗìềểẩớặòùồợãụủíỹắẫựỉỏừỷởóéửỵẳẹèẽổẵẻỡơôưăêâđA-VXYỲỌÁẦẢẤỜỄÀẠẰỆẾÝỘẬỐŨỨĨÕÚỮỊỖÌỀỂẨỚẶÒÙỒỢÃỤỦÍỸẮẪỰỈỎỪỶỞÓÉỬỴẲẸÈẼỔẴẺỠƠÔƯĂÊÂĐ]+)((\\s{1}[a-vxyỳọáầảấờễàạằệếýộậốũứĩõúữịỗìềểẩớặòùồợãụủíỹắẫựỉỏừỷởóéửỵẳẹèẽổẵẻỡơôưăêâđA-VXYỲỌÁẦẢẤỜỄÀẠẰỆẾÝỘẬỐŨỨĨÕÚỮỊỖÌỀỂẨỚẶÒÙỒỢÃỤỦÍỸẮẪỰỈỎỪỶỞÓÉỬỴẲẸÈẼỔẴẺỠƠÔƯĂÊÂĐ]+){1,})") String fullname,
+            String fullname,
             Date dateOfBirth,
-            @NotNull(message = "Căn cước công dân không được để trống", groups = CreateByAdmin.class) @NotBlank(message = "Căn cước công dân không được để trống", groups = CreateByAdmin.class) @Pattern(message = "Căn cước công dân không đúng định dạng", groups = CreateByAdmin.class, regexp = "[0-9]{12}") String cccd,
+            String cccd,
             String province, String district, String town, String detailAddress, String position, String bin,
             String bank, Integer deposit, Integer salary, Integer paidSalary, List<String> managedWards, String avatar,
             Boolean active, LocalDateTime dateCreated, LocalDateTime dateModified) {

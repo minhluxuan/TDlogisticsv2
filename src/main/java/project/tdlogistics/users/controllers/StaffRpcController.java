@@ -8,8 +8,6 @@ import org.springframework.stereotype.Controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import jakarta.validation.Validator;
 import project.tdlogistics.users.entities.Account;
 import project.tdlogistics.users.entities.Request;
 import project.tdlogistics.users.entities.Response;
@@ -22,12 +20,11 @@ public class StaffRpcController {
     private StaffService staffService;
 
     @Autowired
-    Validator validator;
+    private ObjectMapper objectMapper;
 
     @RabbitListener(queues = "rpc.staffs")
     private String handleRpcRequest(String jsonRequest) throws Exception {
         try {
-            ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
             Request<Staff> request = objectMapper.readValue(jsonRequest, new TypeReference<Request<Staff>>() {});
             switch (request.getOperation()) {
                 case "checkExistStaff":
@@ -35,11 +32,11 @@ public class StaffRpcController {
                 case "createNewStaff":
                     return createNewStaff(request.getPayload());
                 default:
-                    return (new ObjectMapper().registerModule(new JavaTimeModule())).writeValueAsString(new Response<Account>(400, true, "Yêu cầu không hợp lệ", null));
+                    return objectMapper.writeValueAsString(new Response<Account>(400, true, "Yêu cầu không hợp lệ", null));
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return (new ObjectMapper()).writeValueAsString(new Response<Account>(500, true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
+            return objectMapper.writeValueAsString(new Response<Account>(500, true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
         }
     }
 
@@ -47,13 +44,13 @@ public class StaffRpcController {
         try {
             Optional<Staff> staffOptional = staffService.checkExistStaff(criteria);
             if (staffOptional.isPresent()) {
-                return (new ObjectMapper().registerModule(new JavaTimeModule())).writeValueAsString(new Response<Staff>(200, false, "Nhân viên đã tồn tại", staffOptional.get()));
+                return objectMapper.writeValueAsString(new Response<Staff>(200, false, "Nhân viên đã tồn tại", staffOptional.get()));
             } else {
-                return (new ObjectMapper().registerModule(new JavaTimeModule())).writeValueAsString(new Response<Staff>(200, false, "Nhân viên không tồn tại", null));
+                return objectMapper.writeValueAsString(new Response<Staff>(200, false, "Nhân viên không tồn tại", null));
             }
         } catch (JsonProcessingException e) {
             e.printStackTrace();
-            return (new ObjectMapper()).writeValueAsString(new Response<Account>(500, true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
+            return objectMapper.writeValueAsString(new Response<Account>(500, true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
         }
     }
 
@@ -61,10 +58,10 @@ public class StaffRpcController {
         try {
             System.out.println(info);
             final Staff newStaff = staffService.createNewStaff(info);
-            return (new ObjectMapper().registerModule(new JavaTimeModule())).writeValueAsString(new Response<Staff>(200, false, "Tạo nhân viên thành công", newStaff));
+            return objectMapper.writeValueAsString(new Response<Staff>(200, false, "Tạo nhân viên thành công", newStaff));
         } catch (Exception e) {
             e.printStackTrace();
-            return (new ObjectMapper()).writeValueAsString(new Response<Account>(500, true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
+            return objectMapper.writeValueAsString(new Response<Account>(500, true, "Đã xảy ra lỗi. Vui lòng thử lại.", null));
         }
     }
 }

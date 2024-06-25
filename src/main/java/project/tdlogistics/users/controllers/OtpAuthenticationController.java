@@ -27,10 +27,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-// @CrossOrigin(origins = {"http://127.0.0.1:5500", "http://192.168.1.9:8762"}, allowCredentials = "true")
+// @CrossOrigin(allowCredentials = "true")
 @RestController
 @RequestMapping("/v2/auth/otp")
 public class OtpAuthenticationController {
@@ -44,6 +45,11 @@ public class OtpAuthenticationController {
     private ObjectMapper objectMapper;
 
     private String exchange = "rpc-direct-exchange";
+
+    @GetMapping("/")
+    public String test() {
+        return "Welcome to TDLogistics";
+    }
 
     @PostMapping("/send")
     public ResponseEntity<Response<String>> sendOtp(
@@ -72,7 +78,7 @@ public class OtpAuthenticationController {
             System.out.println("Otp expires at: " + response.getData().getExpires().format(formatter)); 
             final Otp otp = new Otp(response.getData().getOtp(), request.getPhoneNumber(), request.getEmail(), response.getData().getExpires());
             authService.saveOtp(otp);
-            return ResponseEntity.status(HttpStatus.OK).body(new Response<String>(true, "Gửi otp thành công.", null));
+            return ResponseEntity.status(HttpStatus.OK).body(new Response<String>(false, "Gửi otp thành công.", null));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.OK).body(new Response<String>(true, "Gửi otp thất bại", null));
@@ -97,6 +103,6 @@ public class OtpAuthenticationController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Response<String>(true, response.getMessage(), response.getToken()));
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(new Response<String>(true, response.getMessage(), response.getToken()));
+        return ResponseEntity.status(HttpStatus.OK).body(new Response<String>(false, response.getMessage(), response.getToken()));
     } 
 }

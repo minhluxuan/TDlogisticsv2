@@ -29,7 +29,7 @@ public class AgencyService {
         if (jsonResponseGettingAgency == null) {
             throw new InternalError("Đã xảy ra lỗi. Vui lòng thử lại");
         }
-
+        System.out.println(jsonResponseGettingAgency);
         Response<Agency> responseGettingAgency = objectMapper.readValue(jsonResponseGettingAgency, new TypeReference<Response<Agency>>() {});
             
         if (responseGettingAgency.getError()) {

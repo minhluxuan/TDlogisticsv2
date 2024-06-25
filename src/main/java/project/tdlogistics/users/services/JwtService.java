@@ -71,12 +71,32 @@ public class JwtService {
     public String generateToken(Account account, String option) {
         if (option.equals("STAFF")) {
             final Optional<Staff> optionalStaff = staffRepository.findByAccount(account);
-            if (optionalStaff.isEmpty()) return null;
+            
+            if (optionalStaff.isEmpty()) {
+                String token = Jwts
+                .builder()
+                .subject("JSESSIONID")
+                .claim("role", account.getRole())
+                .claim("accountId", account.getId())
+                .claim("userId", null)
+                .claim("agencyId", null)
+                .claim("active", account.getActive())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + 24*60*60*1000 ))
+                .signWith(getSigninKey())
+                .compact();
+
+                return token;
+            }
+
             String token = Jwts
                 .builder()
                 .subject(account.getId())
+                .claim("role", account.getRole())
+                .claim("accountId", account.getId())
                 .claim("userId", optionalStaff.get().getStaffId())
                 .claim("agencyId", optionalStaff.get().getAgencyId())
+                .claim("active", account.getActive())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + 24*60*60*1000 ))
                 .signWith(getSigninKey())
@@ -86,18 +106,35 @@ public class JwtService {
         }
         else if (option.equals("CUSTOMER")) {
             final Optional<Customer> optionalCustomer = customerRepository.findByAccount(account);
-            if (optionalCustomer.isEmpty()) return null;
+            
+            if (optionalCustomer.isEmpty()) {
+                String token = Jwts
+                .builder()
+                .subject(account.getId())
+                .claim("role", account.getRole())
+                .claim("userId", null)
+                .claim("agencyId", null)
+                .claim("active", account.getActive())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + 24*60*60*1000 ))
+                .signWith(getSigninKey())
+                .compact();
+
+                return token;
+            }
+
             String token = Jwts
                 .builder()
                 .subject(account.getId())
                 .claim("role", account.getRole())
                 .claim("userId", optionalCustomer.get().getId())
                 .claim("agencyId", null)
+                .claim("active", account.getActive())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + 24*60*60*1000 ))
                 .signWith(getSigninKey())
                 .compact();
-            System.out.println(token);
+
             return token;
         }
 

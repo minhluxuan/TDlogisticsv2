@@ -59,7 +59,14 @@ public class AdministrativeService {
     }
 
     public void updateAdministrativeUnit(HashMap<String, Object> criteria, UnitRequest payload) throws JsonProcessingException {
-        String jsonRequestUpdatingUnitRequest = new ObjectMapper().writeValueAsString(new Request<UnitRequest>("updateAdministrativeUnit", criteria, payload));
+        String jsonRequestUpdatingUnitRequest = objectMapper.writeValueAsString(new Request<UnitRequest>("updateAdministrativeUnit", criteria, payload));
         amqpTemplate.convertSendAndReceive(exchange, "rpc.administrative", jsonRequestUpdatingUnitRequest);
+    }
+
+    public void revokeAllShipperManagedWards(String staffId) throws JsonProcessingException {
+        HashMap<String, Object> criteria = new HashMap<String, Object>();
+        criteria.put("shipper", staffId);
+        String jsonRequestRemovingWards = objectMapper.writeValueAsString(new Request<UnitRequest>("revokeAllShipperManagedWards", criteria, null));
+        amqpTemplate.convertSendAndReceive(exchange, routingKey, jsonRequestRemovingWards);
     }
 }

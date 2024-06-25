@@ -45,6 +45,12 @@ public class StaffService {
         return staffRepository.findOneByCccd(cccd);
     }
 
+    public Optional<Staff> getStaffByAccountId(String id) {
+        Account tempAccount = new Account();
+        tempAccount.setId(id);
+        return staffRepository.findByAccount(tempAccount);
+    }
+
     public Optional<Staff> getOneStaff(Staff criteria) {
         ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreNullValues();
         Example<Staff> example = Example.of(criteria, matcher);

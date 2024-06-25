@@ -16,11 +16,15 @@ import project.tdlogistics.users.entities.Account;
 import project.tdlogistics.users.entities.Request;
 import project.tdlogistics.users.entities.Response;
 import project.tdlogistics.users.services.AccountService;
+import project.tdlogistics.users.services.BasicAuthenticationService;
 
 @Controller
 public class AccountRpcController {
     @Autowired
     AccountService accountService;
+
+    @Autowired
+    private BasicAuthenticationService basicAuthenticationService;
 
     @Autowired
     Validator validator;
@@ -60,7 +64,7 @@ public class AccountRpcController {
 
     private String createNewAccount(Account info) throws Exception {
         try {
-            final Account newAccount = accountService.createNewAccount(info);
+            final Account newAccount = basicAuthenticationService.register(info);
             return (new ObjectMapper().registerModule(new JavaTimeModule())).writeValueAsString(new Response<Account>(200, false, "Tài khoản đã tồn tại", newAccount));
         } catch (Exception e) {
             e.printStackTrace();

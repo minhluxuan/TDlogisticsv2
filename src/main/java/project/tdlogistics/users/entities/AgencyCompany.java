@@ -9,23 +9,15 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 
 
 public class AgencyCompany implements Cloneable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+ 
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "agency_id", referencedColumnName = "agencyId")
-    @JsonBackReference
     private Agency agency;
 
-    @Column(name = "tax_number")
     private String taxNumber;
 
-    @Column(name = "company_name")
     private String companyName;
 
-    @Column(name = "license")
-    @Convert(converter = ListToStringConverter.class)
     private List<String> license;
 
     public AgencyCompany() {

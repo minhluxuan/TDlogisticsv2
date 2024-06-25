@@ -3,10 +3,13 @@ package project.tdlogistics.users.services;
 import project.tdlogistics.users.entities.Account;
 import project.tdlogistics.users.entities.Customer;
 import project.tdlogistics.users.entities.Role;
+import project.tdlogistics.users.entities.Staff;
 import project.tdlogistics.users.repositories.AccountRepository;
+import project.tdlogistics.users.repositories.StaffRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Example;
@@ -21,8 +24,11 @@ public class AccountService implements UserDetailsService {
 
     private final AccountRepository repository;
 
-    public AccountService(AccountRepository repository) {
+    private final StaffRepository staffRepository;
+
+    public AccountService(AccountRepository repository, StaffRepository staffRepository) {
         this.repository = repository;
+        this.staffRepository = staffRepository;
     }
 
     public Optional<Account> checkExistStaffAccount(Account criteria) {
@@ -38,6 +44,8 @@ public class AccountService implements UserDetailsService {
     }
 
     public Account createNewAccount(Account info) {
+        // info.setPassword(passwordEncoder.encode(info.getPassword()));
+        info.setActive(false);
         return repository.save(info);
     }
 
@@ -70,9 +78,41 @@ public class AccountService implements UserDetailsService {
             userDetails = account.orElseThrow(() -> new UsernameNotFoundException("User not found"));
         } catch (UsernameNotFoundException e) {
             e.printStackTrace();
-            // throw new UsernameNotFoundException("Error occurred while fetching user details", e);
         }
 
         return userDetails;
+    }
+
+    public List<Account> getManyAccountsOfAgency(String agencyId, Account criteria) {
+        ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreNullValues();
+        Example<Account> example = Example.of(criteria, matcher);
+
+        return repository.findAll(example)
+            .stream()
+            .filter(a -> 
+            Set.of(
+                Role.AGENCY_MANAGER,
+                Role.AGENCY_HUMAN_RESOURCE_MANAGER,
+                Role.TELLER,
+                Role.COMPLAINTS_SOLVER,
+                Role.SHIPPER,
+                Role.DRIVER,
+                Role.TRANSPORT_PARTNER_REPRESENTOR
+            ).contains(a.getRole()))
+            .filter(a -> {
+                Account tempAccount = new Account();
+                tempAccount.setId(a.getId());
+                final Optional<Staff> optionalStaff = staffRepository.findByAccount(tempAccount);
+                
+                return optionalStaff.isPresent() && optionalStaff.get().getAgencyId().equals(agencyId);
+            })
+            .collect(Collectors.toList());
+    }
+
+    public List<Account> getManyAccounts(Account criteria) {
+        ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreNullValues();
+        Example<Account> example = Example.of(criteria, matcher);
+    
+        return repository.findAll(example);
     }
 }

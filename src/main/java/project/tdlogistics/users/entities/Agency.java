@@ -13,76 +13,52 @@ import java.time.LocalDateTime;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Agency {
 
-    @Column(name = "level")
     private Byte level;
 
     @Transient
     private String type;
 
-    @Id
-    @Column(name = "agencyId")
     private String agencyId;
 
-    @Column(name = "agencyName")
     private String agencyName;
 
-    @Column(name = "email")
     private String email;
 
-    @Column(name = "phone_number")
     private String phoneNumber;
 
-    @Column(name = "postal_code")
     private String postalCode;
 
-    @Column(name = "province")
     private String province;
 
-    @Column(name = "district")
     private String district;
 
-    @Column(name = "town")
     private String town;
 
-    @Column(name = "detail_address")
     private String detailAddress;
 
-    @Column(name = "latitude")
     private Float latitude;
 
-    @Column(name = "longitude")
     private Float longitude;
 
-    @Column(name = "bin")
     private String bin;
 
-    @Column(name = "bank")
     private String bank;
 
-    @Column(name = "commission_rate")
     private Float commissionRate;
 
-    @Column(name = "revenue")
     private Float revenue;
 
-    @Column(name = "contract")
     private String contract;
 
-    @Column(name = "managed_wards")
     @Convert(converter = ListToStringConverter.class)
     private List<String> managedWards;
 
-    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "last_update")
     private LocalDateTime lastUpdate;
 
-    @Column(name = "individual_company")
     private Boolean individualCompany;
 
-    @OneToOne(mappedBy = "agency", cascade = CascadeType.ALL)
-    @JsonManagedReference
     private AgencyCompany agencyCompany;
 
     public Agency() {

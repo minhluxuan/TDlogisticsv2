@@ -13,8 +13,9 @@
 //         return new WebMvcConfigurer() {
 //             @Override
 //             public void addCorsMappings(CorsRegistry registry) {
+//                 System.out.println("users received request");
 //                 registry.addMapping("/**")
-//                         .allowedOrigins("http://127.0.0.1:5500", "http://192.168.1.9:8762")  // Allow all origins
+//                         .allowedOrigins("https://api.tdlogistics.net.vn", "http://localhost:8762")  // Allow all origins
 //                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
 //                         .allowedHeaders("*")
 //                         .allowCredentials(true);

@@ -49,6 +49,16 @@ public class MQConfiguration {
     }
 
     @Bean
+    public Queue partnerStaffQueue() {
+        return new Queue("rpc.partner_staff", true);
+    }
+
+    @Bean
+    Binding partnerStaffBinding(Queue partnerStaffQueue, DirectExchange exchange) {
+        return BindingBuilder.bind(partnerStaffQueue).to(exchange).with("rpc.partner_staff");
+    }
+
+    @Bean
     public Queue administrativeQueue() {
         return new Queue("rpc.administrative", true);
     }

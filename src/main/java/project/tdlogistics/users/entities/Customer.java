@@ -9,6 +9,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.*;
+import project.tdlogistics.users.validations.NullOrEmpty;
+import project.tdlogistics.users.validations.account.Delete;
+import project.tdlogistics.users.validations.customer.Create;
+import project.tdlogistics.users.validations.customer.Search;
+import project.tdlogistics.users.validations.customer.Update;
 
 @Entity
 @Table(name = "customer")
@@ -19,26 +24,69 @@ public class Customer {
     private String id;
 
     @Column(name = "fullname")
-    @Pattern(regexp = "([a-vxyỳọáầảấờễàạằệếýộậốũứĩõúữịỗìềểẩớặòùồợãụủíỹắẫựỉỏừỷởóéửỵẳẹèẽổẵẻỡơôưăêâđA-VXYỲỌÁẦẢẤỜỄÀẠẰỆẾÝỘẬỐŨỨĨÕÚỮỊỖÌỀỂẨỚẶÒÙỒỢÃỤỦÍỸẮẪỰỈỎỪỶỞÓÉỬỴẲẸÈẼỔẴẺỠƠÔƯĂÊÂĐ]+)((\\s{1}[a-vxyỳọáầảấờễàạằệếýộậốũứĩõúữịỗìềểẩớặòùồợãụủíỹắẫựỉỏừỷởóéửỵẳẹèẽổẵẻỡơôưăêâđA-VXYỲỌÁẦẢẤỜỄÀẠẰỆẾÝỘẬỐŨỨĨÕÚỮỊỖÌỀỂẨỚẶÒÙỒỢÃỤỦÍỸẮẪỰỈỎỪỶỞÓÉỬỴẲẸÈẼỔẴẺỠƠÔƯĂÊÂĐ]+){1,})")
+    @NotBlank(
+        message = "Họ và tên không được để trống",
+        groups = {Create.class}
+    )
+    @NotBlank(
+        message = "Họ và tên không được để trống",
+        groups = {Create.class}
+    )
+    @NullOrEmpty(
+        message = "Họ và tên không được cho phép",
+        groups = {Delete.class}
+    )
+    @Pattern(
+        message = "Họ và tên không đúng định dạng",
+        regexp = "([a-vxyỳọáầảấờễàạằệếýộậốũứĩõúữịỗìềểẩớặòùồợãụủíỹắẫựỉỏừỷởóéửỵẳẹèẽổẵẻỡơôưăêâđA-VXYỲỌÁẦẢẤỜỄÀẠẰỆẾÝỘẬỐŨỨĨÕÚỮỊỖÌỀỂẨỚẶÒÙỒỢÃỤỦÍỸẮẪỰỈỎỪỶỞÓÉỬỴẲẸÈẼỔẴẺỠƠÔƯĂÊÂĐ]+)((\\s{1}[a-vxyỳọáầảấờễàạằệếýộậốũứĩõúữịỗìềểẩớặòùồợãụủíỹắẫựỉỏừỷởóéửỵẳẹèẽổẵẻỡơôưăêâđA-VXYỲỌÁẦẢẤỜỄÀẠẰỆẾÝỘẬỐŨỨĨÕÚỮỊỖÌỀỂẨỚẶÒÙỒỢÃỤỦÍỸẮẪỰỈỎỪỶỞÓÉỬỴẲẸÈẼỔẴẺỠƠÔƯĂÊÂĐ]+){1,})",
+        groups = {Create.class, Update.class}
+    )
     private String fullname;
 
+    @NullOrEmpty(
+        message = "Họ và tên không được cho phép",
+        groups = {Delete.class}
+    )
     @Column(name = "province")
     private String province;
 
+    @NullOrEmpty(
+        message = "Họ và tên không được cho phép",
+        groups = {Delete.class}
+    )
     @Column(name = "district")
     private String district;
 
+    @NullOrEmpty(
+        message = "Họ và tên không được cho phép",
+        groups = {Delete.class}
+    )
     @Column(name = "ward")
     private String ward;
 
+    @NullOrEmpty(
+        message = "Họ và tên không được cho phép",
+        groups = {Delete.class}
+    )
     @Column(name = "detail_address")
     private String detailAddress;
 
+    @NullOrEmpty(
+        message = "Họ và tên không được cho phép",
+        groups = {Delete.class}
+    )
     @Column(name = "avatar")
     private String avatar;
 
+    @NotNull(
+        message = "Tài khoản không được để trống",
+        groups = {Create.class}
+    )
+    @NullOrEmpty(
+        message = "Tài khoản không được cho phép",
+        groups = {Search.class, Update.class, Delete.class}
+    )
     @OneToOne
-    @NotNull(message = "Tài khoản không được để trống")
     @JoinColumn(name = "account_id", referencedColumnName = "id")
     private Account account;
 

@@ -5,8 +5,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.jsonwebtoken.lang.Collections;
-import jakarta.ws.rs.ForbiddenException;
+import jakarta.validation.Valid;
 import project.tdlogistics.users.entities.Account;
 import project.tdlogistics.users.entities.Agency;
 import project.tdlogistics.users.entities.Response;
@@ -20,6 +19,10 @@ import project.tdlogistics.users.services.FilesService;
 import project.tdlogistics.users.services.StaffService;
 import project.tdlogistics.users.services.ValidationService;
 import project.tdlogistics.users.validations.staffs.CreateByAdmin;
+import project.tdlogistics.users.validations.staffs.CreateByAgency;
+import project.tdlogistics.users.validations.staffs.SearchByAdmin;
+import project.tdlogistics.users.validations.staffs.SearchByAgency;
+import project.tdlogistics.users.validations.staffs.Update;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,11 +36,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -101,8 +102,8 @@ public class StaffRestController {
         @RequestHeader(name = "role") Role role,
         @RequestHeader(name = "userId") String creatorId,
         @RequestHeader(name = "agencyId") String agencyId,
-        @Validated(CreateByAdmin.class) @RequestBody Staff payload
-    ) throws MethodArgumentNotValidException {
+        @RequestBody @Valid Staff payload
+    ) {
         try {
             if (List.of(Role.ADMIN, Role.MANAGER, Role.HUMAN_RESOURCE_MANAGER).contains(role)) {
                 validationService.validateRequest(payload, CreateByAdmin.class);
@@ -176,7 +177,7 @@ public class StaffRestController {
             }
 
             if (List.of(Role.AGENCY_MANAGER, Role.AGENCY_HUMAN_RESOURCE_MANAGER).contains(role)) {
-                validationService.validateRequest(payload, CreateByAdmin.class);
+                validationService.validateRequest(payload, CreateByAgency.class);
 
                 // Check account existence
                 final Optional<Account> optionalAccount = accountService.findById(payload.getAccount().getId()); 
@@ -195,7 +196,7 @@ public class StaffRestController {
 
                 // Check agency existence
                 Agency tempAgency = new Agency();
-                tempAgency.setAgencyId(payload.getAgencyId());
+                tempAgency.setAgencyId(agencyId);
                 final Agency agency = agencyService.checkExistAgency(tempAgency);
                 if (agency == null) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Staff>(true, String.format("Bưu cục/Đại lý %s không tồn tại", payload.getAgencyId()), null));
@@ -209,7 +210,7 @@ public class StaffRestController {
 
                     for (final String w : payload.getManagedWards()) {
                         if (!agency.getManagedWards().contains(w)) {
-                            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<Staff>(true, w + " " + agency.getDistrict() + " " + agency.getProvince() + " không thuộc quyền quản lý của bưu bưu cục " + payload.getAgencyId(), null));
+                            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<Staff>(true, w + " " + agency.getDistrict() + " " + agency.getProvince() + " không thuộc quyền quản lý của bưu bưu cục " + agencyId, null));
                         }
                     }
 
@@ -218,8 +219,7 @@ public class StaffRestController {
                         if (unit == null) {
                             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Staff>(true, String.format("%s, %s, %s không tồn tại", w, agency.getDistrict(), agency.getProvince()), null));
                         }
-                        System.out.println("SHIPPER");
-                        System.out.println(unit.getShipper());
+
                         if (unit.getShipper() != null) {
                             return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<Staff>(true, String.format("%s, %s, %s đã được đảm nhận bởi shipper %s", w, agency.getDistrict(), agency.getProvince(), unit.getShipper()), null));
                         }
@@ -227,12 +227,12 @@ public class StaffRestController {
                 }
 
                 String[] agencyIdSubParts = agencyId.split("_");
+                payload.setAgencyId(agencyId);
                 payload.setStaffId(agencyIdSubParts[0] + "_" + agencyIdSubParts[1] + "_" + payload.getCccd());
                 payload.setAccount(optionalAccount.get());
                 final Staff newStaff = staffService.createNewStaff(payload);
                 
                 if (optionalAccount.get().getRole().equals(Role.SHIPPER)) {
-                    System.out.println(true);
                     for (final String w : payload.getManagedWards()) {
                         HashMap<String, Object> updatingUnitCriteria = new HashMap<String, Object>();
                         updatingUnitCriteria.put("province", agency.getProvince());
@@ -248,6 +248,12 @@ public class StaffRestController {
             }
 
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Response<Staff>(true, "Người dùng không được phép truy cập tài nguyên này", null));
+        } catch (MethodArgumentNotValidException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(true, e.getAllErrors().get(0).getDefaultMessage(), null));
+        } catch (BindException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(true, e.getAllErrors().get(0).getDefaultMessage(), null));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<Staff>(true, "Đã xảy ra lỗi. Vui lòng thử lại", null));
@@ -261,13 +267,15 @@ public class StaffRestController {
         @RequestHeader(name = "agencyId") String agencyId,
         @RequestBody Staff criteria
     ) {
-        if (Set.of(
+        try {
+            if (Set.of(
             Role.ADMIN, 
             Role.MANAGER, 
             Role.HUMAN_RESOURCE_MANAGER, 
             Role.TELLER, 
             Role.COMPLAINTS_SOLVER
         ).contains(role)) {
+            validationService.validateRequest(criteria, SearchByAdmin.class);
             final List<Staff> staffs = staffService.getStaffs(criteria);
             return ResponseEntity.status(HttpStatus.OK).body(new Response<List<Staff>>(false, "Lấy dữ liệu thành công", staffs));
         }
@@ -278,12 +286,20 @@ public class StaffRestController {
             Role.AGENCY_TELLER,
             Role.AGENCY_COMPLAINTS_SOLVER
         ).contains(role)) {
+            validationService.validateRequest(criteria, SearchByAgency.class);
             criteria.setAgencyId(agencyId);
             final List<Staff> staffs = staffService.getStaffs(criteria);
             return ResponseEntity.status(HttpStatus.OK).body(new Response<List<Staff>>(false, "Lấy dữ liệu thành công", staffs));
         }
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Response<List<Staff>>(false, "Người dùng không được phép truy cập tài nguyên này", null));
+        } catch (BindException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(true, e.getAllErrors().get(0).getDefaultMessage(), null));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<List<Staff>>(true, "Đã xảy ra lỗi. Vui lòng thử lại", null));
+        }
     }
 
     @SuppressWarnings("unlikely-arg-type")
@@ -300,6 +316,8 @@ public class StaffRestController {
         }
 
         try {
+            validationService.validateRequest(payload, Update.class);
+
             final String[] updatorIdSubParts = agencyId.split("_");
             final String[] staffIdSubParts = staffId.split("_");
             if (Set.of(
@@ -339,8 +357,12 @@ public class StaffRestController {
                     }
 
                     for (final String w : payload.getManagedWards()) {
-                        // Get ward to check occupation
                         final UnitRequest unit = administrativeService.checkExistWard(new UnitRequest(agency.getProvince(), agency.getDistrict(), w));
+                        
+                        if (unit == null) {
+                            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<Staff>(true, String.format("%s, %s, %s không tồn tại", w, agency.getDistrict(),agency.getProvince()), null));
+                        }
+
                         if (unit.getShipper() != null && !unit.getShipper().equals(staffId)) {
                             return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response<Staff>(true, String.format("%s, %s, %s đã được đảm nhận bởi shipper %s", w, agency.getDistrict(), agency.getProvince(), unit.getShipper()), null));
                         }
@@ -376,9 +398,12 @@ public class StaffRestController {
 
             final Staff postUpdateStaff = staffService.updateStaffInfo(staffId, payload);
             return ResponseEntity.status(HttpStatus.CREATED).body(new Response<Staff>(false, "Cập nhật thông tin nhân viên thành công", postUpdateStaff));
+        } catch (BindException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(true, e.getAllErrors().get(0).getDefaultMessage(), null));
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<Staff>(true, "Đã xảy ra lỗi. Vui lòng thử lại", null));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(true, "Đã xảy ra lỗi. Vui lòng thử lại", null));
         }
     }
 
@@ -422,7 +447,7 @@ public class StaffRestController {
             Staff updatedStaff = new Staff();
             updatedStaff.setAvatar(filename);
             final Staff postUpdateStaff = staffService.updateStaffInfo(staffId, updatedStaff);
-            return ResponseEntity.status(HttpStatus.CREATED).body(new Response<Staff>(true, "Cập nhật ảnh đại diện thành công", postUpdateStaff));
+            return ResponseEntity.status(HttpStatus.CREATED).body(new Response<Staff>(false, "Cập nhật ảnh đại diện thành công", postUpdateStaff));
         } catch (IOException e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<Staff>(true, "Đã xảy ra lỗi trong quá trình tải file. Vui lòng thử lại", null));
@@ -523,6 +548,10 @@ public class StaffRestController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response<Staff>(true, "Nhân viên không tồn tại", null));
             }
 
+            if (optionalStaff.get().getAccount().getRole().equals(Role.SHIPPER)) {
+                administrativeService.revokeAllShipperManagedWards(staffId);
+            }
+
             staffService.deleteStaff(staffId);
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<Staff>(false, "Xóa nhân viên thành công", null)); 
@@ -530,14 +559,5 @@ public class StaffRestController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<Staff>(true, "Đã xảy ra lỗi. Vui lòng thử lại", null));
         }
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Response<Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        StringBuilder errorMessage = new StringBuilder("Thông tin không hợp lệ. Lỗi:");
-        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-            errorMessage.append(" [").append(error.getField()).append("] ").append(error.getDefaultMessage());
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<Object>(true, errorMessage.toString(), null));
     }
 }

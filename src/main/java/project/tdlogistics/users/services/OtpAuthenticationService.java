@@ -75,7 +75,7 @@ public class OtpAuthenticationService {
 
             Optional<Account> optionalAccount = accountRepository.findOneByPhoneNumber(request.getPhoneNumber());
             if (optionalAccount.isEmpty()) {
-                Account newAccount = new Account(null, null, request.getPhoneNumber(), request.getEmail(), Role.CUSTOMER);
+                Account newAccount = new Account(null, null, request.getPhoneNumber(), request.getEmail(), Role.CUSTOMER, true);
                 Customer newCustomer = new Customer();
                 accountRepository.save(newAccount);
                 newCustomer.setAccount(newAccount);
