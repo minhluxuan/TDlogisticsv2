@@ -79,6 +79,75 @@ export class AuthOperation {
     }
 }
 
+export interface UpdateAccountPayload {
+    phoneNumber?: string,
+    email?: string
+}
+
+export interface UpdatePasswordPayload {
+    password: string,
+    newPassword: string
+}
+
+export interface SearchAccountCriteria {
+    id?: string,
+    username?: string,
+    phoneNumber?: string,
+    email?: string,
+    role?: Role,
+    active?: boolean
+}
+
+export class AccountOperation {
+    private baseUrl: string;
+
+    constructor() {
+        this.baseUrl = "https://api2.tdlogistics.net.vn/v2/accounts";
+    }
+
+    async updateInfo(accountId: string, payload: UpdateAccountPayload) {
+        try {
+            const response = await axios.put(`${this.baseUrl}/update?accountId=${accountId}`, payload, {
+                withCredentials: true
+            });
+
+            return { error: response.data.error, message: response.data.message, data: response.data.data };
+        } catch (error) {
+            console.log("Error updating account: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+        }
+    }
+
+    async updatePassword(payload: UpdatePasswordPayload) {
+        try {
+            const response = await axios.put(`${this.baseUrl}/password`, payload, {
+                withCredentials: true
+            });
+
+            return { error: response.data.error, message: response.data.message, data: response.data.data };
+        } catch (error) {
+            console.log("Error updating password: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+        }
+    }
+
+    async search(criteria: SearchAccountCriteria) {
+        try {
+            const response = await axios.post(`${this.baseUrl}/search`, criteria, {
+                withCredentials: true
+            });
+
+            return { error: response.data.error, message: response.data.message, data: response.data.data };
+        } catch (error) {
+            console.log("Error updating password: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+        }
+    }
+}
+
 interface UpdatingCustomerParams {
     customerId: String,
 }
