@@ -1773,7 +1773,7 @@ export interface GettingHistoryInfo {
 }
 
 
-class DriversOperation {
+export class DriversOperation {
     private baseUrl: string;
 	constructor() {
 		this.baseUrl = "https://api2.tdlogistics.net.vn/v2/tasks/drivers";

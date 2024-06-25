@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ShippersOperation = exports.ShipmentsOperation = exports.AgencyOperation = exports.AgencyType = exports.VehicleOperation = exports.TransportPartnerOperation = exports.TransportPartnerStaffOperation = exports.StaffOperation = exports.AdministrativeOperation = exports.OrdersOperation = exports.CustomerOperation = exports.AuthOperation = exports.Role = void 0;
+exports.DriversOperation = exports.ShippersOperation = exports.ShipmentsOperation = exports.AgencyOperation = exports.AgencyType = exports.VehicleOperation = exports.TransportPartnerOperation = exports.TransportPartnerStaffOperation = exports.StaffOperation = exports.AdministrativeOperation = exports.OrdersOperation = exports.CustomerOperation = exports.AuthOperation = exports.Role = void 0;
 var FormData = require("form-data");
 var axios_1 = require("axios");
 var Role;
@@ -1944,3 +1944,4 @@ var DriversOperation = /** @class */ (function () {
     };
     return DriversOperation;
 }());
+exports.DriversOperation = DriversOperation;
