@@ -28,6 +28,14 @@ export interface VerifyingOtp {
     otp: String,
 }
 
+export interface RegisteringPayload {
+    username: string,
+    password: string,
+    email: string,
+    phoneNumber: string,
+    role: Role
+}
+
 export interface LoginPayload {
     username: string,
     password: string,
@@ -59,6 +67,20 @@ export class AuthOperation {
             return { error: response.data.error, message: response.data.message, data: response.data.data };
         } catch (error) {
             console.log("Error verifying otp: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+        }
+    }
+
+    async register(payload: RegisteringPayload) {
+        try {
+            const response = await axios.post(`${this.baseUrl}/basic/register`, payload, {
+                withCredentials: true
+            });
+
+            return { error: response.data.error, message: response.data.message, data: response.data.data };
+        } catch (error) {
+            console.log("Error login: ", error?.response?.data);
             console.error("Request that caused the error: ", error?.request);
             return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
         }
