@@ -686,6 +686,22 @@ export class StaffOperation {
 		}
 	}
 
+    async getManagedWards(staffId: string) {
+        try {
+			const response: AxiosResponse = await axios.get(`${this.baseUrl}/managed_wards/get?staffId=${staffId}`, {
+				withCredentials: true,
+			});
+			
+			const data = response.data;
+			return { error: data.error, message: data.message, data: response.data.data };
+		} 
+		catch (error: any) {
+			console.log("Error getting managed wards: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
 	// ROLE: ADMIN, MANAGER, HUMAN_RESOURCE_MANAGER, AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER
 	async deleteStaff(condition: DeletingStaffCriteria) {
 		try {
@@ -1762,7 +1778,7 @@ export class ShippersOperation {
     // ROLE: AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER
     async createNewTasks(info: CreatingNewShipperTasksInfo) {
         try {
-            const response: AxiosResponse = await axios.post(`${this.baseUrl}/create_tasks`, info, {
+            const response: AxiosResponse = await axios.post(`${this.baseUrl}/create`, info, {
                 withCredentials: true,
             });
 
@@ -1778,7 +1794,7 @@ export class ShippersOperation {
     // ROLE: AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER, AGENCY_SHIPPER
 	async getTask(condition: GettingTasksCondition) {
 		try {
-			const response: AxiosResponse = await axios.post(`${this.baseUrl}/get_tasks`, condition, {
+			const response: AxiosResponse = await axios.post(`${this.baseUrl}/get`, condition, {
 				withCredentials: true,
 			});
 
@@ -1794,7 +1810,7 @@ export class ShippersOperation {
     // ROLE: AGENCY_SHIPPER
 	async confirmCompletedTask(condition: ConfirmingCompletedTaskInfo) {
 		try {
-			const response: AxiosResponse = await axios.patch(`${this.baseUrl}/confirm_completed?id=${condition.id}`, null, {
+			const response: AxiosResponse = await axios.patch(`${this.baseUrl}/complete?id=${condition.id}`, null, {
 				withCredentials: true,
 			});
 
@@ -1810,7 +1826,7 @@ export class ShippersOperation {
     // ROLE: AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER, AGENCY_SHIPPER 
 	async getHistory(condition: GettingHistoryInfo) {
 		try {
-			const response: AxiosResponse = await axios.post(`${this.baseUrl}/get_history`, condition, {
+			const response: AxiosResponse = await axios.post(`${this.baseUrl}/history/get`, condition, {
 				withCredentials: true,
 			});
 
@@ -1889,7 +1905,7 @@ export class DriversOperation {
     // ROLE: ADMIN, MANAGER, HUMAN_RESOURCE_MANAGER, AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER
     async createNewTasks(info: CreatingNewDriverTasksInfo) {
         try {
-            const response: AxiosResponse = await axios.post(`${this.baseUrl}/create_tasks`, info, {
+            const response: AxiosResponse = await axios.post(`${this.baseUrl}/create`, info, {
                 withCredentials: true,
             });
 
@@ -1905,7 +1921,7 @@ export class DriversOperation {
     // ROLE: ADMIN, MANAGER, HUMAN_RESOURCE_MANAGER, AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER, PARTNER_DRIVER
 	async getTask(condition: GettingTasksCondition) {
 		try {
-			const response: AxiosResponse = await axios.post(`${this.baseUrl}/get_tasks`, condition, {
+			const response: AxiosResponse = await axios.post(`${this.baseUrl}/get`, condition, {
 				withCredentials: true,
 			});
 
@@ -1921,7 +1937,7 @@ export class DriversOperation {
     // ROLE: PARTNER_DRIVER
 	async confirmCompletedTask(condition: ConfirmingCompletedTaskCondition) {
 		try {
-			const response: AxiosResponse = await axios.delete(`${this.baseUrl}/confirm_completed?id=${condition.id}`, {
+			const response: AxiosResponse = await axios.delete(`${this.baseUrl}/complete?id=${condition.id}`, {
 				withCredentials: true,
 			});
 
