@@ -498,7 +498,7 @@ export interface CreatingStaffByAgencyPayload {
     role: Role,
     position: string,
     salary: number,
-    paid_salary: number,
+    paidSalary: number,
     province: string,
     district: string,
     town: string,
