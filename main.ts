@@ -1386,6 +1386,7 @@ export interface CreatingAgencyPayload {
 }
 
 export interface SearchingAgencyCriteria {
+    agencyId?: string,
     type?: AgencyType,
     level?: number,
     postalCode?: string,
@@ -1396,7 +1397,6 @@ export interface SearchingAgencyCriteria {
     detailAddress?: string,
     latitude?: number,
     longitude?: number,
-    managedWards?: string[],
     phoneNumber?: string,
     email?: string,
     commissionRate?: number,
