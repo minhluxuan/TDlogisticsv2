@@ -845,6 +845,21 @@ export class TransportPartnerStaffOperation {
         this.baseUrl = "https://api2.tdlogistics.net.vn/v2/partner_staffs";
     }
 
+    async getAuthenticatedStaffInfo() {
+        try {
+            const response: AxiosResponse = await axios.get(`${this.baseUrl}/`, {
+                withCredentials: true,
+            });
+            
+            return { error: response.data.error, data: response.data.data, message: response.data.message };
+        } catch (error: any) {
+            console.log("Error get authenticated staff information: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+        }
+    }
+    
+
     async createByAdmin(payload: CreatingTransportPartnerStaffByAdminPayload) {
         try {
 			const response = await axios.post(`${this.baseUrl}/create`, payload, {
