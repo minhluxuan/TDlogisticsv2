@@ -370,6 +370,36 @@ export interface CalculateFeePayload {
     mass: number
 }
 
+export interface UpdatingOrderImageParams {
+    orderId: string,
+    taskId: string,
+    type: string, // just "send" and "receive" are valid
+}
+
+export interface UpdatingOrderImagesPayload {
+    image: File[],
+}
+
+export interface UpdatingOrderSignatureParams {
+    orderId: string,
+    taskId: string,
+    type: string, // just "send" and "receive" are valid
+}
+
+export interface GettingOrderImageParams {
+    orderId: string,
+    type: string, // just "send" and "receive" are valid
+}
+
+export interface GettingOrderSignatureParams {
+    orderId: string,
+    type: string, // just "send" and "receive" are valid
+}
+
+export interface UpdatingOrderSignaturePayload {
+    image: File
+}
+
 export class OrdersOperation {
     private baseUrl: string;
     constructor() {
@@ -455,6 +485,70 @@ export class OrdersOperation {
             return { error: response.data.error, message: response.data.message, data: response.data.data };
         } catch (error: any) {
             console.log("Error calculating fee: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+        }
+    }
+
+    async updateImages(payload: UpdatingOrderImagesPayload, params: UpdatingOrderImageParams) {
+        try {
+            let formData: FormData = new FormData();
+            for (let i = 0; i < payload.image.length; i++) {
+                formData.append("image", payload.image[i]);
+            }
+
+            const response = await axios.put(`${this.baseUrl}/image/update?orderId=${params.orderId}&taskId=${params.taskId}&type=${params.type}`, formData, {
+                withCredentials: true,
+            });
+
+            return { error: response.data.error, data: response.data.data, message: response.data.message };
+        } catch (error: any) {
+            console.log("Error updating order images: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+        }
+    }
+
+    async updateSignature(payload: UpdatingOrderSignaturePayload, params: UpdatingOrderImageParams) {
+        try {
+            let formData: FormData = new FormData();
+            formData.append("image", payload.image);
+
+            const response = await axios.put(`${this.baseUrl}/signature/update?orderId=${params.orderId}&taskId=${params.taskId}&type=${params.type}`, formData, {
+                withCredentials: true,
+            });
+
+            return { error: response.data.error, data: response.data.data, message: response.data.message };
+        } catch (error: any) {
+            console.log("Error updating order images: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+        }
+    }
+
+    async getImages(params: GettingOrderSignatureParams) {
+        try {
+            const response = await axios.get(`${this.baseUrl}/image/get?orderId=${params.orderId}&type=${params.type}`, {
+                withCredentials: true,
+            });
+
+            return response.data;
+        } catch (error: any) {
+            console.log("Error getting order image: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+        }
+    }
+
+    async getSignature(params: GettingOrderImageParams) {
+        try {
+            const response = await axios.get(`${this.baseUrl}/signature/get?orderId=${params.orderId}&type=${params.type}`, {
+                withCredentials: true,
+            });
+
+            return response.data;
+        } catch (error: any) {
+            console.log("Error getting order signature: ", error?.response?.data);
             console.error("Request that caused the error: ", error?.request);
             return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
         }
