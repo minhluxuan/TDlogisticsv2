@@ -1745,7 +1745,7 @@ export class ShipmentsOperation {
     // ROLE: ADMIN, MANAGER, TELLER, AGENCY_MANAGER, AGENCY_TELLER
     async get(condition: FindingShipmentConditions) {
         try {
-			const response = await axios.post(`${this.baseUrl}/get`, condition, {
+			const response = await axios.post(`${this.baseUrl}/search`, condition, {
 				withCredentials: true,
 			});
 

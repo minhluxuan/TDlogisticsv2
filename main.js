@@ -61,9 +61,9 @@ var AuthOperation = /** @class */ (function () {
         this.baseUrl = "https://api2.tdlogistics.net.vn/v2/auth";
     }
     AuthOperation.prototype.sendOtp = function (payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_1;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -83,9 +83,9 @@ var AuthOperation = /** @class */ (function () {
         });
     };
     AuthOperation.prototype.verifyOtp = function (payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_2;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -107,9 +107,9 @@ var AuthOperation = /** @class */ (function () {
         });
     };
     AuthOperation.prototype.register = function (payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_3;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -131,9 +131,9 @@ var AuthOperation = /** @class */ (function () {
         });
     };
     AuthOperation.prototype.login = function (payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_4;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -162,9 +162,9 @@ var AccountOperation = /** @class */ (function () {
         this.baseUrl = "https://api2.tdlogistics.net.vn/v2/accounts";
     }
     AccountOperation.prototype.updateInfo = function (accountId, payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_5;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -186,9 +186,9 @@ var AccountOperation = /** @class */ (function () {
         });
     };
     AccountOperation.prototype.updatePassword = function (payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_6;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -210,9 +210,9 @@ var AccountOperation = /** @class */ (function () {
         });
     };
     AccountOperation.prototype.search = function (criteria) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_7;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -241,9 +241,9 @@ var CustomerOperation = /** @class */ (function () {
         this.baseUrl = "https://api2.tdlogistics.net.vn/v2/customers";
     }
     CustomerOperation.prototype.getAuthenticatedCustomerInfo = function () {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_8;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -265,9 +265,9 @@ var CustomerOperation = /** @class */ (function () {
         });
     };
     CustomerOperation.prototype.updateInfo = function (params, payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_9;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -289,9 +289,9 @@ var CustomerOperation = /** @class */ (function () {
         });
     };
     CustomerOperation.prototype.search = function (payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_10;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -313,9 +313,9 @@ var CustomerOperation = /** @class */ (function () {
         });
     };
     CustomerOperation.prototype.updateAvatar = function (payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var formData, response, error_11;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -339,9 +339,9 @@ var CustomerOperation = /** @class */ (function () {
         });
     };
     CustomerOperation.prototype.getAvatar = function (params) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_12;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -370,9 +370,9 @@ var OrdersOperation = /** @class */ (function () {
         this.baseUrl = "https://api2.tdlogistics.net.vn/v2/orders";
     }
     OrdersOperation.prototype.create = function (payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_13;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -394,9 +394,9 @@ var OrdersOperation = /** @class */ (function () {
         });
     };
     OrdersOperation.prototype.get = function (payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_14;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -418,9 +418,9 @@ var OrdersOperation = /** @class */ (function () {
         });
     };
     OrdersOperation.prototype.checkExist = function (params) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_15;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -442,9 +442,9 @@ var OrdersOperation = /** @class */ (function () {
         });
     };
     OrdersOperation.prototype.update = function (payload, params) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_16;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -466,9 +466,9 @@ var OrdersOperation = /** @class */ (function () {
         });
     };
     OrdersOperation.prototype.cancel = function (params) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_17;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -490,9 +490,9 @@ var OrdersOperation = /** @class */ (function () {
         });
     };
     OrdersOperation.prototype.calculateFee = function (payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_18;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -514,9 +514,9 @@ var OrdersOperation = /** @class */ (function () {
         });
     };
     OrdersOperation.prototype.updateImages = function (payload, params) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var formData, i, response, error_19;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -542,9 +542,9 @@ var OrdersOperation = /** @class */ (function () {
         });
     };
     OrdersOperation.prototype.updateSignature = function (payload, params) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var formData, response, error_20;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -568,9 +568,9 @@ var OrdersOperation = /** @class */ (function () {
         });
     };
     OrdersOperation.prototype.getImages = function (params) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_21;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -592,9 +592,9 @@ var OrdersOperation = /** @class */ (function () {
         });
     };
     OrdersOperation.prototype.getSignature = function (params) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_22;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -623,9 +623,9 @@ var AdministrativeOperation = /** @class */ (function () {
         this.baseUrl = "https://api2.tdlogistics.net.vn/v2/administrative";
     }
     AdministrativeOperation.prototype.get = function (conditions) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_23;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -657,9 +657,9 @@ var StaffOperation = /** @class */ (function () {
     }
     // ROLE: any
     StaffOperation.prototype.getAuthenticatedStaffInfo = function () {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_24;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -682,9 +682,9 @@ var StaffOperation = /** @class */ (function () {
     };
     // ROLE: ADMIN, TELLER, HUMAN_RESOURCE_MANAGER, COMPLAINTS_SOLVER
     StaffOperation.prototype.findByAdmin = function (conditions) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_25;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -707,9 +707,9 @@ var StaffOperation = /** @class */ (function () {
     };
     // ROLE: ADMIN, TELLER, HUMAN_RESOURCE_MANAGER, COMPLAINTS_SOLVER
     StaffOperation.prototype.findByAgency = function (conditions) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_26;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -732,9 +732,9 @@ var StaffOperation = /** @class */ (function () {
     };
     // ROLE: ADMIN, MANAGER, HUMAN_RESOURCE_MANAGER
     StaffOperation.prototype.createByAdmin = function (info) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_27;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -757,9 +757,9 @@ var StaffOperation = /** @class */ (function () {
     };
     // ROLE: AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER
     StaffOperation.prototype.createByAgency = function (info) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_28;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -783,9 +783,9 @@ var StaffOperation = /** @class */ (function () {
     };
     // ROLE: ADMIN, MANAGER, HUMAN_RESOURCE_MANAGER, AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER
     StaffOperation.prototype.update = function (info, condition) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_29;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -808,9 +808,9 @@ var StaffOperation = /** @class */ (function () {
         });
     };
     StaffOperation.prototype.getManagedWards = function (staffId) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_30;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -834,9 +834,9 @@ var StaffOperation = /** @class */ (function () {
     };
     // ROLE: ADMIN, MANAGER, HUMAN_RESOURCE_MANAGER, AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER
     StaffOperation.prototype.deleteStaff = function (condition) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_31;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -859,9 +859,9 @@ var StaffOperation = /** @class */ (function () {
     };
     // ROLE: ADMIN, MANAGER, HUMAN_RESOURCE_MANAGER, AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER
     StaffOperation.prototype.updateAvatar = function (info, condition) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var formData, response, error_32;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -916,9 +916,9 @@ var TransportPartnerStaffOperation = /** @class */ (function () {
         this.baseUrl = "https://api2.tdlogistics.net.vn/v2/partner_staffs";
     }
     TransportPartnerStaffOperation.prototype.getAuthenticatedStaffInfo = function () {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_34;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -940,9 +940,9 @@ var TransportPartnerStaffOperation = /** @class */ (function () {
         });
     };
     TransportPartnerStaffOperation.prototype.createByAdmin = function (payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_35;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -964,9 +964,9 @@ var TransportPartnerStaffOperation = /** @class */ (function () {
         });
     };
     TransportPartnerStaffOperation.prototype.createByAgency = function (payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_36;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -988,9 +988,9 @@ var TransportPartnerStaffOperation = /** @class */ (function () {
         });
     };
     TransportPartnerStaffOperation.prototype.searchByAdmin = function (criteria) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_37;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1012,9 +1012,9 @@ var TransportPartnerStaffOperation = /** @class */ (function () {
         });
     };
     TransportPartnerStaffOperation.prototype.searchByAgency = function (criteria) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_38;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1036,9 +1036,9 @@ var TransportPartnerStaffOperation = /** @class */ (function () {
         });
     };
     TransportPartnerStaffOperation.prototype.update = function (params, payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_39;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1060,9 +1060,9 @@ var TransportPartnerStaffOperation = /** @class */ (function () {
         });
     };
     TransportPartnerStaffOperation.prototype.deleteStaff = function (params) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_40;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1091,9 +1091,9 @@ var TransportPartnerOperation = /** @class */ (function () {
         this.baseUrl = "https://api2.tdlogistics.net.vn/v2/transport_partners";
     }
     TransportPartnerOperation.prototype.createByAdmin = function (payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_41;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1115,9 +1115,9 @@ var TransportPartnerOperation = /** @class */ (function () {
         });
     };
     TransportPartnerOperation.prototype.createByAgency = function (payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_42;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1139,9 +1139,9 @@ var TransportPartnerOperation = /** @class */ (function () {
         });
     };
     TransportPartnerOperation.prototype.searchByAdmin = function (criteria) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_43;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1163,9 +1163,9 @@ var TransportPartnerOperation = /** @class */ (function () {
         });
     };
     TransportPartnerOperation.prototype.searchByAgency = function (criteria) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_44;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1187,9 +1187,9 @@ var TransportPartnerOperation = /** @class */ (function () {
         });
     };
     TransportPartnerOperation.prototype.update = function (params, payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_45;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1211,9 +1211,9 @@ var TransportPartnerOperation = /** @class */ (function () {
         });
     };
     TransportPartnerOperation.prototype.deleteTransportPartner = function (params) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_46;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1242,9 +1242,9 @@ var VehicleOperation = /** @class */ (function () {
         this.baseUrl = "https://api2.tdlogistics.net.vn/v2/vehicles";
     }
     VehicleOperation.prototype.createByAdmin = function (payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_47;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1266,9 +1266,9 @@ var VehicleOperation = /** @class */ (function () {
         });
     };
     VehicleOperation.prototype.createByAgency = function (payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_48;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1290,9 +1290,9 @@ var VehicleOperation = /** @class */ (function () {
         });
     };
     VehicleOperation.prototype.searchByAdmin = function (criteria) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_49;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1314,9 +1314,9 @@ var VehicleOperation = /** @class */ (function () {
         });
     };
     VehicleOperation.prototype.searchByAgency = function (criteria) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_50;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1338,9 +1338,9 @@ var VehicleOperation = /** @class */ (function () {
         });
     };
     VehicleOperation.prototype.update = function (params, payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_51;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1362,9 +1362,9 @@ var VehicleOperation = /** @class */ (function () {
         });
     };
     VehicleOperation.prototype.deleteVehicle = function (params) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_52;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1386,9 +1386,9 @@ var VehicleOperation = /** @class */ (function () {
         });
     };
     VehicleOperation.prototype.addShipments = function (vehicleId, payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_53;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1410,9 +1410,9 @@ var VehicleOperation = /** @class */ (function () {
         });
     };
     VehicleOperation.prototype.removeShipments = function (vehicleId, payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_54;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1434,9 +1434,9 @@ var VehicleOperation = /** @class */ (function () {
         });
     };
     VehicleOperation.prototype.undertakeShiment = function (shipmentId) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_55;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1471,9 +1471,9 @@ var AgencyOperation = /** @class */ (function () {
         this.baseUrl = "https://api2.tdlogistics.net.vn/v2/agencies";
     }
     AgencyOperation.prototype.create = function (payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_56;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1495,9 +1495,9 @@ var AgencyOperation = /** @class */ (function () {
         });
     };
     AgencyOperation.prototype.search = function (criteria) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_57;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1519,9 +1519,9 @@ var AgencyOperation = /** @class */ (function () {
         });
     };
     AgencyOperation.prototype.update = function (agencyId, payload) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_58;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1543,9 +1543,9 @@ var AgencyOperation = /** @class */ (function () {
         });
     };
     AgencyOperation.prototype.deleteAgency = function (agencyId) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_59;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1574,9 +1574,9 @@ var ShipmentsOperation = /** @class */ (function () {
         this.baseUrl = "https://api2.tdlogistics.net.vn/v2/shipments";
     }
     ShipmentsOperation.prototype.check = function (condition) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_60;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1613,9 +1613,9 @@ var ShipmentsOperation = /** @class */ (function () {
     // }
     // ROLE: ADMIN, MANAGER, TELLER, AGENCY_MANAGER, AGENCY_TELLER
     ShipmentsOperation.prototype.create = function (info) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_61;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1638,9 +1638,9 @@ var ShipmentsOperation = /** @class */ (function () {
         });
     };
     ShipmentsOperation.prototype.getOrdersFromShipment = function (condition) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_62;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1664,9 +1664,9 @@ var ShipmentsOperation = /** @class */ (function () {
     };
     // ROLE: ADMIN, MANAGER, TELLER, AGENCY_MANAGER, AGENCY_TELLER
     ShipmentsOperation.prototype.addOrdersToShipment = function (condition, info) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_63;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1690,9 +1690,9 @@ var ShipmentsOperation = /** @class */ (function () {
     };
     // ROLE: ADMIN, MANAGER, TELLER, AGENCY_MANAGER, AGENCY_TELLER
     ShipmentsOperation.prototype.deleteOrderFromShipment = function (condition, info) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_64;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1716,9 +1716,9 @@ var ShipmentsOperation = /** @class */ (function () {
     };
     // ROLE: AGENCY_MANAGER, AGENCY_TELLER
     ShipmentsOperation.prototype.confirmCreate = function (condition) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_65;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1742,14 +1742,14 @@ var ShipmentsOperation = /** @class */ (function () {
     };
     // ROLE: ADMIN, MANAGER, TELLER, AGENCY_MANAGER, AGENCY_TELLER
     ShipmentsOperation.prototype.get = function (condition) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_66;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         _c.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, axios_1.default.post("".concat(this.baseUrl, "/get"), condition, {
+                        return [4 /*yield*/, axios_1.default.post("".concat(this.baseUrl, "/search"), condition, {
                                 withCredentials: true,
                             })];
                     case 1:
@@ -1768,9 +1768,9 @@ var ShipmentsOperation = /** @class */ (function () {
     };
     // ROLE: ADMIN, MANAGER, TELLER, AGENCY_MANAGER, AGENCY_TELLER
     ShipmentsOperation.prototype.delete = function (condition) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_67;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1794,9 +1794,9 @@ var ShipmentsOperation = /** @class */ (function () {
     };
     // ROLE: ADMIN, MANAGER, TELLER, AGENCY_MANAGER, AGENCY_TELLER
     ShipmentsOperation.prototype.decompose = function (condition, info) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_68;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1820,9 +1820,9 @@ var ShipmentsOperation = /** @class */ (function () {
     };
     // ROLE: AGENCY_MANAGER, AGENCY_TELLER
     ShipmentsOperation.prototype.receive = function (condition) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_69;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1846,9 +1846,9 @@ var ShipmentsOperation = /** @class */ (function () {
     };
     // ROLE: SHIPPER, AGENCY_SHIPPER, PARTNER_SHIPPER
     ShipmentsOperation.prototype.undertake = function (info) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_70;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1872,9 +1872,9 @@ var ShipmentsOperation = /** @class */ (function () {
     };
     // ROLE: ADMIN, MANAGER, TELLER
     ShipmentsOperation.prototype.approve = function (condition) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_71;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1905,9 +1905,9 @@ var ShippersOperation = /** @class */ (function () {
     }
     // ROLE: AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER
     ShippersOperation.prototype.getObjectsCanHandleTask = function () {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_72;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1931,9 +1931,9 @@ var ShippersOperation = /** @class */ (function () {
     };
     // ROLE: AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER
     ShippersOperation.prototype.createNewTasks = function (info) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_73;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1957,9 +1957,9 @@ var ShippersOperation = /** @class */ (function () {
     };
     // ROLE: AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER, AGENCY_SHIPPER
     ShippersOperation.prototype.getTask = function (condition) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_74;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1983,9 +1983,9 @@ var ShippersOperation = /** @class */ (function () {
     };
     // ROLE: AGENCY_SHIPPER
     ShippersOperation.prototype.confirmCompletedTask = function (condition) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_75;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -2009,9 +2009,9 @@ var ShippersOperation = /** @class */ (function () {
     };
     // ROLE: AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER, AGENCY_SHIPPER 
     ShippersOperation.prototype.getHistory = function (condition) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_76;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -2035,9 +2035,9 @@ var ShippersOperation = /** @class */ (function () {
     };
     // ROLE: AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER
     ShippersOperation.prototype.deleteTask = function (condition) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_77;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -2068,9 +2068,9 @@ var DriversOperation = /** @class */ (function () {
     }
     // ROLE: ADMIN, MANAGER, HUMAN_RESOURCE_MANAGER, AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER
     DriversOperation.prototype.getObjectsCanHandleTask = function () {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_78;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -2094,9 +2094,9 @@ var DriversOperation = /** @class */ (function () {
     };
     // ROLE: ADMIN, MANAGER, HUMAN_RESOURCE_MANAGER, AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER
     DriversOperation.prototype.createNewTasks = function (info) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_79;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -2120,9 +2120,9 @@ var DriversOperation = /** @class */ (function () {
     };
     // ROLE: ADMIN, MANAGER, HUMAN_RESOURCE_MANAGER, AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER, PARTNER_DRIVER
     DriversOperation.prototype.getTask = function (condition) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_80;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -2146,9 +2146,9 @@ var DriversOperation = /** @class */ (function () {
     };
     // ROLE: PARTNER_DRIVER
     DriversOperation.prototype.confirmCompletedTask = function (condition) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_81;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -2172,9 +2172,9 @@ var DriversOperation = /** @class */ (function () {
     };
     // ROLE: ADMIN, MANAGER, HUMAN_RESOURCE_MANAGER, AGENCY_MANAGER, AGENCY_HUMAN_RESOURCE_MANAGER
     DriversOperation.prototype.deleteTask = function (condition) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_82;
-            var _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
