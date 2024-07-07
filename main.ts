@@ -1750,8 +1750,7 @@ export class ShipmentsOperation {
 			});
 
 			const data = response.data;
-            //change response of data
-			return { error: data.error, data: data, message: data.message };
+			return { error: data.error, data: data.data, message: data.message };
 		} catch (error: any) {
 			console.log("Error getting shipments: ", error?.response?.data);
             console.error("Request that caused the error: ", error?.request);

@@ -1755,8 +1755,7 @@ var ShipmentsOperation = /** @class */ (function () {
                     case 1:
                         response = _c.sent();
                         data = response.data;
-                        //change response of data
-                        return [2 /*return*/, { error: data.error, data: data, message: data.message }];
+                        return [2 /*return*/, { error: data.error, data: data.data, message: data.message }];
                     case 2:
                         error_66 = _c.sent();
                         console.log("Error getting shipments: ", (_a = error_66 === null || error_66 === void 0 ? void 0 : error_66.response) === null || _a === void 0 ? void 0 : _a.data);
