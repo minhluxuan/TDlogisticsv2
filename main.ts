@@ -1600,11 +1600,11 @@ export interface FindingShipmentConditions {
 }
 
 export interface DecomposingShipmentInfo {
-    orderIds: object
+    orderIds: Array<String>;
 }
 
 export interface OperatingWithOrderInfo {
-    orderIds: object
+    orderIds: Array<String>;
 }
 
 export interface ShipmentID {
