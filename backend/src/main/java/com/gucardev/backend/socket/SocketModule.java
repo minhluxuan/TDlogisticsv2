@@ -25,7 +25,6 @@ public class SocketModule {
         server.addConnectListener(onConnected());
         server.addDisconnectListener(onDisconnected());
         server.addEventListener("send_message", Message.class, onChatReceived());
-
     }
 
 
@@ -44,6 +43,13 @@ public class SocketModule {
             var params = client.getHandshakeData().getUrlParams();
             String room = params.get("room").stream().collect(Collectors.joining());
             String username = params.get("username").stream().collect(Collectors.joining());
+
+            // if (!"admin".equals(username) && !"root".equals(username)) {
+            //     log.warn("Socket connection rejected for username: {}", username);
+            //     client.disconnect(); // Ngắt kết nối
+            //     return;
+            // }
+
             client.joinRoom(room);
             socketService.saveInfoMessage(client, String.format(Constants.WELCOME_MESSAGE, username), room);
             log.info("Socket ID[{}] - room[{}] - username [{}]  Connected to chat module through", client.getSessionId().toString(), room, username);
