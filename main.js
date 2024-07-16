@@ -1581,7 +1581,7 @@ var ShipmentsOperation = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         _c.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, axios_1.default.get("".concat(this.baseUrl, "/check?shipmentId=").concat(condition.shipmentId), {
+                        return [4 /*yield*/, axios_1.default.post("".concat(this.baseUrl, "/check?shipmentId=").concat(condition.shipmentId), {
                                 withCredentials: true,
                             })];
                     case 1:

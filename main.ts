@@ -292,7 +292,7 @@ export interface GettingOrdersCriteria {
     provinceDest?: string,
     districtDest?: string,
     wardDest?: string,
-    serviceType?: number,
+    serviceType?: string,
 }
 
 export interface CreatingOrderByUserInformation {
@@ -1140,19 +1140,8 @@ export interface UpdatingTransportPartnerParams {
     transportPartnerId: string
 }
 
-export interface UpdatingTransportPartnerPayload {
-    transportPartnerName?: string,
-    province?: string,
-    district?: string,
-    town?: string;
-    detailAddress?: string,
-    taxCode?: string
-    phoneNumber?: string,
-    email?: string,
-    bin?: string,
-    bank?: string,
-    debit?: number
-}
+
+
 
 export interface DeletingTransportPartnerParams {
     transportPartnerId: string
@@ -1225,7 +1214,7 @@ export class TransportPartnerOperation {
 		}
     }
 
-    async update(params: UpdatingTransportPartnerParams, payload: UpdatingTransportPartnerPayload) {
+    async update(params: UpdatingTransportPartnerParams, payload: UpdatingTransportPartnerStaffPayload) {
         try {
 			const response = await axios.put(`${this.baseUrl}/update?transportPartnerId=${params.transportPartnerId}`, payload, {
 				withCredentials: true,
@@ -1635,7 +1624,7 @@ export class ShipmentsOperation {
 
     async check(condition: ShipmentID) {
         try {
-			const response = await axios.get(`${this.baseUrl}/check?shipmentId=${condition.shipmentId}`, {
+			const response = await axios.post(`${this.baseUrl}/check?shipmentId=${condition.shipmentId}`, {
 				withCredentials: true,
 			});
 
