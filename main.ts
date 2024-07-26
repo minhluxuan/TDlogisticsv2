@@ -297,6 +297,7 @@ export interface GettingOrdersCriteria {
 
 export interface CreatingOrderByUserInformation {
     nameSender: string,
+    phoneNumberSender?: string,
     nameReceiver: string,
     phoneNumberReceiver: string,
     mass: number,
@@ -406,7 +407,7 @@ export class OrdersOperation {
         this.baseUrl = "https://api2.tdlogistics.net.vn/v2/orders";
     }
 
-    async create(payload: UpdatingOrderPayload) {
+    async create(payload: CreatingOrderByUserInformation) {
         try {
             const response = await axios.post(`${this.baseUrl}/create`, payload, {
                 withCredentials: true,
