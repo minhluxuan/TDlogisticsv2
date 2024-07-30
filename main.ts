@@ -2066,3 +2066,237 @@ export class DriversOperation {
 		}
     }
 }
+
+//Business
+
+export interface CreateBusiness {
+    // Business Representor
+    userFullname: string;
+    userPhoneNumber: string;
+    userEmail: string;
+    userDateOfBirth: Date;
+    userCccd: string;
+    userProvince: string;
+    userDistrict: string;
+    userTown: string;
+    userDetailAddress: string;
+    userBin: string;
+    userBank: string;
+    username: string;
+    password: string;
+  
+    // Business information
+    // Created by admin needs agencyId, while agency does not
+    agencyId?: string; // Optional if only needed by admin
+    businessName: string;
+    email: string;
+    phoneNumber: string;
+    taxNumber: string;
+    province: string;
+    district: string;
+    town: string;
+    detailAddress: string;
+    bin: string;
+    bank: string;
+}
+
+export interface BusinessUser {
+    // Identifiers
+    uuid?: string;
+    businessId?: string;
+    agencyId?: string;
+  
+    // Business Information
+    businessName?: string;
+    taxNumber?: string;
+    province?: string;
+    district?: string;
+    town?: string;
+    detailAddress?: string;
+    bin?: string;
+    bank?: string;
+  
+    // Other Fields
+    debit?: number;
+    active?: boolean;
+    approved?: boolean;
+    representor?: BusinessRepresentor;
+}
+ 
+
+export interface BusinessRepresentor {
+    id?: number;
+    businessId?: string;
+    uuid?: string;
+    fullName?: string;
+    phoneNumber?: string;
+    email?: string;
+    dateOfBirth?: Date;
+    cccd?: string;
+    province?: string;
+    district?: string;
+    town?: string;
+    detailAddress?: string;
+    bin?: string;
+    bank?: string;
+    businessUser?: BusinessUser;
+}
+
+export interface BusinessId {
+    businessId: String;
+}
+
+export class BusinessOperation {
+    private baseUrl: string;
+	constructor() {
+		this.baseUrl = "https://api2.tdlogistics.net.vn/v2/business";
+	}
+
+    
+    // ROLE: BUSINESS USER
+    async createByBusiness(info: CreateBusiness) {
+        try {
+            const response: AxiosResponse = await axios.post(`${this.baseUrl}/create`, info, {
+                withCredentials: true,
+            });
+
+            const data = response.data;
+            return { error: data.error, message: data.message };
+        } catch (error: any) {
+            console.log("Error creating new tasks: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+        }
+    }
+
+    // ROLE: MANAGER, TELLER, ADMIN
+    // Create business by admin
+    async approve(info: CreateBusiness) {
+        try {
+            const response: AxiosResponse = await axios.post(`${this.baseUrl}/approve`, info, {
+                withCredentials: true,
+            });
+
+            const data = response.data;
+            return { error: data.error, message: data.message };
+        } catch (error: any) {
+            console.log("Error creating new tasks: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+        }
+    }
+
+    // ROLE: BUSINESS
+	async getAuthenticatedInfo() {
+		try {
+			const response: AxiosResponse = await axios.get(`${this.baseUrl}/`, {
+				withCredentials: true,
+			});
+
+			const data = response.data;
+			return { error: data.error, data: data.data, message: data.message };
+		} catch (error: any) {
+			console.log("Error getting tasks: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+	}
+
+    // ROLE: ADMIN, MANAGER, TELLER, AGENCY_MANAGER, AGENCY_TELLER, BUSINESS, HUMAN_RESOURCE_MANAGER, COMPLAINTS_SOLVER
+	async findBusinessUser(payload: BusinessUser) {
+		try {
+			const response: AxiosResponse = await axios.post(`${this.baseUrl}/search`, payload, {
+				withCredentials: true,
+			});
+
+			const data = response.data;
+			return { error: data.error, message: data.message };
+		} catch (error: any) {
+			console.log("Error confirming completed task: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+	}
+
+    // ROLE: ADMIN, MANAGER, TELLER, AGENCY_MANAGER, AGENCY_TELLER, BUSINESS, HUMAN_RESOURCE_MANAGER, COMPLAINTS_SOLVER
+	async findBusinessRepresentor(payload: BusinessRepresentor) {
+		try {
+			const response: AxiosResponse = await axios.post(`${this.baseUrl}/representor/search`, payload, {
+				withCredentials: true,
+			});
+
+			const data = response.data;
+			return { error: data.error, message: data.message };
+		} catch (error: any) {
+			console.log("Error confirming completed task: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+	}
+
+    // ROLE: ADMIN, MANAGER, TELLER, AGENCY_MANAGER, AGENCY_TELLER
+	async updateBusinessUser(payload: BusinessUser) {
+		try {
+			const response: AxiosResponse = await axios.put(`${this.baseUrl}/update`, payload, {
+				withCredentials: true,
+			});
+
+			const data = response.data;
+			return { error: data.error, message: data.message };
+		} catch (error: any) {
+			console.log("Error confirming completed task: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+	}
+
+    // ROLE: ADMIN, MANAGER, TELLER, AGENCY_MANAGER, AGENCY_TELLER
+	async updateBusinessRepresentor(payload: BusinessRepresentor) {
+		try {
+			const response: AxiosResponse = await axios.put(`${this.baseUrl}/representor/update`, payload, {
+				withCredentials: true,
+			});
+
+			const data = response.data;
+			return { error: data.error, message: data.message };
+		} catch (error: any) {
+			console.log("Error confirming completed task: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+	}
+
+
+
+    // ROLE: ADMIN, MANAGER, TELLER, AGENCY_MANAGER, AGENCY_TELLER
+    async deleteBusinessUser(params: BusinessId) {
+        try {
+			const response: AxiosResponse = await axios.delete(`${this.baseUrl}/delete?businessId=${params.businessId}`,  {
+				withCredentials: true,
+			});
+
+			const data = response.data;
+			return { error: data.error, message: data.message };
+		} catch (error: any) {
+			console.log("Error deleting task: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+		}
+    }
+
+    // ROLE: ADMIN, MANAGER, TELLER, AGENCY_MANAGER, AGENCY_TELLER
+	// async updateContact(payload: BusinessRepresentor) {
+	// 	try {
+	// 		const response: AxiosResponse = await axios.put(`${this.baseUrl}/representor/update`, payload, {
+	// 			withCredentials: true,
+	// 		});
+
+	// 		const data = response.data;
+	// 		return { error: data.error, message: data.message };
+	// 	} catch (error: any) {
+	// 		console.log("Error confirming completed task: ", error?.response?.data);
+    //         console.error("Request that caused the error: ", error?.request);
+    //         return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+	// 	}
+	// }
+}
