@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BusinessOperation = exports.DriversOperation = exports.ShippersOperation = exports.ShipmentsOperation = exports.AgencyOperation = exports.AgencyType = exports.VehicleOperation = exports.TransportPartnerOperation = exports.TransportPartnerStaffOperation = exports.StaffOperation = exports.AdministrativeOperation = exports.OrdersOperation = exports.CustomerOperation = exports.AccountOperation = exports.AuthOperation = exports.Role = void 0;
+exports.BusinessOperation = exports.DriversOperation = exports.ShippersOperation = exports.ShipmentsOperation = exports.AgencyOperation = exports.AgencyType = exports.VehicleOperation = exports.TransportPartnerOperation = exports.TransportPartnerStaffOperation = exports.StaffOperation = exports.AdministrativeOperation = exports.OrdersOperation = exports.CustomerOperation = exports.AccountOperation = exports.AuthOperation = exports.LoginOption = exports.Role = void 0;
 var FormData = require("form-data");
 var axios_1 = require("axios");
 var Role;
@@ -56,6 +56,12 @@ var Role;
     Role[Role["TRANSPORT_PARTNER_REPRESENTOR"] = 12] = "TRANSPORT_PARTNER_REPRESENTOR";
 })(Role || (exports.Role = Role = {}));
 ;
+var LoginOption;
+(function (LoginOption) {
+    LoginOption["BUSINESS"] = "BUSINESS";
+    LoginOption["STAFF"] = "STAFF";
+    LoginOption["CUSTOMER"] = "CUSTOMER";
+})(LoginOption || (exports.LoginOption = LoginOption = {}));
 var AuthOperation = /** @class */ (function () {
     function AuthOperation() {
         this.baseUrl = "https://api2.tdlogistics.net.vn/v2/auth";
@@ -130,7 +136,7 @@ var AuthOperation = /** @class */ (function () {
             });
         });
     };
-    AuthOperation.prototype.login = function (payload) {
+    AuthOperation.prototype.login = function (payload, loginOption) {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, error_4;
@@ -138,7 +144,7 @@ var AuthOperation = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         _c.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, axios_1.default.post("".concat(this.baseUrl, "/basic/login"), payload, {
+                        return [4 /*yield*/, axios_1.default.post("".concat(this.baseUrl, "/basic/login?option=").concat(loginOption), payload, {
                                 withCredentials: true
                             })];
                     case 1:

@@ -41,6 +41,12 @@ export interface LoginPayload {
     password: string,
 }
 
+export enum LoginOption {
+    BUSINESS = "BUSINESS",
+    STAFF = "STAFF",
+    CUSTOMER = "CUSTOMER"
+}
+
 export class AuthOperation {
     private baseUrl: String;
     
@@ -86,9 +92,9 @@ export class AuthOperation {
         }
     }
 
-    async login(payload: LoginPayload) {
+    async login(payload: LoginPayload, loginOption: LoginOption) {
         try {
-            const response = await axios.post(`${this.baseUrl}/basic/login`, payload, {
+            const response = await axios.post(`${this.baseUrl}/basic/login?option=${loginOption}`, payload, {
                 withCredentials: true
             });
 
