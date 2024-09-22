@@ -964,6 +964,19 @@ export interface UpdatingTransportPartnerStaffPayload {
     bank?: string
 }
 
+export interface UpdatingTransportPartnerPayload {
+    transportPartnerName?: string,
+    province?: string,
+    district?: string,
+    town?: string,
+    taxCode?: string,
+    phoneNumber?: string,
+    email?: string,
+    bin?: string,
+    bank?: string,
+    debit?: number
+}
+
 export interface DeletingTransportPartnerStaffParams {
     staffId: string
 }
@@ -1249,7 +1262,7 @@ export class TransportPartnerOperation {
 		}
     }
 
-    async update(params: UpdatingTransportPartnerParams, payload: UpdatingTransportPartnerStaffPayload) {
+    async update(params: UpdatingTransportPartnerParams, payload: UpdatingTransportPartnerPayload) {
         try {
 			const response = await axios.put(`${this.baseUrl}/update?transportPartnerId=${params.transportPartnerId}`, payload, {
 				withCredentials: true,
