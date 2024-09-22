@@ -969,6 +969,7 @@ export interface UpdatingTransportPartnerPayload {
     province?: string,
     district?: string,
     town?: string,
+    detailAddress?: string,
     taxCode?: string,
     phoneNumber?: string,
     email?: string,
