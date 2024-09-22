@@ -174,6 +174,20 @@ export class AccountOperation {
             return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
         }
     }
+
+    async logout() {
+        try {
+            const response = await axios.get(`${this.baseUrl}/logout`, {
+                withCredentials: true
+            });
+
+            return { error: response.data.error, message: response.data.message, data: response.data.data };
+        } catch (error) {
+            console.log("Error updating password: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+        }
+    }
 }
 
 interface UpdatingCustomerParams {
@@ -577,6 +591,20 @@ export class AdministrativeOperation {
     async get(conditions: AdministrativePayload) {
         try {
             const response: AxiosResponse = await axios.post(`${this.baseUrl}/search`, conditions, {
+                withCredentials: true
+            });
+
+            return { error: response.data.error, data: response.data.data, message: response.data.message }
+        } catch (error: any) {
+            console.error("Error getting administrative: ", error?.response?.data);
+            console.error("Request that caused the error: ", error?.request);
+            return { error: error?.response?.data, request: error?.request, status: error.response ? error.response.status : null };
+        }
+    }
+
+    async getWardsManagedByShipper(shipperId: String) {
+        try {
+            const response: AxiosResponse = await axios.get(`${this.baseUrl}/shipper/search?shipperId=${shipperId}`, {
                 withCredentials: true
             });
 
