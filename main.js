@@ -2285,7 +2285,7 @@ var BusinessOperation = /** @class */ (function () {
     };
     // ROLE: MANAGER, TELLER, ADMIN
     // Create business by admin
-    BusinessOperation.prototype.approve = function (info) {
+    BusinessOperation.prototype.approve = function (uuid, agencyId) {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var response, data, error_86;
@@ -2293,7 +2293,7 @@ var BusinessOperation = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         _c.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, axios_1.default.post("".concat(this.baseUrl, "/approve"), info, {
+                        return [4 /*yield*/, axios_1.default.post("".concat(this.baseUrl, "/approve?uuid=").concat(uuid, "&agencyId=").concat(agencyId), {
                                 withCredentials: true,
                             })];
                     case 1:

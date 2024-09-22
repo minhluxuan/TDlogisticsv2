@@ -1,5 +1,6 @@
 const FormData = require("form-data");
 import axios, { AxiosResponse } from "axios";
+import { UUID } from "crypto";
 
 export enum Role {
     CUSTOMER,
@@ -2219,9 +2220,9 @@ export class BusinessOperation {
 
     // ROLE: MANAGER, TELLER, ADMIN
     // Create business by admin
-    async approve(info: CreateBusiness) {
+    async approve(uuid: UUID, agencyId: string) {
         try {
-            const response: AxiosResponse = await axios.post(`${this.baseUrl}/approve`, info, {
+            const response: AxiosResponse = await axios.post(`${this.baseUrl}/approve?uuid=${uuid}&agencyId=${agencyId}`, {
                 withCredentials: true,
             });
 
